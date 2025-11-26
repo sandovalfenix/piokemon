@@ -1,32 +1,16 @@
 <script setup lang="ts">
-import { useBattleStore } from '@/stores/battle'
-import { storeToRefs } from 'pinia'
-const { attackPokemon } = useBattleStore()
-const { pokemons, opponentPokemons, gameOver, winner } = storeToRefs(useBattleStore())
+import TradeWithNpc from '@/components/TradeWithNpc.vue'
+import MyTeam from '@/components/MyTeam.vue'
+
+import PokemonBattle from '@/components/PokemonBattle.vue';
+
 </script>
 
 <template>
   <main>
-    <h1>Battle Pokémon App</h1>
-
-    <div v-if="gameOver" class="gameOver">
-      <h2>Game Over!</h2>
-      <p>The winner is: {{ winner }}</p>
-    </div>
-    <section class="battle-section">
-      <div class="pokemon-card">
-        <h2>Player's Pokémon</h2>
-        <p>Name: {{ pokemons[0].name }}</p>
-        <p>HP: {{ pokemons[0].hp }}</p>
-        <button @click="attackPokemon(pokemons, opponentPokemons)">Attack Opponent</button>
-      </div>
-
-      <div class="pokemon-card">
-        <h2>Opponent's Pokémon</h2>
-        <p>Name: {{ opponentPokemons[0].name }}</p>
-        <p>HP: {{ opponentPokemons[0].hp }}</p>
-      </div>
-    </section>
+    <PokemonBattle />
+    <TradeWithNpc />
+    <MyTeam />
   </main>
 </template>
 
