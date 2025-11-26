@@ -13,12 +13,11 @@ interface Pokemon {
 export const useBattleStore = defineStore('battle', () => {
   const teamStore = useTeamStore()
   // my pokemons (now from team store)
-  // const pokemons = ref([{ id: 1, name: 'Bulbasaur', hp: 10, attack: 44, defense: 49 }])
 
   // opponent pokemons
   const opponentPokemons = ref<Pokemon[]>([{ id: 4, name: 'Charmander', hp: 10, attack: 52, defense: 43 }])
 
-  const attacker = ref(true)
+  const isPlayerTurn = ref(true)
 
   // attack function
   const attackPokemon = (pokemonAttack: Ref<Pokemon[]> | Pokemon[], pokemonDefense: Ref<Pokemon[]> | Pokemon[]) => {
@@ -40,10 +39,10 @@ export const useBattleStore = defineStore('battle', () => {
     defenderStats.hp = Math.max(0, defenderStats.hp - damage)
 
     // switch turn
-    attacker.value = !attacker.value
+    isPlayerTurn.value = !isPlayerTurn.value
 
     // if game is not over and it is now the opponent's turn, schedule their attack
-    if (!gameOver.value && !attacker.value) {
+    if (!gameOver.value && !isPlayerTurn.value) {
       setTimeout(() => {
         attackPokemon(opponentPokemons, teamStore.pokemons)
       }, 1000)
@@ -62,5 +61,5 @@ export const useBattleStore = defineStore('battle', () => {
     return null
   })
 
-  return { opponentPokemons, attacker, attackPokemon, gameOver, winner }
+  return { opponentPokemons, isPlayerTurn, attackPokemon, gameOver, winner }
 })
