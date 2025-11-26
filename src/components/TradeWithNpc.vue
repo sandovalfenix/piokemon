@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTradeStore } from '@/stores/TradeWithNpc'
+import { useTradeStore } from '@/stores/tradeWithNpc'
 import { storeToRefs } from 'pinia'
 
 const tradeStore = useTradeStore()
