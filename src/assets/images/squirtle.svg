@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="320" height="320">
+  <rect width="100%" height="100%" rx="20" fill="#E8F8FF"/>
+  <g transform="translate(8,8)">
+    <ellipse cx="72" cy="92" rx="44" ry="26" fill="#81D9EA"/>
+    <circle cx="58" cy="66" r="10" fill="#05637E"/>
+    <circle cx="86" cy="66" r="10" fill="#05637E"/>
+    <path d="M40 80 Q72 52 104 80" fill="#C6F0FA" stroke="#4EB2C7" stroke-width="3"/>
+    <text x="50%" y="140" font-family="Inter, Arial" font-size="14" text-anchor="middle" fill="#0f172a">Squirtle</text>
+  </g>
+</svg>

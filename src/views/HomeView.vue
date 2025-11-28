@@ -18,20 +18,75 @@
       >
         Explorar
       </button>
+
     </div>
 
     <!-- Componente Buscar -->
-    <BuscarPokemon 
-      v-if="mostrarBuscar" 
+    <BuscarPokemon
+      v-if="mostrarBuscar"
       @cerrar="mostrarBuscar = false"
+      @pokemon-encontrado="handlePokemonEncontrado"
+      @pokemon-no-encontrado="handlePokemonNoEncontrado"
+    />
+
+    <!-- Componente Capturar -->
+    <Capturar
+      v-if="mostrarCapturar"
+      :pokemonData="pokemonData"
+      :estadoBusqueda="estadoBusqueda"
+      @ir-a-batalla="handleIrABatalla"
+      @huir="handleHuir"
     />
   </main>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import BuscarPokemon from '../components/Buscar.vue'
+import Capturar from '@/components/Capturar.vue'
+import type { GeneratedPokemon } from '@/stores/pokemonGenerator'
 
 const mostrarBuscar = ref(false)
+const mostrarCapturar = ref(false)
+const estadoBusqueda = ref<'encontrado' | 'no encontrado'>('no encontrado')
+const pokemonData = ref<GeneratedPokemon | null>(null)
+
+const router = useRouter()
+
+function handlePokemonEncontrado (p: GeneratedPokemon) {
+  pokemonData.value = p
+  estadoBusqueda.value = 'encontrado'
+  mostrarBuscar.value = false
+  mostrarCapturar.value = true
+}
+
+function handlePokemonNoEncontrado () {
+  pokemonData.value = null
+  estadoBusqueda.value = 'no encontrado'
+  mostrarBuscar.value = false
+  mostrarCapturar.value = true
+}
+
+async function handleIrABatalla (p: GeneratedPokemon) {
+  // Intentar navegar a la ruta "batalla" si existe
+  mostrarCapturar.value = false
+  try {
+    await router.push({ path: '/batalla', query: { name: p.name } })
+  } catch (e) {
+    // Si la ruta no existe, solo cerramos la ventana y dejamos la consola informando
+    console.warn('Ruta /batalla no encontrada — emitiendo acción abierta localmente', e)
+  }
+}
+
+function handleHuir () {
+  // Volver al estado inicial
+  mostrarCapturar.value = false
+  mostrarBuscar.value = false
+  pokemonData.value = null
+  estadoBusqueda.value = 'no encontrado'
+}
+
+// DEV helper para probar la vista Capturar con un Pokémon conocido (Charmander id=4)
+// removed: development helper forceCharmander
 </script>
