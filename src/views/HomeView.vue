@@ -5,6 +5,7 @@
       Proyecto Vue 3 + Vite + Tailwind CSS + shadcn-vue configurado correctamente.
     </p>
     <div class="flex gap-4">
+      <!-- Botón Dashboard -->
       <RouterLink
         to="/dashboard"
         class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
@@ -12,6 +13,7 @@
         Ir al Dashboard
       </RouterLink>
       
+      <!-- Botón Explorar -->
       <button
         @click="mostrarBuscar = true"
         class="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-green-700"
@@ -19,6 +21,13 @@
         Explorar
       </button>
 
+      <!-- Botón Mochila -->
+      <button
+        @click="mostrarInventario = true"
+        class="inline-flex items-center justify-center rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-purple-700"
+      >
+        Mochila
+      </button>
     </div>
 
     <!-- Componente Buscar -->
@@ -37,6 +46,13 @@
       @ir-a-batalla="handleIrABatalla"
       @huir="handleHuir"
     />
+
+    <!-- Modal Inventario -->
+    <InventarioBall
+      v-if="mostrarInventario"
+      @ball-seleccionada="handleBallSeleccionada"
+      @cerrar="mostrarInventario = false"
+    />
   </main>
 </template>
 
@@ -45,10 +61,13 @@ import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import BuscarPokemon from '../components/Buscar.vue'
 import Capturar from '@/components/Capturar.vue'
+import InventarioBall from '@/components/inventarioball.vue'
 import type { GeneratedPokemon } from '@/stores/pokemonGenerator'
 
 const mostrarBuscar = ref(false)
 const mostrarCapturar = ref(false)
+const mostrarInventario = ref(false)
+
 const estadoBusqueda = ref<'encontrado' | 'no encontrado'>('no encontrado')
 const pokemonData = ref<GeneratedPokemon | null>(null)
 
@@ -69,24 +88,22 @@ function handlePokemonNoEncontrado () {
 }
 
 async function handleIrABatalla (p: GeneratedPokemon) {
-  // Intentar navegar a la ruta "batalla" si existe
   mostrarCapturar.value = false
   try {
     await router.push({ path: '/batalla', query: { name: p.name } })
   } catch (e) {
-    // Si la ruta no existe, solo cerramos la ventana y dejamos la consola informando
-    console.warn('Ruta /batalla no encontrada — emitiendo acción abierta localmente', e)
+    console.warn('Ruta /batalla no encontrada — acción local', e)
   }
 }
 
 function handleHuir () {
-  // Volver al estado inicial
   mostrarCapturar.value = false
   mostrarBuscar.value = false
   pokemonData.value = null
   estadoBusqueda.value = 'no encontrado'
 }
 
-// DEV helper para probar la vista Capturar con un Pokémon conocido (Charmander id=4)
-// removed: development helper forceCharmander
+function handleBallSeleccionada(ballData: { type: string; label: string; count: number }) {
+  alert(`Has lanzado una ${ballData.label}`)
+}
 </script>
