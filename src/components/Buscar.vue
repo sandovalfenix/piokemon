@@ -1,49 +1,59 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-      <h2 class="text-2xl font-bold mb-1">Buscar Pokémon</h2>
+  <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
+    <Card class="w-full max-w-md mx-4 border border-border shadow-lg">
+      <CardHeader class="border-b border-border">
+        <CardTitle class="text-foreground">Buscar Pokémon</CardTitle>
+      </CardHeader>
       
-      <div v-if="buscando" class="text-center">
-        <div class="relative h-56 flex items-center justify-center">
-          <div 
-            class="w-32 h-32"
-            :style="spriteStyle"
-          ></div>
+      <CardContent class="text-center pt-6">
+        <div v-if="buscando" class="space-y-4">
+          <div class="relative h-56 flex items-center justify-center rounded-lg bg-muted/50 border border-border">
+            <div 
+              class="w-32 h-32"
+              :style="spriteStyle"
+            ></div>
+          </div>
+          
+          <div class="space-y-1">
+            <p class="text-lg font-semibold text-foreground">Buscando Pokémon...</p>
+            <p class="text-sm text-muted-foreground">Explorando la selva</p>
+          </div>
         </div>
         
-        <p class="text-lg mt-2">Buscando Pokémon...</p>
-        <p class="text-sm text-gray-500 mt-1">Explorando la selva</p>
-      </div>
-      
-      <div v-else class="text-center">
-        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-2">
-          <h3 class="font-bold text-lg">Búsqueda completada</h3>
-          <p class="mt-1">Revisa la consola para ver el resultado</p>
+        <div v-else class="space-y-4">
+          <div class="bg-primary/10 border border-primary rounded-lg p-4 space-y-2">
+            <h3 class="font-bold text-base text-foreground">✅ Búsqueda completada</h3>
+            <p class="text-sm text-muted-foreground">Revisa la consola para ver el resultado</p>
+          </div>
         </div>
-      </div>
+      </CardContent>
       
-      <div class="flex gap-2 mt-4">
-        <button
+      <CardFooter class="border-t border-border flex gap-2 pt-4">
+        <Button
           v-if="!buscando"
           @click="reiniciarBusqueda"
-          class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded transition-colors"
+          class="flex-1"
+          variant="outline"
         >
           Buscar de Nuevo
-        </button>
+        </Button>
         
-        <button
+        <Button
           @click="cerrarModal"
-          class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition-colors"
+          class="flex-1"
+          variant="destructive"
         >
           Cerrar
-        </button>
-      </div>
-    </div>
+        </Button>
+      </CardFooter>
+    </Card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 interface PokemonData {
   nombre: string;
