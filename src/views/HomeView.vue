@@ -1,3 +1,6 @@
+<script lang="ts">
+import EncounterView from '@/components/EncounterView.vue';
+</script>
 <template>
   <main class="container mx-auto p-8">
     <h1 class="text-4xl font-bold mb-4">Bienvenido a Piokemon</h1>
@@ -12,6 +15,7 @@
         Ir al Dashboard
       </RouterLink>
     </div>
+    <EncounterView />
   </main>
 </template>
 
