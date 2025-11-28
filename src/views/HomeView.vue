@@ -11,11 +11,27 @@
       >
         Ir al Dashboard
       </RouterLink>
+      
+      <button
+        @click="mostrarBuscar = true"
+        class="inline-flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-green-700"
+      >
+        Explorar
+      </button>
     </div>
+
+    <!-- Componente Buscar -->
+    <BuscarPokemon 
+      v-if="mostrarBuscar" 
+      @cerrar="mostrarBuscar = false"
+    />
   </main>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-</script>
+import BuscarPokemon from '../components/Buscar.vue'
 
+const mostrarBuscar = ref(false)
+</script>
