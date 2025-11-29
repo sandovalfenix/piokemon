@@ -1,65 +1,77 @@
-import { ref, computed, type Ref, isRef } from 'vue'
 import { defineStore } from 'pinia'
-import { useTeamStore } from './team'
+import type { BattleState } from '@/domain/battle/engine/entities'
+import type { AI } from '@/domain/battle/ai/types'
+import { createInitialState } from '@/domain/battle/engine/state'
+import { createSeededRng } from '@/domain/battle/calc/rng'
+import { resolveTurn } from '@/domain/battle/engine/resolveTurn'
+import { createBasicAI } from '@/domain/battle/ai/basicAI'
+import { createStrategicAI } from '@/domain/battle/ai/strategicAI'
+import { SAMPLE_PLAYER, SAMPLE_NPC } from '@/data/pokemon'
 
-interface Pokemon {
-  id: number
-  name: string
-  hp: number
-  attack: number
-  defense: number
-}
+export type AIType = 'basic' | 'strategic'
 
-export const useBattleStore = defineStore('battle', () => {
-  const teamStore = useTeamStore()
-  // my pokemons (now from team store)
+export const useBattleStore = defineStore('battle', {
+  state: (): BattleState & { seed?: string | number; aiType: AIType; ai: AI } => ({
+    ...createInitialState(SAMPLE_PLAYER, SAMPLE_NPC),
+    seed: undefined,
+    aiType: 'basic',
+    ai: createBasicAI(),
+  }),
 
-  // opponent pokemons
-  const opponentPokemons = ref<Pokemon[]>([{ id: 4, name: 'Charmander', hp: 10, attack: 52, defense: 43 }])
+  getters: {
+    playerPokemon: (state) => state.player,
+    npcPokemon: (state) => state.npc,
+    isResolved: (state) => state.phase === 'ended',
+    playerHPPercent: (state) =>
+      Math.floor((state.player.currentHp / state.player.stats.hp) * 100),
+    npcHPPercent: (state) => Math.floor((state.npc.currentHp / state.npc.stats.hp) * 100),
+  },
 
-  const isPlayerTurn = ref(true)
+  actions: {
+    startBattle(seed?: string | number, aiType: AIType = 'basic') {
+      const initial = createInitialState(
+        structuredClone(SAMPLE_PLAYER),
+        structuredClone(SAMPLE_NPC),
+      )
 
-  // attack function
-  const attackPokemon = (pokemonAttack: Ref<Pokemon[]> | Pokemon[], pokemonDefense: Ref<Pokemon[]> | Pokemon[]) => {
-    // tolerate both: refs passed from script (have `.value`) and unwrapped arrays passed from templates
-    const attackArr = isRef(pokemonAttack) ? pokemonAttack.value : pokemonAttack
-    const defendArr = isRef(pokemonDefense) ? pokemonDefense.value : pokemonDefense
+      // Create AI based on type
+      const ai = aiType === 'strategic' ? createStrategicAI() : createBasicAI()
 
-    // validate
-    if (!attackArr || !defendArr || !attackArr[0] || !defendArr[0]) return
+      this.$patch({ ...initial, seed, aiType, ai, log: [] })
+    },
 
-    if (gameOver.value) return
+    selectPlayerMove(moveId: string) {
+      if (this.phase !== 'select' || this.winner) return
 
-    const attackerStats = attackArr[0]
-    const defenderStats = defendArr[0]
+      this.phase = 'resolving'
+      const rng = createSeededRng(this.seed ?? Date.now())
+      const results = resolveTurn(this, moveId, rng, this.ai)
 
-    // calculate damage (at least 1)
-    const damage = Math.max(1, attackerStats.attack - defenderStats.defense)
+      // Generate log messages
+      for (const result of results) {
+        const attacker = result.attacker === 'player' ? this.player : this.npc
+        const defender = result.attacker === 'player' ? this.npc : this.player
+        const move = attacker.moves.find((m) => m.id === result.moveId)
 
-    defenderStats.hp = Math.max(0, defenderStats.hp - damage)
+        if (!result.hit) {
+          this.log.push(`${attacker.name}'s attack missed!`)
+        } else {
+          this.log.push(`${attacker.name} used ${move?.name}!`)
+          if (result.effectiveness === 2) this.log.push("It's super effective!")
+          if (result.effectiveness === 0.5) this.log.push("It's not very effective...")
+          if (result.effectiveness === 0) this.log.push('It has no effect...')
+          this.log.push(`${defender.name} took ${result.damage} damage!`)
+        }
+      }
 
-    // switch turn
-    isPlayerTurn.value = !isPlayerTurn.value
+      if (this.winner) {
+        this.log.push(this.winner === 'player' ? 'You win!' : 'You lose!')
+        this.phase = 'ended'
+      }
+    },
 
-    // if game is not over and it is now the opponent's turn, schedule their attack
-    if (!gameOver.value && !isPlayerTurn.value) {
-      setTimeout(() => {
-        attackPokemon(opponentPokemons, teamStore.pokemons)
-      }, 1000)
-    }
-  }
-
-  const gameOver = computed(() => {
-    if (!teamStore.pokemons[0] || !opponentPokemons.value[0]) return true
-    return teamStore.pokemons[0].hp <= 0 || opponentPokemons.value[0].hp <= 0
-  })
-
-  const winner = computed(() => {
-    if (!teamStore.pokemons[0] || !opponentPokemons.value[0]) return null
-    if (teamStore.pokemons[0].hp <= 0) return 'opponent'
-    if (opponentPokemons.value[0].hp <= 0) return 'player'
-    return null
-  })
-
-  return { opponentPokemons, isPlayerTurn, attackPokemon, gameOver, winner }
+    endBattle() {
+      this.$reset()
+    },
+  },
 })

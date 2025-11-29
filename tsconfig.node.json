@@ -2,7 +2,7 @@
   "extends": "@tsconfig/node22/tsconfig.json",
   "include": [
     "vite.config.*",
-    "vitest.config.*",
+    // exclude vitest config from TS build (use JS config)
     "cypress.config.*",
     "nightwatch.conf.*",
     "playwright.config.*",

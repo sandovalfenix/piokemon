@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import TradeWithNpc from '@/components/TradeWithNpc.vue'
 import MyTeam from '@/components/MyTeam.vue'
-
-import PokemonBattle from '@/components/PokemonBattle.vue';
-
 </script>
 
 <template>
   <main>
-    <PokemonBattle />
+    <h1>Pokémon MMO</h1>
+    <p>Welcome! Visit the Battle page to test the battle system.</p>
     <TradeWithNpc />
     <MyTeam />
   </main>
