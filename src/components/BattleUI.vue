@@ -1,5 +1,5 @@
 <template>
-  <section class="p-4 max-w-4xl mx-auto space-y-4 relative">
+  <section class="p-4 max-w-screen-xl mx-auto space-y-4 relative">
     <header class="mb-4 flex justify-between items-center">
       <h1 class="text-2xl font-bold">Battle</h1>
     </header>

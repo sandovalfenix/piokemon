@@ -64,8 +64,8 @@ export function isPokeAPITypeResponse(data: unknown): data is PokeAPITypeRespons
     POKEMON_TYPES.includes(obj.name as PokemonType) &&
     typeof obj.damage_relations === 'object' &&
     obj.damage_relations !== null &&
-    Array.isArray((obj.damage_relations as any).double_damage_to) &&
-    Array.isArray((obj.damage_relations as any).half_damage_to) &&
-    Array.isArray((obj.damage_relations as any).no_damage_to)
+    Array.isArray(obj.damage_relations.double_damage_to) &&
+    Array.isArray(obj.damage_relations.half_damage_to) &&
+    Array.isArray(obj.damage_relations.no_damage_to)
   )
 }

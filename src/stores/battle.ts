@@ -8,6 +8,7 @@ import { createStrategicAI } from '@/domain/battle/ai/strategicAI'
 import { computeTypeMultiplier } from '@/domain/battle/calc/typeChart'
 import { calculateDamage } from '@/domain/battle/calc/damage'
 import { SAMPLE_PLAYER, SAMPLE_NPC } from '@/data/pokemon'
+import { useTypeChartStore } from './typeChart'
 
 export const useBattleStore = defineStore('battle', {
   state: (): BattleState & { seed?: string | number; ai: AI } => ({
@@ -26,7 +27,13 @@ export const useBattleStore = defineStore('battle', {
   },
 
   actions: {
-    startBattle(seed?: string | number) {
+    async startBattle(seed?: string | number) {
+      // Load type chart on first battle access
+      const typeChartStore = useTypeChartStore()
+      if (!typeChartStore.lastUpdated) {
+        await typeChartStore.loadTypeChart()
+      }
+
       // Deep clone to ensure we have fresh Pokemon with full HP
       const playerClone = structuredClone(SAMPLE_PLAYER)
       const npcClone = structuredClone(SAMPLE_NPC)
