@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import FinalCaptura from './FinalCaptura.vue'
 
 import { useEncounterStore } from '@/stores/useEncounterStore'
 import type { GeneratedPokemon } from '@/stores/pokemonGenerator'
@@ -24,6 +25,8 @@ const emit = defineEmits<{
 const buscando = ref<boolean>(true);
 const frameActual = ref<number>(0);
 const animacionId = ref<number | null>(null);
+const mostrarFinalCaptura = ref<boolean>(false);
+const resultadoCaptura = ref<'capturado' | 'escapó'>('escapó');
 
 const encounterStore = useEncounterStore()
 const foundPokemon = ref<GeneratedPokemon | null>(null)
@@ -101,6 +104,15 @@ const decidirResultadoDeBusqueda = (): void => {
     if (foundPokemon.value) {
       console.log('✅ Pokémon encontrado (store):', foundPokemon.value)
       emit('pokemon-encontrado', foundPokemon.value)
+      
+      // Simular captura (70% de probabilidad)
+      const capturado = Math.random() > 0.3
+      resultadoCaptura.value = capturado ? 'capturado' : 'escapó'
+      
+      // Mostrar FinalCaptura después de 2 segundos
+      setTimeout(() => {
+        mostrarFinalCaptura.value = true
+      }, 2000)
     } else {
       // Fallback por si algo raro pasa
       console.log('❌ Error: se esperaba un Pokémon del store pero es null')
@@ -120,10 +132,16 @@ const reiniciarBusqueda = (): void => {
 const cerrarModal = (): void => {
   emit('cerrar');
 };
+
+const handleVolverInicio = (): void => {
+  mostrarFinalCaptura.value = false
+  cerrarModal()
+};
 </script>
 <template>
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
-    <Card class="w-full max-w-md mx-4 border border-border shadow-lg">
+    <!-- Modal de búsqueda -->
+    <Card v-if="!mostrarFinalCaptura" class="w-full max-w-md mx-4 border border-border shadow-lg">
       <CardHeader class="border-b border-border">
         <CardTitle class="text-foreground">Buscar Pokémon</CardTitle>
       </CardHeader>
@@ -181,5 +199,13 @@ const cerrarModal = (): void => {
         </Button>
       </CardFooter>
     </Card>
+
+    <!-- Modal de resultado final de captura -->
+    <FinalCaptura
+      v-if="mostrarFinalCaptura && foundPokemon"
+      :resultado="resultadoCaptura"
+      :pokemon="foundPokemon"
+      @volver-inicio="handleVolverInicio"
+    />
   </div>
 </template>
