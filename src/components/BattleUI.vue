@@ -1,25 +1,24 @@
 <template>
-  <section class="p-4 max-w-4xl mx-auto space-y-4">
+  <section class="p-4 max-w-4xl mx-auto space-y-4 relative">
     <header class="mb-4 flex justify-between items-center">
       <h1 class="text-2xl font-bold">Battle</h1>
-      <div class="flex gap-2 items-center text-sm">
-        <label for="ai-select" class="text-gray-600 dark:text-gray-400">AI:</label>
-        <select
-          id="ai-select"
-          v-model="selectedAI"
-          @change="handleAIChange"
-          class="px-2 py-1 border rounded dark:bg-slate-700 dark:border-slate-600"
-          :disabled="!battleStore.isResolved && battleStore.turn > 1"
-        >
-          <option value="basic">Basic</option>
-          <option value="strategic">Strategic</option>
-        </select>
-      </div>
     </header>
     <div class="grid grid-cols-1 gap-4">
-      <div :class="{'battle-shake': isShaking, 'battle-fade': isMissing}">
-        <StatusPanel />
+      <div class="relative">
+        <div :class="{'battle-shake': isShaking}">
+          <StatusPanel :attacking-side="attackingSide" />
+        </div>
+
+        <!-- Miss Message Overlay -->
+        <transition name="miss-pop">
+          <div v-if="showMissMessage" class="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div class="bg-gray-800/90 text-white px-8 py-4 rounded-xl shadow-2xl border-2 border-gray-600 backdrop-blur-sm transform">
+              <span class="text-2xl font-bold tracking-wider uppercase text-yellow-400 drop-shadow-md">Missed!</span>
+            </div>
+          </div>
+        </transition>
       </div>
+
       <LogPanel />
       <MoveSelector v-if="!battleStore.isResolved" :disabled="battleLoop.isInputDisabled.value" />
       <div v-else class="text-center">
@@ -32,7 +31,6 @@
 <script setup lang="ts">
 import { onMounted, watch, ref } from 'vue'
 import { useBattleStore } from '@/stores/battle'
-import type { AIType } from '@/stores/battle'
 import { useBattleLoop } from '@/composables/useBattleLoop'
 import { useAudio } from '@/composables/useAudio'
 import { createHowlerAudio, DEFAULT_BATTLE_SOUNDS } from '@/services/audio/howlerAudio'
@@ -46,17 +44,15 @@ const battleLoop = useBattleLoop()
 // Initialize audio with Howler.js adapter
 const audio = useAudio(createHowlerAudio(DEFAULT_BATTLE_SOUNDS))
 
-// AI selection
-const selectedAI = ref<AIType>('strategic')
-
 // Animation states
 const isShaking = ref(false)
-const isMissing = ref(false)
+const showMissMessage = ref(false)
+const attackingSide = ref<'player' | 'npc' | null>(null)
 
 // Preload sounds on mount
 onMounted(async () => {
   await audio.preload(Object.keys(DEFAULT_BATTLE_SOUNDS))
-  battleStore.startBattle(undefined, selectedAI.value)
+  battleStore.startBattle()
 })
 
 // Watch for battle resolution to play victory/defeat sound
@@ -70,32 +66,35 @@ watch(() => battleStore.isResolved, (resolved) => {
   }
 })
 
-// Watch for new log messages to trigger animations
+// Watch for new log messages to trigger animations and sounds
 watch(() => battleStore.log.length, () => {
   const lastMessage = battleStore.log[battleStore.log.length - 1]
   if (lastMessage) {
     if (lastMessage.includes('missed')) {
-      // Trigger fade animation for misses
-      isMissing.value = true
-      setTimeout(() => { isMissing.value = false }, 600)
+      // Trigger miss animation and sound
+      showMissMessage.value = true
+      audio.play('miss')
+      setTimeout(() => { showMissMessage.value = false }, 1000)
     } else if (lastMessage.includes('damage')) {
       // Trigger shake animation for hits
       isShaking.value = true
+      audio.play('hit')
       setTimeout(() => { isShaking.value = false }, 500)
+    } else if (lastMessage.includes('used')) {
+      // Trigger attack animation
+      if (lastMessage.startsWith(battleStore.playerPokemon?.name || '')) {
+        attackingSide.value = 'player'
+      } else if (lastMessage.startsWith(battleStore.npcPokemon?.name || '')) {
+        attackingSide.value = 'npc'
+      }
+      setTimeout(() => { attackingSide.value = null }, 500)
     }
   }
 })
 
 const handleNewBattle = () => {
   audio.stop()
-  battleStore.startBattle(undefined, selectedAI.value)
-}
-
-const handleAIChange = () => {
-  // Only allow changing AI at the start of a new battle
-  if (battleStore.isResolved || battleStore.turn === 1) {
-    battleStore.startBattle(undefined, selectedAI.value)
-  }
+  battleStore.startBattle()
 }
 </script>
 <style scoped>
@@ -119,17 +118,33 @@ const handleAIChange = () => {
   }
 }
 
-/* Fade animation for misses */
-.battle-fade {
-  animation: fade-pulse 0.6s ease-in-out;
+/* Miss Pop Animation */
+.miss-pop-enter-active {
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.miss-pop-leave-active {
+  animation: pop-out 0.3s ease-in;
 }
 
-@keyframes fade-pulse {
-  0%, 100% {
-    opacity: 1;
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
   }
-  50% {
-    opacity: 0.3;
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pop-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
   }
 }
 </style>

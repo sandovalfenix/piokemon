@@ -101,10 +101,8 @@ export function createHowlerAudio(soundPaths: Record<string, string> = {}): Audi
  * These can be overridden when creating the audio port
  */
 export const DEFAULT_BATTLE_SOUNDS = {
-  hit: '/sounds/hit.mp3',
-  miss: '/sounds/miss.mp3',
-  superEffective: '/sounds/super-effective.mp3',
-  notVeryEffective: '/sounds/not-very-effective.mp3',
-  victory: '/sounds/victory.mp3',
-  defeat: '/sounds/defeat.mp3',
+  hit: '/sounds/hit.wav',
+  miss: '/sounds/miss.wav',
+  victory: '/sounds/win.wav',
+  defeat: '/sounds/lose.wav',
 }

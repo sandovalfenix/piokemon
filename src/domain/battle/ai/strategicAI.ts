@@ -3,17 +3,13 @@ import { computeTypeMultiplier } from '../calc/typeChart'
 
 /**
  * Strategic AI that considers type effectiveness and remaining HP
- * Prefers super effective moves ≥70% of the time when available
+ * Prefers super effective moves ≥50% of the time when available
  */
 export function createStrategicAI(): AI {
   return {
     chooseMove(ctx: AIContext): string {
       const { attacker, defender, rng } = ctx
       const moves = attacker.moves
-
-      if (moves.length === 0) {
-        throw new Error('No moves available for AI')
-      }
 
       // Calculate effectiveness for each move
       const moveScores = moves.map((move) => {
@@ -46,10 +42,10 @@ export function createStrategicAI(): AI {
       // Find super effective moves
       const superEffectiveMoves = moveScores.filter((m) => m.effectiveness === 2)
 
-      // 70% of the time, pick a super effective move if available
+      // 50% of the time, pick a super effective move if available
       if (superEffectiveMoves.length > 0) {
         const rand = rng.next()
-        if (rand < 0.7) {
+        if (rand < 0.5) {
           // Pick best super effective move
           return superEffectiveMoves[0]!.move.id
         }

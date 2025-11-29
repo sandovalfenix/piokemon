@@ -1,21 +1,19 @@
 import { defineStore } from 'pinia'
-import type { BattleState } from '@/domain/battle/engine/entities'
+import type { BattleState, Pokemon, Move } from '@/domain/battle/engine/entities'
 import type { AI } from '@/domain/battle/ai/types'
+import type { Rng } from '@/domain/battle/calc/rng'
 import { createInitialState } from '@/domain/battle/engine/state'
 import { createSeededRng } from '@/domain/battle/calc/rng'
-import { resolveTurn } from '@/domain/battle/engine/resolveTurn'
-import { createBasicAI } from '@/domain/battle/ai/basicAI'
 import { createStrategicAI } from '@/domain/battle/ai/strategicAI'
+import { computeTypeMultiplier } from '@/domain/battle/calc/typeChart'
+import { calculateDamage } from '@/domain/battle/calc/damage'
 import { SAMPLE_PLAYER, SAMPLE_NPC } from '@/data/pokemon'
 
-export type AIType = 'basic' | 'strategic'
-
 export const useBattleStore = defineStore('battle', {
-  state: (): BattleState & { seed?: string | number; aiType: AIType; ai: AI } => ({
+  state: (): BattleState & { seed?: string | number; ai: AI } => ({
     ...createInitialState(SAMPLE_PLAYER, SAMPLE_NPC),
     seed: undefined,
-    aiType: 'basic',
-    ai: createBasicAI(),
+    ai: createStrategicAI(),
   }),
 
   getters: {
@@ -28,45 +26,135 @@ export const useBattleStore = defineStore('battle', {
   },
 
   actions: {
-    startBattle(seed?: string | number, aiType: AIType = 'basic') {
-      const initial = createInitialState(
-        structuredClone(SAMPLE_PLAYER),
-        structuredClone(SAMPLE_NPC),
-      )
+    startBattle(seed?: string | number) {
+      // Deep clone to ensure we have fresh Pokemon with full HP
+      const playerClone = structuredClone(SAMPLE_PLAYER)
+      const npcClone = structuredClone(SAMPLE_NPC)
 
-      // Create AI based on type
-      const ai = aiType === 'strategic' ? createStrategicAI() : createBasicAI()
+      // Reset HP to max (in case objects were mutated)
+      playerClone.currentHp = playerClone.stats.hp
+      npcClone.currentHp = npcClone.stats.hp
 
-      this.$patch({ ...initial, seed, aiType, ai, log: [] })
+      const initial = createInitialState(playerClone, npcClone)
+      const ai = createStrategicAI()
+
+      this.$patch({ ...initial, seed, ai, log: [], turn: 1, phase: 'select', winner: null })
     },
 
-    selectPlayerMove(moveId: string) {
+    async selectPlayerMove(moveId: string) {
       if (this.phase !== 'select' || this.winner) return
 
       this.phase = 'resolving'
       const rng = createSeededRng(this.seed ?? Date.now())
-      const results = resolveTurn(this, moveId, rng, this.ai)
 
-      // Generate log messages
-      for (const result of results) {
-        const attacker = result.attacker === 'player' ? this.player : this.npc
-        const defender = result.attacker === 'player' ? this.npc : this.player
-        const move = attacker.moves.find((m) => m.id === result.moveId)
+      // Get player move
+      const playerMove = this.player.moves.find((m) => m.id === moveId)
+      if (!playerMove) return
 
-        if (!result.hit) {
-          this.log.push(`${attacker.name}'s attack missed!`)
-        } else {
-          this.log.push(`${attacker.name} used ${move?.name}!`)
-          if (result.effectiveness === 2) this.log.push("It's super effective!")
-          if (result.effectiveness === 0.5) this.log.push("It's not very effective...")
-          if (result.effectiveness === 0) this.log.push('It has no effect...')
-          this.log.push(`${defender.name} took ${result.damage} damage!`)
+      // Determine turn order by speed
+      const playerFirst = this.player.stats.speed >= this.npc.stats.speed
+
+      // Get NPC move
+      const npcMoveId = this.ai.chooseMove({
+        attacker: this.npc,
+        defender: this.player,
+        rng
+      })
+      const npcMove = this.npc.moves.find(m => m.id === npcMoveId) ?? this.npc.moves[0]!
+
+      // Execute attacks sequentially based on speed
+      if (playerFirst) {
+        // Player attacks first
+        await this.executeAttack(this.player, this.npc, playerMove, 'player', rng)
+
+        // Check if NPC can still attack
+        if (this.npc.currentHp > 0 && !this.winner) {
+          await new Promise(resolve => setTimeout(resolve, 800))
+          await this.executeAttack(this.npc, this.player, npcMove, 'npc', rng)
+        }
+      } else {
+        // NPC attacks first
+        await this.executeAttack(this.npc, this.player, npcMove, 'npc', rng)
+
+        // Check if player can still attack
+        if (this.player.currentHp > 0 && !this.winner) {
+          await new Promise(resolve => setTimeout(resolve, 800))
+          await this.executeAttack(this.player, this.npc, playerMove, 'player', rng)
         }
       }
 
+      // Small delay before showing win/lose message
       if (this.winner) {
+        await new Promise(resolve => setTimeout(resolve, 500))
         this.log.push(this.winner === 'player' ? 'You win!' : 'You lose!')
         this.phase = 'ended'
+      } else {
+        // Increment turn and return to select phase
+        this.turn++
+        this.phase = 'select'
+      }
+    },
+
+    async executeAttack(
+      attacker: Pokemon,
+      defender: Pokemon,
+      move: Move,
+      attackerLabel: 'player' | 'npc',
+      rng: Rng
+    ) {
+      // Accuracy check
+      const accuracyRoll = rng.next() * 100
+      const hit = accuracyRoll <= move.accuracy
+
+      if (!hit) {
+        // Miss: show message + play miss sound (triggered by log watch)
+        this.log.push(`${attacker.name}'s attack missed!`)
+        await new Promise(resolve => setTimeout(resolve, 600)) // Wait for miss animation
+      } else {
+        // Hit sequence - announce attack
+        this.log.push(`${attacker.name} used ${move.name}!`)
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        // Calculate damage and effectiveness
+        const defenderType: import('@/domain/battle/engine/entities').Type | [import('@/domain/battle/engine/entities').Type, import('@/domain/battle/engine/entities').Type?] =
+          defender.types.length === 1
+            ? defender.types[0]!
+            : [defender.types[0]!, defender.types[1]]
+
+        const effectiveness = computeTypeMultiplier(move.type, defenderType)
+
+        // Show effectiveness
+        if (effectiveness === 2) this.log.push("It's super effective!")
+        if (effectiveness === 0.5) this.log.push("It's not very effective...")
+        if (effectiveness === 0) this.log.push('It has no effect...')
+
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Calculate and apply damage NOW (sequentially)
+        const atk = move.category === 'physical' ? attacker.stats.atk : attacker.stats.spAtk
+        const def = move.category === 'physical' ? defender.stats.def : defender.stats.spDef
+
+        const damage = calculateDamage({
+          level: attacker.level,
+          power: move.power,
+          atk,
+          def,
+          category: move.category,
+          multiplier: effectiveness,
+          rng,
+        })
+
+        // Apply damage to defender
+        defender.currentHp = Math.max(0, defender.currentHp - damage)
+
+        // Show damage message + hit sound (triggered by log watch)
+        this.log.push(`${defender.name} took ${damage} damage!`)
+        await new Promise(resolve => setTimeout(resolve, 500)) // Wait for hit animation
+
+        // Check for winner after damage is applied
+        if (defender.currentHp <= 0) {
+          this.winner = attackerLabel === 'player' ? 'player' : 'npc'
+        }
       }
     },
 
