@@ -21,6 +21,7 @@
   "dependencies": {
     "howler": "^2.2.4",
     "pinia": "^3.0.3",
+    "primeicons": "^7.0.0",
     "react-icons": "^5.5.0",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"

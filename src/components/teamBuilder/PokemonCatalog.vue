@@ -312,6 +312,7 @@ onMounted(() => {
 }
 
 .search-bar {
+  color: #000;
   margin-bottom: 16px;
 }
 

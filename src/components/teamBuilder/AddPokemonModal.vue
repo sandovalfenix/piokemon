@@ -8,6 +8,9 @@
 import { ref, computed, watch } from 'vue'
 import type { Pokemon, Move } from '@/models/teamBuilder'
 import { fetchMovesBatch } from '@/services/teamBuilder'
+import PhysicalIcon from '@/assets/Physical.png'
+import SpecialIcon from '@/assets/Special.png'
+import StatusIcon from '@/assets/Status.png'
 
 interface Props {
   pokemon: Pokemon | null
@@ -172,13 +175,13 @@ function getTypeColor(type: string): string {
 }
 
 /**
- * Get category icon SVG
+ * Get category icon path
  */
 function getCategoryIcon(category: string): string {
   const icons: Record<string, string> = {
-    Physical: 'M21 10c-1.6 0-3.2.3-4.5.9l-5.5 2.7V9.5c0-.3-.2-.5-.5-.5s-.5.2-.5.5v9c0 .3.2.5.5.5s.5-.2.5-.5v-5.2l5.5-2.7c1.2-.6 2.5-.9 3.9-.9h.1c.3 0 .5-.2.5-.5s-.2-.5-.5-.5h-.1z',
-    Special: 'M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2z',
-    Status: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z',
+    Physical: PhysicalIcon,
+    Special: SpecialIcon,
+    Status: StatusIcon,
   }
   return icons[category] ?? ''
 }
@@ -202,12 +205,6 @@ function getCategoryIcon(category: string): string {
               Select Moves for {{ pokemon.name }}
               <span class="move-count">({{ selectedMoves.length }}/4)</span>
             </h2>
-            <button @click="handleClose" class="close-button" aria-label="Close modal">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
           </div>
 
           <!-- Moves List -->
@@ -238,13 +235,16 @@ function getCategoryIcon(category: string): string {
                 @click="isMoveSelected(move) ? handleRemoveMove(move) : handleAddMove(move)"
               >
                 <div class="move-main">
-                  <svg class="move-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path :d="getCategoryIcon(move.category)" />
-                  </svg>
+                  <img
+                    v-if="getCategoryIcon(move.category)"
+                    :src="getCategoryIcon(move.category)"
+                    :alt="move.category"
+                    class="move-icon"
+                  />
                   <span class="move-name">{{ move.name }}</span>
                   <span class="move-type" :style="{ backgroundColor: getTypeColor(move.type) }">{{ move.type }}</span>
                 </div>
-                <div class="move-stats">
+                <div class="move-stats ml-2">
                   <span v-if="move.power" class="stat">{{ move.power }}</span>
                   <span v-else class="stat">-</span>
                   <span class="stat-sep">•</span>
@@ -398,11 +398,14 @@ function getCategoryIcon(category: string): string {
 
 .move-icon {
   flex-shrink: 0;
-  color: #6b7280;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.7;
 }
 
 .move-selected .move-icon {
-  color: #3b82f6;
+  opacity: 1;
 }
 
 .move-name {

@@ -108,11 +108,6 @@ function handleClearTeam(): void {
         @dragover="handleDragOver"
         @drop="handleDrop(index)"
       >
-        <!-- Position Indicator -->
-        <div class="position-indicator flex items-center gap-2 mb-1">
-          <span class="text-xs font-bold text-gray-600">Position {{ index + 1 }}</span>
-          <span v-if="index === 0" class="text-xs text-yellow-600">⭐ Lead</span>
-        </div>
 
         <!-- Team Member Card -->
         <TeamMemberCard
@@ -123,25 +118,11 @@ function handleClearTeam(): void {
       </div>
     </div>
 
-    <!-- Team Status Footer -->
-    <div v-if="teamSize > 0" class="team-footer mt-4 pt-4 border-t border-gray-300">
-      <div class="text-sm text-gray-700">
-        <div class="flex justify-between mb-1">
-          <span>Team Size:</span>
-          <span class="font-bold">{{ teamSize }}/6</span>
-        </div>
-        <div class="flex justify-between">
-          <span>Available Slots:</span>
-          <span class="font-bold">{{ 6 - teamSize }}</span>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <style scoped>
 .team-roster {
-  min-height: 400px;
   max-height: 800px;
   overflow-y: auto;
 }
@@ -149,6 +130,7 @@ function handleClearTeam(): void {
 .team-member-wrapper {
   cursor: grab;
   transition: transform 0.2s;
+  color: #000;
 }
 
 .team-member-wrapper:active {

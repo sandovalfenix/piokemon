@@ -7,6 +7,9 @@
 -->
 <script setup lang="ts">
 import type { TeamMember } from '@/models/teamBuilder'
+import PhysicalIcon from '@/assets/Physical.png'
+import SpecialIcon from '@/assets/Special.png'
+import StatusIcon from '@/assets/Status.png'
 
 interface Props {
   member: TeamMember
@@ -53,13 +56,13 @@ function getTypeColor(type: string): string {
 /**
  * Get category label
  */
-function getCategoryLabel(category: string): string {
-  const labels: Record<string, string> = {
-    Physical: 'Phys',
-    Special: 'Spec',
-    Status: 'Stat',
+function getCategoryIcon(category: string): string {
+  const icons: Record<string, string> = {
+    Physical: PhysicalIcon,
+    Special: SpecialIcon,
+    Status: StatusIcon,
   }
-  return labels[category] ?? category
+  return icons[category] ?? ''
 }
 
 /**
@@ -72,11 +75,6 @@ function handleRemove(): void {
 
 <template>
   <div class="team-member-card bg-white rounded-lg shadow-md p-4 relative">
-    <!-- Lead Badge -->
-    <div v-if="isLead" class="lead-badge absolute top-2 right-2 bg-yellow-500 text-white px-2 py-1 rounded text-xs font-bold">
-      ⭐ LEAD
-    </div>
-
     <!-- Pokemon Header -->
     <div class="flex items-center gap-4 mb-3">
       <!-- Sprite -->
@@ -102,25 +100,18 @@ function handleRemove(): void {
         </div>
         <div class="text-sm text-gray-600 mt-1">Level {{ member.level }}</div>
       </div>
-    </div>
-
-    <!-- HP Bar -->
-    <div class="hp-bar mb-3">
-      <div class="flex justify-between text-xs text-gray-600 mb-1">
-        <span>HP</span>
-        <span>{{ member.currentHp }} / {{ member.maxHp }}</span>
-      </div>
-      <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          class="h-full bg-green-500 transition-all"
-          :style="{ width: `${(member.currentHp / member.maxHp) * 100}%` }"
-        ></div>
-      </div>
+      <!-- Remove Button -->
+      <button
+        class="remove-button w-auto px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+        @click="handleRemove"
+      >
+        <i class="pi pi-trash mx-auto"></i>
+      </button>
     </div>
 
     <!-- Moves List -->
     <div class="moves-list mb-3">
-      <div class="text-sm font-semibold text-gray-700 mb-1">Moves ({{ member.selectedMoves.length }})</div>
+      <div class="text-sm font-semibold text-gray-700 mb-1">Moves</div>
       <div class="space-y-1">
         <div
           v-for="move in member.selectedMoves"
@@ -137,44 +128,23 @@ function handleRemove(): void {
             </span>
           </div>
           <div class="flex items-center gap-2 text-gray-600">
-            <span class="category-label text-xs font-medium">{{ getCategoryLabel(move.category) }}</span>
+            <span class="category-label text-xs font-medium">
+              <img :src="getCategoryIcon(move.category)" />
+            </span>
             <span v-if="move.power">{{ move.power }}</span>
             <span v-else>—</span>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Stats Preview -->
-    <div class="stats-preview grid grid-cols-3 gap-2 text-xs mb-3">
-      <div class="stat text-center">
-        <div class="text-gray-600">ATK</div>
-        <div class="font-bold">{{ member.pokemon.stats.attack }}</div>
-      </div>
-      <div class="stat text-center">
-        <div class="text-gray-600">DEF</div>
-        <div class="font-bold">{{ member.pokemon.stats.defense }}</div>
-      </div>
-      <div class="stat text-center">
-        <div class="text-gray-600">SPD</div>
-        <div class="font-bold">{{ member.pokemon.stats.speed }}</div>
-      </div>
-    </div>
-
-    <!-- Remove Button -->
-    <button
-      class="remove-button w-full px-3 py-2 bg-red-500 text-white rounded font-semibold hover:bg-red-600 transition-colors"
-      :aria-label="`Remove ${member.pokemon.name} from team`"
-      @click="handleRemove"
-    >
-      Remove from Team
-    </button>
   </div>
 </template>
 
 <style scoped>
 .team-member-card {
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .team-member-card:hover {

@@ -163,12 +163,6 @@ async function startBattle() {
     <div class="view-container">
       <!-- Team status bar -->
       <div class="team-status-bar">
-        <div class="team-info">
-          <h3>Your Team: {{ roster.length }}/6</h3>
-          <div v-if="roster.length > 0 && roster[0]" class="team-lead">
-            Lead: {{ roster[0].pokemon.name }}
-          </div>
-        </div>
         <div class="battle-controls">
           <button
             class="start-battle-button"
@@ -227,7 +221,7 @@ async function startBattle() {
 
 .team-status-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: end;
   align-items: center;
   padding: 16px 24px;
   background: rgba(0, 0, 0, 0.3);
