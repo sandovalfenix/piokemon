@@ -1,0 +1,215 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PokeAPI Pokemon Response",
+  "description": "Schema for PokeAPI /pokemon/{id} endpoint response (subset of fields used)",
+  "type": "object",
+  "required": ["id", "name", "types", "stats", "sprites", "moves"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Pokemon unique identifier",
+      "minimum": 1,
+      "example": 25
+    },
+    "name": {
+      "type": "string",
+      "description": "Pokemon species name (lowercase, hyphenated)",
+      "minLength": 1,
+      "maxLength": 50,
+      "example": "pikachu"
+    },
+    "types": {
+      "type": "array",
+      "description": "Pokemon types (1-2 types)",
+      "minItems": 1,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["slot", "type"],
+        "properties": {
+          "slot": {
+            "type": "integer",
+            "description": "Type slot (1 or 2)",
+            "minimum": 1,
+            "maximum": 2
+          },
+          "type": {
+            "type": "object",
+            "required": ["name", "url"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Type name (lowercase)",
+                "enum": [
+                  "normal", "fire", "water", "electric", "grass", "ice",
+                  "fighting", "poison", "ground", "flying", "psychic", "bug",
+                  "rock", "ghost", "dragon", "dark", "steel", "fairy"
+                ],
+                "example": "electric"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "PokeAPI type resource URL",
+                "example": "https://pokeapi.co/api/v2/type/13/"
+              }
+            }
+          }
+        }
+      }
+    },
+    "stats": {
+      "type": "array",
+      "description": "Pokemon base stats (6 stats)",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["base_stat", "stat"],
+        "properties": {
+          "base_stat": {
+            "type": "integer",
+            "description": "Base stat value",
+            "minimum": 1,
+            "maximum": 255,
+            "example": 55
+          },
+          "effort": {
+            "type": "integer",
+            "description": "Effort value (not used in MVP)",
+            "minimum": 0
+          },
+          "stat": {
+            "type": "object",
+            "required": ["name", "url"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Stat name",
+                "enum": ["hp", "attack", "defense", "special-attack", "special-defense", "speed"],
+                "example": "attack"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "PokeAPI stat resource URL",
+                "example": "https://pokeapi.co/api/v2/stat/2/"
+              }
+            }
+          }
+        }
+      }
+    },
+    "sprites": {
+      "type": "object",
+      "description": "Pokemon sprite images",
+      "required": ["front_default"],
+      "properties": {
+        "front_default": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Front sprite URL (null for some Pokemon)",
+          "example": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+        },
+        "front_shiny": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Shiny front sprite (not used in MVP)"
+        },
+        "back_default": {
+          "type": ["string", "null"],
+          "format": "uri",
+          "description": "Back sprite (not used in MVP)"
+        }
+      }
+    },
+    "moves": {
+      "type": "array",
+      "description": "Learnable moves for this Pokemon",
+      "minItems": 0,
+      "maxItems": 800,
+      "items": {
+        "type": "object",
+        "required": ["move"],
+        "properties": {
+          "move": {
+            "type": "object",
+            "required": ["name", "url"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Move name (lowercase, hyphenated)",
+                "minLength": 1,
+                "maxLength": 50,
+                "example": "thunderbolt"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "PokeAPI move resource URL",
+                "example": "https://pokeapi.co/api/v2/move/85/"
+              }
+            }
+          },
+          "version_group_details": {
+            "type": "array",
+            "description": "Move learning details (not used in MVP)",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "weight": {
+      "type": "integer",
+      "description": "Pokemon weight in hectograms (not used in MVP)"
+    },
+    "height": {
+      "type": "integer",
+      "description": "Pokemon height in decimeters (not used in MVP)"
+    }
+  },
+  "examples": [
+    {
+      "id": 25,
+      "name": "pikachu",
+      "types": [
+        {
+          "slot": 1,
+          "type": {
+            "name": "electric",
+            "url": "https://pokeapi.co/api/v2/type/13/"
+          }
+        }
+      ],
+      "stats": [
+        { "base_stat": 35, "effort": 0, "stat": { "name": "hp", "url": "https://pokeapi.co/api/v2/stat/1/" } },
+        { "base_stat": 55, "effort": 0, "stat": { "name": "attack", "url": "https://pokeapi.co/api/v2/stat/2/" } },
+        { "base_stat": 40, "effort": 0, "stat": { "name": "defense", "url": "https://pokeapi.co/api/v2/stat/3/" } },
+        { "base_stat": 50, "effort": 0, "stat": { "name": "special-attack", "url": "https://pokeapi.co/api/v2/stat/4/" } },
+        { "base_stat": 50, "effort": 0, "stat": { "name": "special-defense", "url": "https://pokeapi.co/api/v2/stat/5/" } },
+        { "base_stat": 90, "effort": 0, "stat": { "name": "speed", "url": "https://pokeapi.co/api/v2/stat/6/" } }
+      ],
+      "sprites": {
+        "front_default": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+      },
+      "moves": [
+        {
+          "move": {
+            "name": "thunder-shock",
+            "url": "https://pokeapi.co/api/v2/move/84/"
+          }
+        },
+        {
+          "move": {
+            "name": "thunderbolt",
+            "url": "https://pokeapi.co/api/v2/move/85/"
+          }
+        }
+      ],
+      "weight": 60,
+      "height": 4
+    }
+  ]
+}

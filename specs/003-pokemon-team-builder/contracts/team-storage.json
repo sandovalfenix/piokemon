@@ -1,0 +1,238 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Team Storage Schema",
+  "description": "localStorage schema for persisting user-built Pokemon teams",
+  "type": "object",
+  "required": ["version", "createdAt", "updatedAt", "members"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "Schema version for migration support",
+      "const": 1,
+      "example": 1
+    },
+    "createdAt": {
+      "type": "integer",
+      "description": "Unix timestamp (milliseconds) when team was first created",
+      "minimum": 0,
+      "example": 1732896000000
+    },
+    "updatedAt": {
+      "type": "integer",
+      "description": "Unix timestamp (milliseconds) when team was last modified",
+      "minimum": 0,
+      "example": 1732896000000
+    },
+    "members": {
+      "type": "array",
+      "description": "Team roster (1-6 Pokemon)",
+      "minItems": 0,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["pokemon", "selectedMoves", "level", "currentHp", "maxHp", "position"],
+        "properties": {
+          "pokemon": {
+            "type": "object",
+            "description": "Base Pokemon data from PokeAPI",
+            "required": ["id", "name", "types", "stats", "sprite", "moves"],
+            "properties": {
+              "id": {
+                "type": "integer",
+                "description": "Pokemon ID",
+                "minimum": 1,
+                "example": 25
+              },
+              "name": {
+                "type": "string",
+                "description": "Pokemon name (capitalized)",
+                "minLength": 1,
+                "maxLength": 50,
+                "example": "Pikachu"
+              },
+              "types": {
+                "type": "array",
+                "description": "Pokemon types (1-2)",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "Normal", "Fire", "Water", "Electric", "Grass", "Ice",
+                    "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug",
+                    "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
+                  ],
+                  "example": "Electric"
+                }
+              },
+              "stats": {
+                "type": "object",
+                "description": "Base stats",
+                "required": ["hp", "attack", "defense", "spAttack", "spDefense", "speed"],
+                "properties": {
+                  "hp": { "type": "integer", "minimum": 1, "maximum": 255, "example": 35 },
+                  "attack": { "type": "integer", "minimum": 1, "maximum": 255, "example": 55 },
+                  "defense": { "type": "integer", "minimum": 1, "maximum": 255, "example": 40 },
+                  "spAttack": { "type": "integer", "minimum": 1, "maximum": 255, "example": 50 },
+                  "spDefense": { "type": "integer", "minimum": 1, "maximum": 255, "example": 50 },
+                  "speed": { "type": "integer", "minimum": 1, "maximum": 255, "example": 90 }
+                }
+              },
+              "sprite": {
+                "type": "string",
+                "format": "uri",
+                "description": "Sprite image URL",
+                "example": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+              },
+              "moves": {
+                "type": "array",
+                "description": "Learnable moves (reference only)",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "name"],
+                  "properties": {
+                    "id": { "type": "integer", "minimum": 1, "example": 85 },
+                    "name": { "type": "string", "minLength": 1, "example": "Thunderbolt" }
+                  }
+                }
+              }
+            }
+          },
+          "selectedMoves": {
+            "type": "array",
+            "description": "User-selected moves (1-4)",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "type", "power", "accuracy", "category", "pp"],
+              "properties": {
+                "id": { "type": "integer", "minimum": 1, "example": 85 },
+                "name": { "type": "string", "minLength": 1, "example": "Thunderbolt" },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "Normal", "Fire", "Water", "Electric", "Grass", "Ice",
+                    "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug",
+                    "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
+                  ],
+                  "example": "Electric"
+                },
+                "power": {
+                  "type": ["integer", "null"],
+                  "minimum": 0,
+                  "maximum": 250,
+                  "example": 90
+                },
+                "accuracy": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "example": 100
+                },
+                "category": {
+                  "type": "string",
+                  "enum": ["Physical", "Special", "Status"],
+                  "example": "Special"
+                },
+                "pp": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 64,
+                  "example": 15
+                },
+                "effect": {
+                  "type": "string",
+                  "description": "Optional effect description",
+                  "example": "Has a 10% chance to paralyze the target."
+                }
+              }
+            }
+          },
+          "level": {
+            "type": "integer",
+            "description": "Pokemon level (fixed at 50 for MVP)",
+            "const": 50,
+            "example": 50
+          },
+          "currentHp": {
+            "type": "integer",
+            "description": "Current HP (0 to maxHp)",
+            "minimum": 0,
+            "example": 110
+          },
+          "maxHp": {
+            "type": "integer",
+            "description": "Maximum HP (computed from base HP + level)",
+            "minimum": 1,
+            "example": 110
+          },
+          "position": {
+            "type": "integer",
+            "description": "Team position (0-5, 0 is lead)",
+            "minimum": 0,
+            "maximum": 5,
+            "example": 0
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": 1,
+      "createdAt": 1732896000000,
+      "updatedAt": 1732896000000,
+      "members": [
+        {
+          "pokemon": {
+            "id": 25,
+            "name": "Pikachu",
+            "types": ["Electric"],
+            "stats": {
+              "hp": 35,
+              "attack": 55,
+              "defense": 40,
+              "spAttack": 50,
+              "spDefense": 50,
+              "speed": 90
+            },
+            "sprite": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png",
+            "moves": [
+              { "id": 84, "name": "Thunder Shock" },
+              { "id": 85, "name": "Thunderbolt" },
+              { "id": 86, "name": "Thunder Wave" },
+              { "id": 98, "name": "Quick Attack" }
+            ]
+          },
+          "selectedMoves": [
+            {
+              "id": 85,
+              "name": "Thunderbolt",
+              "type": "Electric",
+              "power": 90,
+              "accuracy": 100,
+              "category": "Special",
+              "pp": 15,
+              "effect": "Has a 10% chance to paralyze the target."
+            },
+            {
+              "id": 98,
+              "name": "Quick Attack",
+              "type": "Normal",
+              "power": 40,
+              "accuracy": 100,
+              "category": "Physical",
+              "pp": 30,
+              "effect": "Inflicts regular damage with no additional effect."
+            }
+          ],
+          "level": 50,
+          "currentHp": 110,
+          "maxHp": 110,
+          "position": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,20 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import BattleScreen from '@/components/BattleScreen.vue'
+import HomeView from '../views/HomeView.vue'
+import BattleView from '@/views/BattleView.vue'
+import TeamBuilderView from '@/views/TeamBuilderView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/battle',
-      name: 'battle',
-      component: BattleScreen  // La batalla es la página principal
+      path: '/',
+      name: 'home',
+      component: HomeView,
     },
     {
-      path: '/home',
-      name: 'home',
-      component: () => import('@/views/HomeView.vue')
-    }
-  ]
+      path: '/battle',
+      name: 'battle',
+      component: BattleView,
+    },
+    {
+      path: '/team-builder',
+      name: 'team-builder',
+      component: TeamBuilderView,
+    },
+  ],
 })
 
 export default router

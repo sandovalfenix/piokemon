@@ -1,0 +1,203 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PokeAPI Move Response",
+  "description": "Schema for PokeAPI /move/{id} endpoint response (subset of fields used)",
+  "type": "object",
+  "required": ["id", "name", "type", "power", "accuracy", "pp", "damage_class"],
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Move unique identifier",
+      "minimum": 1,
+      "example": 85
+    },
+    "name": {
+      "type": "string",
+      "description": "Move name (lowercase, hyphenated)",
+      "minLength": 1,
+      "maxLength": 50,
+      "example": "thunderbolt"
+    },
+    "type": {
+      "type": "object",
+      "description": "Move type",
+      "required": ["name", "url"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Type name (lowercase)",
+          "enum": [
+            "normal", "fire", "water", "electric", "grass", "ice",
+            "fighting", "poison", "ground", "flying", "psychic", "bug",
+            "rock", "ghost", "dragon", "dark", "steel", "fairy"
+          ],
+          "example": "electric"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "PokeAPI type resource URL",
+          "example": "https://pokeapi.co/api/v2/type/13/"
+        }
+      }
+    },
+    "power": {
+      "type": ["integer", "null"],
+      "description": "Move base power (null for status moves)",
+      "minimum": 0,
+      "maximum": 250,
+      "example": 90
+    },
+    "accuracy": {
+      "type": ["integer", "null"],
+      "description": "Move accuracy percentage (null for always-hit moves)",
+      "minimum": 0,
+      "maximum": 100,
+      "example": 100
+    },
+    "pp": {
+      "type": "integer",
+      "description": "Power Points (max uses before recharge)",
+      "minimum": 1,
+      "maximum": 64,
+      "example": 15
+    },
+    "damage_class": {
+      "type": "object",
+      "description": "Move damage category",
+      "required": ["name", "url"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Damage class name",
+          "enum": ["physical", "special", "status"],
+          "example": "special"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "PokeAPI damage class resource URL",
+          "example": "https://pokeapi.co/api/v2/move-damage-class/3/"
+        }
+      }
+    },
+    "effect_entries": {
+      "type": "array",
+      "description": "Move effect descriptions in multiple languages",
+      "items": {
+        "type": "object",
+        "required": ["effect", "short_effect", "language"],
+        "properties": {
+          "effect": {
+            "type": "string",
+            "description": "Full effect description",
+            "example": "Inflicts regular damage with no additional effect."
+          },
+          "short_effect": {
+            "type": "string",
+            "description": "Brief effect summary",
+            "example": "Inflicts regular damage."
+          },
+          "language": {
+            "type": "object",
+            "required": ["name", "url"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Language code",
+                "example": "en"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "description": "PokeAPI language resource URL"
+              }
+            }
+          }
+        }
+      }
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Move priority (-7 to +5, not used in MVP)",
+      "minimum": -7,
+      "maximum": 5
+    },
+    "target": {
+      "type": "object",
+      "description": "Move target type (not used in MVP)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "selected-pokemon"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": 85,
+      "name": "thunderbolt",
+      "type": {
+        "name": "electric",
+        "url": "https://pokeapi.co/api/v2/type/13/"
+      },
+      "power": 90,
+      "accuracy": 100,
+      "pp": 15,
+      "damage_class": {
+        "name": "special",
+        "url": "https://pokeapi.co/api/v2/move-damage-class/3/"
+      },
+      "effect_entries": [
+        {
+          "effect": "Inflicts regular damage. Has a 10% chance to paralyze the target.",
+          "short_effect": "Has a 10% chance to paralyze the target.",
+          "language": {
+            "name": "en",
+            "url": "https://pokeapi.co/api/v2/language/9/"
+          }
+        }
+      ],
+      "priority": 0,
+      "target": {
+        "name": "selected-pokemon",
+        "url": "https://pokeapi.co/api/v2/move-target/10/"
+      }
+    },
+    {
+      "id": 45,
+      "name": "growl",
+      "type": {
+        "name": "normal",
+        "url": "https://pokeapi.co/api/v2/type/1/"
+      },
+      "power": null,
+      "accuracy": 100,
+      "pp": 40,
+      "damage_class": {
+        "name": "status",
+        "url": "https://pokeapi.co/api/v2/move-damage-class/1/"
+      },
+      "effect_entries": [
+        {
+          "effect": "Lowers the target's Attack by one stage.",
+          "short_effect": "Lowers the target's Attack by one stage.",
+          "language": {
+            "name": "en",
+            "url": "https://pokeapi.co/api/v2/language/9/"
+          }
+        }
+      ],
+      "priority": 0,
+      "target": {
+        "name": "all-opponents",
+        "url": "https://pokeapi.co/api/v2/move-target/11/"
+      }
+    }
+  ]
+}

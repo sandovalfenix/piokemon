@@ -23,6 +23,13 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
   skipFormatting,
   {
+    name: 'app/shadcn-vue-overrides',
+    files: ['src/components/ui/**/*.vue'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
+    },
+  },
+  {
     name: 'app/tests',
     files: ['**/*.{test,spec}.{ts,tsx}'],
     languageOptions: {

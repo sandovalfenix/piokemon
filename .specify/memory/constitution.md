@@ -1,26 +1,27 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: 0.0.0 → 1.0.0
-Change Type: MAJOR - Initial constitution ratification
+Version: 1.1.0 → 1.2.0
+Change Type: MINOR - Added shadcn-vue component library to approved stack
 
 Modified Principles:
-- Initial creation of all core principles
+- VI. UI/UX Design System - Enhanced with shadcn-vue component library requirement
 
 Added Sections:
-- Core Principles (Component-First, Type Safety, State Management, Testing Culture, Performance & Accessibility)
-- Architecture & Tech Stack
-- Development Workflow
-- Governance
+- Architecture & Tech Stack: Added shadcn-vue to Approved Libraries
+- Architecture & Tech Stack: Added UI Component Library section
+
+Removed Sections:
+- None
 
 Templates Status:
-✅ Constitution created (initial version)
-⚠ Templates require review: plan-template.md, spec-template.md, tasks-template.md
+✅ plan-template.md - No updates required (component library usage covered by constitution)
+✅ spec-template.md - No updates required (UI requirements captured in FR)
+✅ tasks-template.md - No updates required (component tasks follow from spec)
+✅ Constitution updated
 
 Follow-up TODOs:
-- Validate template alignment after initial usage
-- Establish CI/CD pipeline configuration
-- Define security scanning integration
+- None (all templates remain aligned)
 -->
 
 # Pokémon MMO Constitution
@@ -110,6 +111,20 @@ Accessibility requirements (NON-NEGOTIABLE):
 
 **Rationale**: Performance = user retention; accessibility = inclusive design and legal compliance.
 
+### VI. UI/UX Design System
+
+All user interfaces MUST follow a modern, minimalist design language using Tailwind CSS with glassomorphism and neumorphism aesthetics:
+- Use shadcn-vue components as the foundation for all UI elements (buttons, inputs, dialogs, etc.)
+- Use Tailwind utility classes for all styling (NO custom CSS except when absolutely necessary)
+- Apply glassy, translucent backgrounds with backdrop blur effects (`backdrop-blur-*`, `bg-opacity-*`)
+- Implement soft neumorphic shadows for depth and tactile feel (`shadow-*` with subtle inset effects)
+- Maintain visual simplicity: clean layouts, generous whitespace, subtle animations
+- Color palette: soft, muted tones with high-contrast accents for interactive elements
+- Responsive by default: mobile-first approach using Tailwind breakpoints (`sm:`, `md:`, `lg:`, etc.)
+- All shadcn-vue components MUST be customized to align with glassomorphism/neumorphism aesthetic
+
+**Rationale**: Consistent, modern design language creates professional user experience while Tailwind ensures maintainability and rapid iteration. Glassomorphism/neumorphism provide visual appeal without complexity. shadcn-vue provides accessible, type-safe components that can be customized to match our design system.
+
 ## Architecture & Tech Stack
 
 **Core Stack** (changes require constitutional amendment):
@@ -118,12 +133,26 @@ Accessibility requirements (NON-NEGOTIABLE):
 - **Language**: TypeScript 5.9+ (strict mode)
 - **State Management**: Pinia 3+
 - **Routing**: Vue Router 4+
+- **Styling**: Tailwind CSS 3+ with JIT mode
+- **UI Components**: shadcn-vue (with Radix Vue primitives)
 - **Linting**: ESLint 9+ with Vue/TypeScript configs
 - **Formatting**: Prettier 3.6+
+
+**UI Component Library** (shadcn-vue configuration):
+- Style: New York (recommended)
+- Base color: Neutral
+- CSS variables: Enabled
+- Components path: `@/components/ui`
+- Utils path: `@/lib/utils`
+- All components MUST be added via `npx shadcn-vue@latest add <component>`
+- Direct modification of shadcn-vue components is ALLOWED to match design system
 
 **Approved Libraries** (additions require discussion):
 - Vue DevTools for development
 - Type utilities as needed
+- Radix Vue (headless UI primitives, required by shadcn-vue)
+- class-variance-authority (for component variants)
+- clsx & tailwind-merge (for className utilities)
 
 **Forbidden**:
 - Options API (use Composition API)
@@ -138,11 +167,14 @@ Accessibility requirements (NON-NEGOTIABLE):
 **File Structure**:
 ```
 src/
-  components/     # Reusable UI components
+  components/
+    ui/           # shadcn-vue components (auto-generated)
+    [feature]/    # Feature-specific components (e.g., teamBuilder/)
   views/          # Route-level components
   stores/         # Pinia state stores
   models/         # TypeScript interfaces/types
   services/       # API/external integrations
+  lib/            # Shared utilities (cn helper, etc.)
   utils/          # Pure utility functions
   router/         # Route definitions
 ```
@@ -156,7 +188,8 @@ src/
 **Style Guidelines**:
 - Use `<script setup lang="ts">` syntax
 - Order: template → script → style
-- Scoped styles only (`<style scoped>`)
+- Scoped styles only (`<style scoped>`) - prefer Tailwind utilities over custom styles
+- Tailwind classes preferred: use utility-first approach, avoid `@apply` unless absolutely necessary
 - ESLint/Prettier enforced (run `npm run lint` before commit)
 - Max file length: 300 lines (split if exceeded)
 
@@ -240,4 +273,4 @@ MUST pass before merge:
 
 ---
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-11-28
+**Version**: 1.2.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-11-30

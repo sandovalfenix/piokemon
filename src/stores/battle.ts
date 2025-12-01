@@ -9,7 +9,9 @@ import { computeTypeMultiplier } from '@/domain/battle/calc/typeChart'
 import { calculateDamage } from '@/domain/battle/calc/damage'
 import { SAMPLE_PLAYER, SAMPLE_NPC } from '@/data/pokemon'
 import { useTypeChartStore } from './typeChart'
+import { useTeamStore } from './team'
 import { validatePokemonType } from '@/services/typeChart/typeChartService'
+import { transformTeamMemberToBattlePokemon } from '@/services/teamBuilder'
 
 /**
  * Validate all types in a Pokemon
@@ -73,6 +75,58 @@ export const useBattleStore = defineStore('battle', {
         phase: 'select',
         winner: null,
       })
+    },
+
+    /**
+     * Start battle with custom team from team builder
+     * Feature: 003-pokemon-team-builder
+     * User Story 4: Start Battle with Custom Team
+     *
+     * @param seed - Optional RNG seed for deterministic battles
+     * @throws Error if team is empty or lead Pokemon has no moves
+     */
+    async startBattleWithCustomTeam(seed?: string | number) {
+      // Load type chart on first battle access
+      const typeChartStore = useTypeChartStore()
+      if (!typeChartStore.lastUpdated) {
+        await typeChartStore.loadTypeChart()
+      }
+
+      // Get team lead from team store
+      const teamStore = useTeamStore()
+      if (teamStore.roster.length === 0) {
+        throw new Error('Cannot start battle: team is empty')
+      }
+
+      const teamLead = teamStore.roster[0]
+      if (!teamLead) {
+        throw new Error('Cannot start battle: team lead is missing')
+      }
+
+      if (teamLead.selectedMoves.length === 0) {
+        throw new Error('Cannot start battle: team lead has no moves')
+      }
+
+      // Transform team lead to battle Pokemon
+      const playerPokemon = transformTeamMemberToBattlePokemon(teamLead)
+
+      // Use SAMPLE_NPC as opponent (deep clone)
+      const npcClone = structuredClone(SAMPLE_NPC)
+
+      // Validate Pokemon types
+      validatePokemonTypes(playerPokemon, typeChartStore.typeChart)
+      validatePokemonTypes(npcClone, typeChartStore.typeChart)
+
+      // Reset HP to max
+      playerPokemon.currentHp = playerPokemon.stats.hp
+      npcClone.currentHp = npcClone.stats.hp
+
+      const initial = createInitialState(playerPokemon, npcClone)
+      const ai = createStrategicAI()
+
+      this.$patch({ ...initial, seed, ai, log: [], turn: 1, phase: 'select', winner: null })
+
+      console.log(`[BattleStore] Started battle with custom team lead: ${playerPokemon.name}`)
     },
 
     async selectPlayerMove(moveId: string) {
