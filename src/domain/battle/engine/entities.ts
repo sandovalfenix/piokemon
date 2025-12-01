@@ -40,8 +40,13 @@ export interface BattleState {
   phase: Phase
   player: Pokemon
   npc: Pokemon
+  playerTeam: Pokemon[]
+  npcTeam: Pokemon[]
+  currentPlayerIndex: number
+  currentNpcIndex: number
   winner: 'player' | 'npc' | null
   log: string[]
+  playerNeedsSwitchPokemon?: boolean
 }
 
 export interface TurnResult {

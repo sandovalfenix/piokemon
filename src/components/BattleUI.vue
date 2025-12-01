@@ -42,6 +42,7 @@ import { useTypeChartStore } from '@/stores/typeChart'
 import { useBattleLoop } from '@/composables/useBattleLoop'
 import { useAudio } from '@/composables/useAudio'
 import { createHowlerAudio, DEFAULT_BATTLE_SOUNDS } from '@/services/audio/howlerAudio'
+import { SAMPLE_PLAYER, SAMPLE_NPC } from '@/data/pokemon'
 import StatusPanel from '@/components/StatusPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
 import MoveSelector from '@/components/MoveSelector.vue'
@@ -61,7 +62,10 @@ const attackingSide = ref<'player' | 'npc' | null>(null)
 // Preload sounds on mount
 onMounted(async () => {
   await audio.preload(Object.keys(DEFAULT_BATTLE_SOUNDS))
-  battleStore.startBattle()
+  // Iniciamos con un equipo por defecto
+  const defaultPlayer = structuredClone(SAMPLE_PLAYER)
+  const defaultNpc = structuredClone(SAMPLE_NPC)
+  battleStore.startBattle([defaultPlayer], [defaultNpc])
 })
 
 // Watch for battle resolution to play victory/defeat sound
@@ -103,7 +107,9 @@ watch(() => battleStore.log.length, () => {
 
 const handleNewBattle = () => {
   audio.stop()
-  battleStore.startBattle()
+  const defaultPlayer = structuredClone(SAMPLE_PLAYER)
+  const defaultNpc = structuredClone(SAMPLE_NPC)
+  battleStore.startBattle([defaultPlayer], [defaultNpc])
 }
 </script>
 <style scoped>

@@ -39,16 +39,16 @@ const battleStore = useBattleStore()
  * This provides visual indication of message type
  */
 const getMessageClass = (message: string): string => {
-  if (message.includes('super effective')) {
+  if (message.includes('súper efectivo') || message.includes('super effective')) {
     return 'text-green-600 dark:text-green-400 font-semibold'
   }
-  if (message.includes('not very effective')) {
+  if (message.includes('No es muy efectivo') || message.includes('not very effective')) {
     return 'text-red-600 dark:text-red-400'
   }
-  if (message.includes('missed')) {
+  if (message.includes('falló') || message.includes('missed')) {
     return 'text-gray-500 dark:text-gray-400 italic'
   }
-  if (message.includes('fainted') || message.includes('wins')) {
+  if (message.includes('debilitó') || message.includes('fainted') || message.includes('Ganaste') || message.includes('Perdiste')) {
     return 'font-bold text-purple-600 dark:text-purple-400'
   }
   return ''
@@ -65,7 +65,7 @@ const lastCriticalMessage = computed(() => {
   // Find the last critical message (win/lose/faint)
   for (let i = log.length - 1; i >= 0; i--) {
     const msg = log[i]
-    if (msg?.includes('wins') || msg?.includes('fainted')) {
+    if (msg?.includes('debilitó') || msg?.includes('Ganaste') || msg?.includes('Perdiste') || msg?.includes('fainted') || msg?.includes('wins')) {
       return msg
     }
   }

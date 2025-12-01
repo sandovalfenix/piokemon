@@ -1,146 +1,122 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import MoveSelector from './MoveSelector.vue'
-import MyTeam from './MyTeam.vue'
+import BattleTeamSelector from './BattleTeamSelector.vue'
+import PokemonTeamSwitcher from './PokemonTeamSwitcher.vue'
+import TrainerWaitingScreen from './TrainerWaitingScreen.vue'
 import LogPanel from './LogPanel.vue'
 import StatusPanel from './StatusPanel.vue'
+import { useBattleStore } from '@/stores/battle'
+import { useTrainerBattle } from '../composables/useTrainerBattle'
+import { useAudio } from '../composables/useAudio'
+import { SAMPLE_NPC, PLAYER_TEAM } from '@/data/pokemon'
+import { getPokemonFrontSpriteUrl, getPokemonBackSpriteUrl } from '@/utils/pokemonSpriteMap'
+import { createHowlerAudio, DEFAULT_BATTLE_SOUNDS } from '@/services/audio/howlerAudio'
+import { getRandomTrainer } from '@/data/trainersData'
+import { getAttackEffect } from '@/utils/attackEffects'
+import type { Trainer } from '@/data/trainers'
+import type { Pokemon } from '@/domain/battle/engine/entities'
+import type { TrainerData } from '@/data/trainersData'
 
-// Interfaces
-interface Move {
-  id: number
-  name: string
-  type: string
-  power: number
-  pp: number
-  maxPp: number
-  accuracy?: number
+// Props
+interface Props {
+  trainer?: Trainer
+  playerTeam?: Pokemon[]
 }
 
-interface Pokemon {
-  id: number
-  name: string
-  level: number
-  currentHp: number
-  maxHp: number
-  currentExp?: number
-  maxExp?: number
-  sprite: string
-  backSprite?: string
-  gender?: 'male' | 'female'
-  moves: Move[]
-  status?: string
-}
+const props = defineProps<Props>()
+
+// Stores
+const battleStore = useBattleStore()
+const { rivalRemainingPokemon, playerRemainingPokemon, startBattle: startTrainerBattle } = useTrainerBattle()
+
+// Audio setup
+const audioPort = createHowlerAudio(DEFAULT_BATTLE_SOUNDS)
+const { play: playSound } = useAudio(audioPort)
 
 // Estado de la batalla
-const currentView = ref<'main' | 'fight' | 'bag' | 'pokemon'>('main')
-const battleLog = ref<string[]>(['¡La batalla ha comenzado!'])
+const currentView = ref<'main' | 'fight' | 'bag' | 'pokemon' | 'trainer-waiting' | 'player-team-switch' | 'enemy-team-switch'>('main')
+const damageEffect = ref<{ active: boolean; target: 'player' | 'enemy' }>({ active: false, target: 'player' })
+const attackEffect = ref<{ active: boolean; target: 'player' | 'enemy'; type: string }>({ active: false, target: 'player', type: 'normal' })
+const waitingTrainer = ref<TrainerData | null>(null)
+const waitingForTrainerSwitch = ref(false)
 
-// Pokémon del jugador
-const playerPokemon = ref<Pokemon>({
-  id: 6,
-  name: 'CHARIZARD',
-  level: 36,
-  currentHp: 120,
-  maxHp: 150,
-  currentExp: 2500,
-  maxExp: 3500,
-  sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png',
-  backSprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/back/6.png',
-  gender: 'male',
-  moves: [
-    { id: 1, name: 'Flamethrower', type: 'fire', power: 90, pp: 15, maxPp: 15, accuracy: 100 },
-    { id: 2, name: 'Air Slash', type: 'flying', power: 75, pp: 15, maxPp: 15, accuracy: 95 },
-    { id: 3, name: 'Dragon Claw', type: 'dragon', power: 80, pp: 15, maxPp: 15, accuracy: 100 },
-    { id: 4, name: 'Fire Spin', type: 'fire', power: 35, pp: 15, maxPp: 15, accuracy: 85 }
-  ]
-})
+// Watch para sonidos sincronizados
+watch(
+  () => battleStore.log[battleStore.log.length - 1],
+  (newMessage) => {
+    if (!newMessage) return
 
-// Pokémon enemigo
-const enemyPokemon = ref<Pokemon>({
-  id: 130,
-  name: 'GYARADOS',
-  level: 35,
-  currentHp: 140,
-  maxHp: 140,
-  sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/130.png',
-  gender: 'male',
-  moves: []
-})
+    // Detectar ataques y aplicar efectos
+    if (newMessage.includes('usó')) {
+      // Extraer tipo de ataque del mensaje o usar el del movimiento
+      const moveMatch = newMessage.match(/usó (.+)!/)
+      if (moveMatch) {
+        const moveName = moveMatch[1]
+        // Buscar el movimiento para obtener su tipo
+        const playerMove = battleStore.player.moves.find(m => m.name === moveName)
+        const npcMove = battleStore.npc.moves.find(m => m.name === moveName)
+        const moveType = playerMove?.type || npcMove?.type || 'normal'
 
-// Equipo del jugador (6 Pokémon)
-const playerTeam = ref<Pokemon[]>([
-  playerPokemon.value,
-  {
-    id: 25,
-    name: 'PIKACHU',
-    level: 32,
-    currentHp: 70,
-    maxHp: 70,
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/25.png',
-    backSprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/back/25.png',
-    gender: 'male',
-    moves: []
-  },
-  {
-    id: 3,
-    name: 'VENUSAUR',
-    level: 35,
-    currentHp: 135,
-    maxHp: 135,
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/3.png',
-    backSprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/back/3.png',
-    gender: 'female',
-    moves: []
-  },
-  {
-    id: 9,
-    name: 'BLASTOISE',
-    level: 36,
-    currentHp: 142,
-    maxHp: 142,
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/9.png',
-    backSprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/back/9.png',
-    gender: 'male',
-    moves: []
-  },
-  {
-    id: 131,
-    name: 'LAPRAS',
-    level: 34,
-    currentHp: 125,
-    maxHp: 125,
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/131.png',
-    backSprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/back/131.png',
-    gender: 'female',
-    moves: []
-  },
-  {
-    id: 143,
-    name: 'SNORLAX',
-    level: 38,
-    currentHp: 0,
-    maxHp: 180,
-    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/143.png',
-    backSprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-iii/firered-leafgreen/back/143.png',
-    gender: 'male',
-    status: 'fainted',
-    moves: []
+        // Determinar quién atacó
+        if (newMessage.includes(battleStore.player.name)) {
+          triggerAttackEffect('enemy', moveType)
+        } else if (newMessage.includes(battleStore.npc.name)) {
+          triggerAttackEffect('player', moveType)
+        }
+      }
+    }
+
+    // Sonidos de ataques y daño
+    if (newMessage.includes('recibió')) {
+      playSound('hit')
+      // Detectar quién recibió daño
+      if (newMessage.includes(battleStore.npc.name)) {
+        triggerDamageEffect('enemy')
+      } else if (newMessage.includes(battleStore.player.name)) {
+        triggerDamageEffect('player')
+      }
+    }
+    // Sonidos de fallos
+    if (newMessage.includes('falló')) {
+      playSound('miss')
+    }
+    // Sonidos de debilitamiento
+    if (newMessage.includes('debilitó')) {
+      playSound('defeat')
+    }
+    // Sonidos de victoria
+    if (newMessage.includes('Ganaste') || newMessage.includes('Perdiste')) {
+      playSound('victory')
+    }
   }
-])
+)
+
+// Efecto de daño
+const triggerDamageEffect = (target: 'player' | 'enemy') => {
+  damageEffect.value = { active: true, target }
+  setTimeout(() => {
+    damageEffect.value = { active: false, target }
+  }, 300)
+}
+
+// Efecto de ataque especial
+const triggerAttackEffect = (target: 'player' | 'enemy', moveType: string) => {
+  attackEffect.value = { active: true, target, type: moveType }
+  const effect = getAttackEffect(moveType)
+  setTimeout(() => {
+    attackEffect.value = { active: false, target, type: 'normal' }
+  }, effect.duration)
+}
 
 // Computed
 const playerHpPercent = computed(() =>
-  (playerPokemon.value.currentHp / playerPokemon.value.maxHp) * 100
+  (battleStore.player.currentHp / battleStore.player.stats.hp) * 100
 )
 
 const enemyHpPercent = computed(() =>
-  (enemyPokemon.value.currentHp / enemyPokemon.value.maxHp) * 100
+  (battleStore.npc.currentHp / battleStore.npc.stats.hp) * 100
 )
-
-const playerExpPercent = computed(() => {
-  if (!playerPokemon.value.currentExp || !playerPokemon.value.maxExp) return 0
-  return (playerPokemon.value.currentExp / playerPokemon.value.maxExp) * 100
-})
 
 const getHpColor = (percent: number) => {
   if (percent > 50) return '#10b981'
@@ -148,169 +124,155 @@ const getHpColor = (percent: number) => {
   return '#ef4444'
 }
 
+const isTrainerBattle = computed(() => props.trainer !== undefined)
+
+const trainerName = computed(() => {
+  if (isTrainerBattle.value && props.trainer) {
+    return props.trainer.name
+  }
+  return 'Ash'
+})
+
+const enemyTrainerName = computed(() => {
+  if (isTrainerBattle.value) {
+    return `${props.trainer!.title} ${props.trainer!.name}`
+  }
+  return 'Pokémon Salvaje'
+})
+
 // Handlers
 const handleFight = () => {
   currentView.value = 'fight'
-  addLog(`¿Qué movimiento usará ${playerPokemon.value.name}?`)
 }
 
 const handleBag = () => {
   currentView.value = 'bag'
-  addLog('Selecciona un objeto de la mochila.')
 }
 
 const handlePokemon = () => {
   currentView.value = 'pokemon'
-  addLog('¿Qué Pokémon enviarás?')
 }
 
 const handleRun = () => {
+  if (isTrainerBattle.value) {
+    battleStore.log.push('¡No puedes escapar de una batalla con un entrenador!')
+    return
+  }
+
   const canRun = Math.random() > 0.5
   if (canRun) {
-    addLog('¡Has huido con éxito de la batalla!')
+    battleStore.log.push('¡Has huido con éxito de la batalla!')
     setTimeout(() => {
       alert('¡Escapaste de la batalla!')
     }, 800)
   } else {
-    addLog('¡No puedes escapar!')
-    setTimeout(() => enemyAttack(), 1000)
+    battleStore.log.push('¡No puedes escapar!')
   }
 }
 
-// CORREGIDO: Ahora SÍ hace daño
-const handleMoveSelected = (moveIndex: number) => {
-  console.log('=== ATAQUE INICIADO ===')
-  console.log('Índice:', moveIndex)
-  console.log('Moves disponibles:', playerPokemon.value.moves)
+const handleMoveSelected = async (moveId: string) => {
+  await battleStore.selectPlayerMove(moveId)
+  currentView.value = 'main'
+}
 
-  const move = playerPokemon.value.moves[moveIndex]
+const handleSwitchPokemon = async (pokemonIndex: number) => {
+  const newPokemon = battleStore.playerTeam[pokemonIndex]
 
-  if (!move) {
-    console.error('❌ Movimiento no encontrado en índice:', moveIndex)
-    addLog('Error: Movimiento no válido')
+  if (!newPokemon || newPokemon.currentHp === 0) {
+    battleStore.log.push('¡No puedes usar ese Pokémon!')
     return
   }
 
-  console.log('✅ Movimiento encontrado:', move.name)
-
-  if (move.pp <= 0) {
-    addLog('¡No quedan PP para este movimiento!')
+  if (newPokemon.id === battleStore.player.id) {
+    battleStore.log.push(`¡${newPokemon.name} ya está en combate!`)
     return
   }
 
-  // Reducir PP
-  move.pp--
-  console.log('PP restantes:', move.pp)
+  const oldPokemonName = battleStore.player.name
+  battleStore.currentPlayerIndex = pokemonIndex
+  battleStore.player = newPokemon
 
-  // CALCULAR DAÑO
-  const baseDamage = move.power
-  const randomFactor = 0.85 + Math.random() * 0.3
-  const damage = Math.max(1, Math.floor(baseDamage * randomFactor))
-
-  console.log('💥 Daño calculado:', damage)
-  console.log('HP enemigo ANTES:', enemyPokemon.value.currentHp)
-
-  // APLICAR DAÑO AL ENEMIGO
-  enemyPokemon.value.currentHp = Math.max(0, enemyPokemon.value.currentHp - damage)
-
-  console.log('HP enemigo DESPUÉS:', enemyPokemon.value.currentHp)
-
-  addLog(`¡${playerPokemon.value.name} usó ${move.name}!`)
-  addLog(`¡Causó ${damage} puntos de daño!`)
-
-  if (enemyPokemon.value.currentHp === 0) {
-    addLog(`¡${enemyPokemon.value.name} enemigo se debilitó!`)
-    addLog('¡Ganaste la batalla!')
-
-    if (playerPokemon.value.currentExp !== undefined && playerPokemon.value.maxExp !== undefined) {
-      const expGained = 250
-      playerPokemon.value.currentExp = Math.min(
-        playerPokemon.value.maxExp,
-        playerPokemon.value.currentExp + expGained
-      )
-      addLog(`¡${playerPokemon.value.name} ganó ${expGained} puntos de EXP!`)
-    }
-  } else {
-    setTimeout(() => enemyAttack(), 1500)
-  }
+  battleStore.log.push(`¡Vuelve, ${oldPokemonName}!`)
+  battleStore.log.push(`¡Adelante, ${newPokemon.name}!`)
 
   currentView.value = 'main'
 }
 
-// CORREGIDO: Cambio de Pokémon
-const handleSwitchPokemon = (pokemonIndex: number) => {
-  console.log('=== CAMBIO DE POKÉMON ===')
-  console.log('Índice seleccionado:', pokemonIndex)
+const handleTrainerPokemonSelected = async (pokemonIndex: number) => {
+  if (waitingForTrainerSwitch.value && waitingTrainer.value) {
+    const selectedPokemon = battleStore.npcTeam[pokemonIndex]
+    if (selectedPokemon) {
+      battleStore.currentNpcIndex = pokemonIndex
+      battleStore.npc = selectedPokemon
+      battleStore.log.push(`¡${waitingTrainer.value.name} envió a ${selectedPokemon.name}!`)
 
-  const newPokemon = playerTeam.value[pokemonIndex]
+      waitingForTrainerSwitch.value = false
+      waitingTrainer.value = null
+      currentView.value = 'main'
 
-  if (!newPokemon) {
-    console.error('❌ Pokémon no encontrado')
-    return
-  }
-
-  console.log('Pokémon seleccionado:', newPokemon.name)
-
-  if (newPokemon.currentHp === 0) {
-    addLog(`¡${newPokemon.name} está debilitado!`)
-    return
-  }
-
-  if (newPokemon.id === playerPokemon.value.id) {
-    addLog(`¡${newPokemon.name} ya está en combate!`)
-    return
-  }
-
-  const oldPokemonName = playerPokemon.value.name
-
-  // Asignar el nuevo Pokémon
-  playerPokemon.value = newPokemon
-
-  addLog(`¡Vuelve, ${oldPokemonName}!`)
-  addLog(`¡Adelante, ${newPokemon.name}!`)
-
-  currentView.value = 'main'
-  setTimeout(() => enemyAttack(), 1500)
-}
-
-const enemyAttack = () => {
-  if (enemyPokemon.value.currentHp === 0) return
-
-  const damage = Math.floor(Math.random() * 20) + 15
-  playerPokemon.value.currentHp = Math.max(0, playerPokemon.value.currentHp - damage)
-
-  addLog(`¡${enemyPokemon.value.name} enemigo atacó!`)
-  addLog(`¡Causó ${damage} puntos de daño!`)
-
-  if (playerPokemon.value.currentHp === 0) {
-    addLog(`¡${playerPokemon.value.name} se debilitó!`)
-
-    const hasOtherPokemon = playerTeam.value.some(p => p.currentHp > 0 && p.id !== playerPokemon.value.id)
-    if (hasOtherPokemon) {
-      currentView.value = 'pokemon'
-      addLog('¡Elige otro Pokémon!')
-    } else {
-      addLog('¡Perdiste la batalla!')
+      await new Promise(resolve => setTimeout(resolve, 600))
     }
   }
 }
 
 const handleBack = () => {
   currentView.value = 'main'
-  addLog(`¿Qué hará ${playerPokemon.value.name}?`)
 }
 
-const addLog = (message: string) => {
-  battleLog.value.push(message)
-  if (battleLog.value.length > 50) {
-    battleLog.value.shift()
+// Inicializar batalla
+onMounted(async () => {
+  // Usar props.playerTeam si se proporciona, si no, usar PLAYER_TEAM como equipo por defecto
+  const team = props.playerTeam || PLAYER_TEAM.map(p => structuredClone(p))
+
+  if (isTrainerBattle.value && props.trainer) {
+    // Batalla contra entrenador
+    await startTrainerBattle(props.trainer, team)
+    battleStore.log.push(`¡${enemyTrainerName.value} quiere luchar!`)
+    battleStore.log.push(`¡${props.trainer.name} envió a ${battleStore.npc.name}!`)
+    battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
+  } else {
+    // Batalla salvaje - crear equipo por defecto si es necesario
+    const playerTeamToUse = team
+    const npcTeamToUse = [structuredClone(SAMPLE_NPC)]
+
+    await battleStore.startBattle(playerTeamToUse, npcTeamToUse)
+    battleStore.log.push('¡Un Pokémon salvaje apareció!')
+    battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
   }
-}
-
-onMounted(() => {
-  addLog(`¡Un ${enemyPokemon.value.name} salvaje apareció!`)
-  addLog(`¡Adelante, ${playerPokemon.value.name}!`)
 })
+
+// Watch para el log
+watch(() => battleStore.log, () => {
+  const lastMessage = battleStore.log[battleStore.log.length - 1]
+
+  // Detectar si el jugador necesita cambiar Pokémon
+  if (lastMessage?.includes('se debilitó') && lastMessage.includes(battleStore.player.name)) {
+    // El Pokémon del jugador se debilitó
+    if (battleStore.playerTeamRemaining > 0 && battleStore.winner === null) {
+      // Mostrar selector de Pokémon automáticamente con imágenes
+      setTimeout(() => {
+        currentView.value = 'player-team-switch'
+        battleStore.log.push('¡Elige tu próximo Pokémon!')
+      }, 1000)
+    }
+  }
+
+  // Detectar si el enemigo necesita cambiar Pokémon
+  if (lastMessage?.includes('se debilitó') && lastMessage.includes(battleStore.npc.name)) {
+    // El Pokémon del enemigo se debilitó
+    if (battleStore.npcTeamRemaining > 0 && battleStore.winner === null) {
+      // Mostrar equipo del enemigo con imágenes
+      setTimeout(() => {
+        const randomTrainer = getRandomTrainer()
+        waitingTrainer.value = randomTrainer
+        waitingForTrainerSwitch.value = true
+        currentView.value = 'enemy-team-switch'
+        battleStore.log.push(`¡${randomTrainer.name} elige su próximo Pokémon!`)
+      }, 1000)
+    }
+  }
+}, { deep: true })
+
 </script>
 
 <template>
@@ -322,12 +284,9 @@ onMounted(() => {
         <div class="enemy-info-panel">
           <div class="info-box enemy-box">
             <div class="name-level-row">
-              <span class="pokemon-name">{{ enemyPokemon.name }}</span>
-              <span v-if="enemyPokemon.gender" class="gender-icon" :class="enemyPokemon.gender">
-                {{ enemyPokemon.gender === 'male' ? '♂' : '♀' }}
-              </span>
+              <span class="pokemon-name">{{ battleStore.npc.name }}</span>
             </div>
-            <div class="level-row">:L{{ enemyPokemon.level }}</div>
+            <div class="level-row">:L{{ battleStore.npc.level }}</div>
             <div class="hp-display">
               <span class="hp-text">HP</span>
               <div class="hp-bar-outer">
@@ -340,6 +299,10 @@ onMounted(() => {
                 />
               </div>
             </div>
+            <!-- Equipo rival disponible -->
+            <div v-if="isTrainerBattle" class="team-indicator">
+              Equipo: {{ rivalRemainingPokemon }}/{{ battleStore.npcTeam.length }}
+            </div>
           </div>
         </div>
 
@@ -347,32 +310,49 @@ onMounted(() => {
         <div class="enemy-sprite-area">
           <div class="sprite-platform enemy-platform"></div>
           <img
-            :src="enemyPokemon.sprite"
-            :alt="enemyPokemon.name"
-            class="pokemon-sprite enemy-sprite"
+            :src="getPokemonFrontSpriteUrl(battleStore.npc.name)"
+            :alt="battleStore.npc.name"
+            :class="[
+              'pokemon-sprite enemy-sprite',
+              { 'damage-hit': damageEffect.active && damageEffect.target === 'enemy' },
+              { 'attack-effect': attackEffect.active && attackEffect.target === 'enemy', [`attack-${attackEffect.type}`]: attackEffect.active && attackEffect.target === 'enemy' }
+            ]"
           >
+          <!-- Efecto de ataque -->
+          <div
+            v-if="attackEffect.active && attackEffect.target === 'enemy'"
+            :class="['attack-effect-overlay', `effect-${attackEffect.type}`]"
+            :style="{ backgroundColor: getAttackEffect(attackEffect.type).color }"
+          />
         </div>
 
         <!-- Sprite jugador -->
         <div class="player-sprite-area">
           <div class="sprite-platform player-platform"></div>
           <img
-            :src="playerPokemon.backSprite || playerPokemon.sprite"
-            :alt="playerPokemon.name"
-            class="pokemon-sprite player-sprite"
+            :src="getPokemonBackSpriteUrl(battleStore.player.name)"
+            :alt="battleStore.player.name"
+            :class="[
+              'pokemon-sprite player-sprite',
+              { 'damage-hit': damageEffect.active && damageEffect.target === 'player' },
+              { 'attack-effect': attackEffect.active && attackEffect.target === 'player', [`attack-${attackEffect.type}`]: attackEffect.active && attackEffect.target === 'player' }
+            ]"
           >
+          <!-- Efecto de ataque -->
+          <div
+            v-if="attackEffect.active && attackEffect.target === 'player'"
+            :class="['attack-effect-overlay', `effect-${attackEffect.type}`]"
+            :style="{ backgroundColor: getAttackEffect(attackEffect.type).color }"
+          />
         </div>
 
         <!-- Información del Pokémon jugador -->
         <div class="player-info-panel">
           <div class="info-box player-box">
             <div class="name-level-row">
-              <span class="pokemon-name">{{ playerPokemon.name }}</span>
-              <span v-if="playerPokemon.gender" class="gender-icon" :class="playerPokemon.gender">
-                {{ playerPokemon.gender === 'male' ? '♂' : '♀' }}
-              </span>
+              <span class="pokemon-name">{{ battleStore.player.name }}</span>
             </div>
-            <div class="level-row">:L{{ playerPokemon.level }}</div>
+            <div class="level-row">:L{{ battleStore.player.level }}</div>
             <div class="hp-display">
               <span class="hp-text">HP</span>
               <div class="hp-bar-outer">
@@ -385,20 +365,19 @@ onMounted(() => {
                 />
               </div>
             </div>
-            <div class="hp-numbers">{{ playerPokemon.currentHp }} / {{ playerPokemon.maxHp }}</div>
-            <div class="exp-display">
-              <div class="exp-bar-outer">
-                <div class="exp-bar-inner" :style="{ width: playerExpPercent + '%' }" />
-              </div>
+            <div class="hp-numbers">{{ battleStore.player.currentHp }} / {{ battleStore.player.stats.hp }}</div>
+            <!-- Equipo disponible -->
+            <div class="team-indicator">
+              Equipo: {{ playerRemainingPokemon }}/{{ battleStore.playerTeam.length }}
             </div>
           </div>
         </div>
 
         <!-- StatusPanel (componente enlazado) -->
         <StatusPanel
-          v-if="playerPokemon && enemyPokemon"
-          :player-pokemon="playerPokemon"
-          :enemy-pokemon="enemyPokemon"
+          v-if="battleStore.player && battleStore.npc"
+          :player-pokemon="battleStore.player"
+          :enemy-pokemon="battleStore.npc"
           class="status-overlay"
         />
       </div>
@@ -407,37 +386,61 @@ onMounted(() => {
       <div class="control-area">
         <!-- Vista principal -->
         <template v-if="currentView === 'main'">
-          <!-- LogPanel enlazado CON SCROLL -->
-          <LogPanel
-            :messages="battleLog"
-            :max-messages="10"
-            :is-battle-style="true"
-          />
+          <!-- Contenedor de Log y Botones lado a lado -->
+          <div class="main-layout">
+            <!-- LogPanel en el lado izquierdo -->
+            <div class="log-section">
+              <LogPanel
+                :messages="battleStore.log"
+                :max-messages="8"
+                :is-battle-style="true"
+              />
+            </div>
 
-          <div class="action-panel">
-            <button class="action-btn" @click="handleFight">
-              <span class="action-text">FIGHT</span>
-            </button>
-            <button class="action-btn" @click="handleBag">
-              <span class="action-text">BAG</span>
-            </button>
-            <button class="action-btn" @click="handlePokemon">
-              <span class="action-text">POKéMON</span>
-            </button>
-            <button class="action-btn" @click="handleRun">
-              <span class="action-text">RUN</span>
-            </button>
+            <!-- Botones de acciones en el lado derecho -->
+            <div class="action-panel">
+              <button class="action-btn" @click="handleFight">
+                <span class="action-text">FIGHT</span>
+              </button>
+              <button class="action-btn" @click="handleBag">
+                <span class="action-text">BAG</span>
+              </button>
+              <button class="action-btn" @click="handlePokemon">
+                <span class="action-text">POKéMON</span>
+              </button>
+              <button class="action-btn" @click="handleRun">
+                <span class="action-text">RUN</span>
+              </button>
+            </div>
           </div>
         </template>
 
-        <!-- MoveSelector enlazado -->
-        <MoveSelector
-          v-else-if="currentView === 'fight'"
-          :moves="playerPokemon.moves"
-          :is-battle-style="true"
-          @select-move="handleMoveSelected"
-          @back="handleBack"
-        />
+        <!-- MoveSelector con LogPanel a su lado -->
+        <template v-else-if="currentView === 'fight'">
+          <div class="fight-layout">
+            <!-- LogPanel en el lado izquierdo -->
+            <div class="log-section">
+              <LogPanel
+                :messages="battleStore.log"
+                :max-messages="8"
+                :is-battle-style="true"
+              />
+            </div>
+
+            <!-- MoveSelector en el lado derecho -->
+            <div class="move-section">
+              <MoveSelector
+                :moves="battleStore.player.moves"
+                :is-battle-style="true"
+                @select-move="handleMoveSelected"
+                @back="handleBack"
+              />
+              <button class="back-button" @click="handleBack">
+                <span class="back-arrow">←</span> ATRÁS
+              </button>
+            </div>
+          </div>
+        </template>
 
         <!-- Vista de mochila -->
         <div v-else-if="currentView === 'bag'" class="bag-panel">
@@ -486,12 +489,41 @@ onMounted(() => {
         </div>
 
         <!-- MyTeam enlazado -->
-        <MyTeam
+        <BattleTeamSelector
           v-else-if="currentView === 'pokemon'"
-          :team="playerTeam"
-          :current-pokemon-id="playerPokemon.id"
+          :team="battleStore.playerTeam"
+          :current-pokemon-id="battleStore.player.id"
+          :trainer-name="trainerName"
           @switch-pokemon="handleSwitchPokemon"
           @back="handleBack"
+        />
+
+        <!-- Entrenador esperando cambio de Pokémon -->
+        <TrainerWaitingScreen
+          v-else-if="currentView === 'trainer-waiting' && waitingTrainer"
+          :trainer="waitingTrainer"
+          :available-pokemon="battleStore.npcTeam"
+          :current-pokemon-index="battleStore.currentNpcIndex"
+          @pokemon-selected="handleTrainerPokemonSelected"
+        />
+
+        <!-- Selector de equipo del jugador con imágenes grandes -->
+        <PokemonTeamSwitcher
+          v-else-if="currentView === 'player-team-switch'"
+          :team="battleStore.playerTeam"
+          :current-pokemon-id="battleStore.player.id"
+          :trainer-name="trainerName"
+          @select="handleSwitchPokemon"
+        />
+
+        <!-- Selector de equipo del enemigo con imágenes grandes -->
+        <PokemonTeamSwitcher
+          v-else-if="currentView === 'enemy-team-switch' && waitingTrainer"
+          :team="battleStore.npcTeam"
+          :current-pokemon-id="battleStore.npc.id"
+          :trainer-name="waitingTrainer.name"
+          is-enemy-team
+          @select="handleTrainerPokemonSelected"
         />
       </div>
     </div>
@@ -569,24 +601,93 @@ onMounted(() => {
 }
 
 .enemy-sprite {
-  width: 100px;
-  height: 100px;
-  top: 18%;
-  right: 18%;
+  width: 150px;
+  height: 150px;
+  top: 15%;
+  right: 15%;
   animation-delay: 0s;
 }
 
 .player-sprite {
-  width: 120px;
-  height: 120px;
-  bottom: 16%;
-  left: 8%;
+  width: 180px;
+  height: 180px;
+  bottom: 10%;
+  left: 5%;
   animation-delay: 1.5s;
+  transform: scaleX(-1);
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
+}
+
+@keyframes damageHit {
+  0% {
+    filter: brightness(1) drop-shadow(0 0 0 rgba(255, 0, 0, 0));
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    filter: brightness(0.7) drop-shadow(0 0 8px rgba(255, 0, 0, 0.8));
+    transform: translateX(-5px) rotate(-2deg);
+  }
+  50% {
+    filter: brightness(0.7) drop-shadow(0 0 8px rgba(255, 0, 0, 0.8));
+    transform: translateX(5px) rotate(2deg);
+  }
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0 rgba(255, 0, 0, 0));
+    transform: translateX(0) rotate(0deg);
+  }
+}
+
+.damage-hit {
+  animation: damageHit 0.3s ease-in-out;
+}
+
+.attack-effect {
+  animation: attackPulse 0.6s ease-out;
+}
+
+.attack-effect-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: effectPulse 0.6s ease-out;
+  opacity: 0.3;
+}
+
+@keyframes effectPulse {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+@keyframes attackPulse {
+  0% {
+    filter: brightness(1) saturate(1);
+  }
+  25% {
+    filter: brightness(1.3) saturate(1.5);
+  }
+  50% {
+    filter: brightness(1.2) saturate(1.3);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
 }
 
 .info-box {
@@ -680,6 +781,16 @@ onMounted(() => {
   margin-top: 2px;
 }
 
+.team-indicator {
+  font-size: 8px;
+  color: #666;
+  margin-top: 3px;
+  padding-top: 3px;
+  border-top: 1px solid #ddd;
+  text-align: center;
+  font-weight: bold;
+}
+
 .exp-display {
   margin-top: 4px;
 }
@@ -709,10 +820,11 @@ onMounted(() => {
   height: 150px;
   background: oklch(var(--color-muted));
   border-top: 3px solid oklch(var(--color-border));
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
   padding: 8px;
+  overflow-y: auto;
 }
 
 .action-panel {
@@ -847,24 +959,63 @@ onMounted(() => {
   font-size: 11px;
 }
 
+/* New Layout Styles */
+.main-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  height: 100%;
+  padding: 8px;
+}
+
+.log-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.move-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fight-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  height: 100%;
+  padding: 8px;
+}
+
+@media (max-width: 800px) {
+  .main-layout,
+  .fight-layout {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
 @media (max-width: 800px) {
   .battle-screen {
     width: 95vw;
-height: auto;
-aspect-ratio: 3 / 2;
+    height: auto;
+    aspect-ratio: 3 / 2;
+  }
 }
-}
+
 @media (min-width: 1200px) {
-.battle-screen {
-width: 960px;
-height: 640px;
-}
-.control-area {
-height: 200px;
-}
-}
+  .battle-screen {
+    width: 960px;
+    height: 640px;
+  }
 
+  .control-area {
+    height: 200px;
+  }
+}
 </style>
-
-//Corrige el código:3
-//Gracias

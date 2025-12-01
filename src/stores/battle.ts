@@ -24,7 +24,7 @@ function validatePokemonTypes(pokemon: Pokemon, typeChart: Record<string, Record
 
 export const useBattleStore = defineStore('battle', {
   state: (): BattleState & { seed?: string | number; ai: AI } => ({
-    ...createInitialState(SAMPLE_PLAYER, SAMPLE_NPC),
+    ...createInitialState([SAMPLE_PLAYER], [SAMPLE_NPC]),
     seed: undefined,
     ai: createStrategicAI(),
   }),
@@ -36,32 +36,43 @@ export const useBattleStore = defineStore('battle', {
     playerHPPercent: (state) =>
       Math.floor((state.player.currentHp / state.player.stats.hp) * 100),
     npcHPPercent: (state) => Math.floor((state.npc.currentHp / state.npc.stats.hp) * 100),
+    playerTeamRemaining: (state) =>
+      state.playerTeam.filter(p => p.currentHp > 0).length,
+    npcTeamRemaining: (state) =>
+      state.npcTeam.filter(p => p.currentHp > 0).length,
   },
 
   actions: {
-    async startBattle(seed?: string | number) {
+    async startBattle(playerTeam: Pokemon[], npcTeam: Pokemon[], seed?: string | number) {
       // Load type chart on first battle access
       const typeChartStore = useTypeChartStore()
       if (!typeChartStore.lastUpdated) {
         await typeChartStore.loadTypeChart()
       }
 
-      // Deep clone to ensure we have fresh Pokemon with full HP
-      const playerClone = structuredClone(SAMPLE_PLAYER)
-      const npcClone = structuredClone(SAMPLE_NPC)
+      // Deep clone teams to ensure we have fresh Pokemon with full HP
+      const playerTeamClone = playerTeam.map(p => structuredClone(p))
+      const npcTeamClone = npcTeam.map(p => structuredClone(p))
 
-      // Validate Pokemon types
-      validatePokemonTypes(playerClone, typeChartStore.typeChart)
-      validatePokemonTypes(npcClone, typeChartStore.typeChart)
+      // Validate all Pokemon types
+      const allPokemon = [...playerTeamClone, ...npcTeamClone]
+      for (const pokemon of allPokemon) {
+        validatePokemonTypes(pokemon, typeChartStore.typeChart)
+        pokemon.currentHp = pokemon.stats.hp
+      }
 
-      // Reset HP to max (in case objects were mutated)
-      playerClone.currentHp = playerClone.stats.hp
-      npcClone.currentHp = npcClone.stats.hp
-
-      const initial = createInitialState(playerClone, npcClone)
+      const initial = createInitialState(playerTeamClone, npcTeamClone)
       const ai = createStrategicAI()
 
-      this.$patch({ ...initial, seed, ai, log: [], turn: 1, phase: 'select', winner: null })
+      this.$patch({
+        ...initial,
+        seed,
+        ai,
+        log: [],
+        turn: 1,
+        phase: 'select',
+        winner: null,
+      })
     },
 
     async selectPlayerMove(moveId: string) {
@@ -90,31 +101,87 @@ export const useBattleStore = defineStore('battle', {
         // Player attacks first
         await this.executeAttack(this.player, this.npc, playerMove, 'player', rng)
 
+        // Check if NPC fainted and switch if needed
+        if (this.npc.currentHp <= 0 && !this.winner) {
+          await this.switchNpcPokemon()
+        }
+
         // Check if NPC can still attack
         if (this.npc.currentHp > 0 && !this.winner) {
           await new Promise(resolve => setTimeout(resolve, 800))
           await this.executeAttack(this.npc, this.player, npcMove, 'npc', rng)
+
+          // Check if player fainted and switch if needed
+          if (this.player.currentHp <= 0 && !this.winner) {
+            await this.switchPlayerPokemon()
+          }
         }
       } else {
         // NPC attacks first
         await this.executeAttack(this.npc, this.player, npcMove, 'npc', rng)
 
+        // Check if player fainted and switch if needed
+        if (this.player.currentHp <= 0 && !this.winner) {
+          await this.switchPlayerPokemon()
+        }
+
         // Check if player can still attack
         if (this.player.currentHp > 0 && !this.winner) {
           await new Promise(resolve => setTimeout(resolve, 800))
           await this.executeAttack(this.player, this.npc, playerMove, 'player', rng)
+
+          // Check if NPC fainted and switch if needed
+          if (this.npc.currentHp <= 0 && !this.winner) {
+            await this.switchNpcPokemon()
+          }
         }
       }
 
-      // Small delay before showing win/lose message
+      // Check for overall battle winner
       if (this.winner) {
         await new Promise(resolve => setTimeout(resolve, 500))
-        this.log.push(this.winner === 'player' ? 'You win!' : 'You lose!')
+        this.log.push(this.winner === 'player' ? '¡Ganaste la batalla!' : '¡Perdiste la batalla!')
         this.phase = 'ended'
       } else {
         // Increment turn and return to select phase
         this.turn++
         this.phase = 'select'
+      }
+    },
+
+    async switchNpcPokemon() {
+      // Find next alive NPC Pokémon after current index
+      const nextIndex = this.npcTeam.findIndex(
+        (p, idx) => idx > this.currentNpcIndex && p.currentHp > 0
+      )
+
+      if (nextIndex !== -1) {
+        // Set flag to indicate trainer needs to switch (will be handled by UI)
+        this.currentNpcIndex = nextIndex
+        this.npc = this.npcTeam[nextIndex]!
+        this.log.push(`¡El rival envió a ${this.npc.name}!`)
+        await new Promise(resolve => setTimeout(resolve, 600))
+      } else {
+        // No more Pokémon for NPC - player wins
+        this.winner = 'player'
+      }
+    },
+
+    async switchPlayerPokemon() {
+      // Check if there are any alive player Pokémon left
+      const nextIndex = this.playerTeam.findIndex(
+        (p, idx) => idx > this.currentPlayerIndex && p.currentHp > 0
+      )
+
+      if (nextIndex !== -1) {
+        // Auto switch to next Pokémon after a small delay for better UX
+        this.currentPlayerIndex = nextIndex
+        this.player = this.playerTeam[nextIndex]!
+        this.log.push(`¡Adelante, ${this.player.name}!`)
+        await new Promise(resolve => setTimeout(resolve, 600))
+      } else {
+        // No more Pokémon for player - NPC wins
+        this.winner = 'npc'
       }
     },
 
@@ -131,11 +198,11 @@ export const useBattleStore = defineStore('battle', {
 
       if (!hit) {
         // Miss: show message + play miss sound (triggered by log watch)
-        this.log.push(`${attacker.name}'s attack missed!`)
+        this.log.push(`¡${attacker.name} falló el ataque!`)
         await new Promise(resolve => setTimeout(resolve, 600)) // Wait for miss animation
       } else {
         // Hit sequence - announce attack
-        this.log.push(`${attacker.name} used ${move.name}!`)
+        this.log.push(`¡${attacker.name} usó ${move.name}!`)
         await new Promise(resolve => setTimeout(resolve, 300))
 
         // Calculate damage and effectiveness
@@ -147,9 +214,9 @@ export const useBattleStore = defineStore('battle', {
         const effectiveness = computeTypeMultiplier(move.type, defenderType)
 
         // Show effectiveness
-        if (effectiveness === 2) this.log.push("It's super effective!")
-        if (effectiveness === 0.5) this.log.push("It's not very effective...")
-        if (effectiveness === 0) this.log.push('It has no effect...')
+        if (effectiveness === 2) this.log.push('¡Es súper efectivo!')
+        if (effectiveness === 0.5) this.log.push('No es muy efectivo...')
+        if (effectiveness === 0) this.log.push('¡No tiene efecto!')
 
         await new Promise(resolve => setTimeout(resolve, 200))
 
@@ -171,12 +238,12 @@ export const useBattleStore = defineStore('battle', {
         defender.currentHp = Math.max(0, defender.currentHp - damage)
 
         // Show damage message + hit sound (triggered by log watch)
-        this.log.push(`${defender.name} took ${damage} damage!`)
+        this.log.push(`¡${defender.name} recibió ${damage} puntos de daño!`)
         await new Promise(resolve => setTimeout(resolve, 500)) // Wait for hit animation
 
-        // Check for winner after damage is applied
+        // Check if defender fainted
         if (defender.currentHp <= 0) {
-          this.winner = attackerLabel === 'player' ? 'player' : 'npc'
+          this.log.push(`¡${defender.name} se debilitó!`)
         }
       }
     },
