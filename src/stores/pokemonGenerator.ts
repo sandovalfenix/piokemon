@@ -38,15 +38,15 @@ function generateHp(level: number) {
  * Retorna un Pokémon de la región dada.
  * Si no se coloca región, retorna cualquiera.
  */
-export function generateRandomPokemon(region?: string): GeneratedPokemon {
+export function generateRandomPokemon(region?: string): GeneratedPokemon | null {
   let pool = POKEMON_DATA;
 
   if (region) {
     pool = pool.filter(p => p.region.toLowerCase() === region.toLowerCase());
   }
 
-  // Evitar quedarse sin pool
-  if (pool.length === 0) pool = POKEMON_DATA;
+  // Si se especificó región y no hay coincidencias, retornar null
+  if (pool.length === 0) return null;
 
   const base = pool[Math.floor(Math.random() * pool.length)];
   const level = generateLevel();
