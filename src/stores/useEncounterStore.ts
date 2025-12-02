@@ -8,6 +8,7 @@ import { attemptCapture } from '../stores/captureEngine'
 
 export const useEncounterStore = defineStore('encounter', () => {
   const wildPokemon = ref<GeneratedPokemon | null>(null)
+  const currentPokemon = ref<GeneratedPokemon | null>(null)
   const isEncounterActive = ref(false)
   const isCaptureInProgress = ref(false)
 
@@ -21,6 +22,10 @@ export const useEncounterStore = defineStore('encounter', () => {
     const pokemon = generateRandomPokemon(region)
     wildPokemon.value = pokemon
     isEncounterActive.value = true
+  }
+
+  function setCurrentPokemon(pokemon: GeneratedPokemon) {
+    currentPokemon.value = pokemon
   }
 
   function endEncounter() {
@@ -48,11 +53,13 @@ export const useEncounterStore = defineStore('encounter', () => {
 
   return {
     wildPokemon,
+    currentPokemon,
     isEncounterActive,
     isCaptureInProgress,
     capturedPokemons,
 
     generateEncounter,
+    setCurrentPokemon,
     endEncounter,
     tryCapture
   }

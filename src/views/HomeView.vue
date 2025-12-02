@@ -43,8 +43,7 @@
       v-if="mostrarCapturar"
       :pokemonData="pokemonData"
       :estadoBusqueda="estadoBusqueda"
-      @ir-a-batalla="handleIrABatalla"
-      @huir="handleHuir"
+      @seguir-buscando="handleSeguirBuscando"
     />
 
     <!-- Modal Inventario -->
@@ -58,7 +57,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import BuscarPokemon from '../components/Buscar.vue'
 import Capturar from '@/components/Capturar.vue'
 import InventarioBall from '@/components/inventarioball.vue'
@@ -70,8 +69,6 @@ const mostrarInventario = ref(false)
 
 const estadoBusqueda = ref<'encontrado' | 'no encontrado'>('no encontrado')
 const pokemonData = ref<GeneratedPokemon | null>(null)
-
-const router = useRouter()
 
 function handlePokemonEncontrado (p: GeneratedPokemon) {
   pokemonData.value = p
@@ -87,18 +84,9 @@ function handlePokemonNoEncontrado () {
   mostrarCapturar.value = true
 }
 
-async function handleIrABatalla (p: GeneratedPokemon) {
+function handleSeguirBuscando () {
   mostrarCapturar.value = false
-  try {
-    await router.push({ path: '/batalla', query: { name: p.name } })
-  } catch (e) {
-    console.warn('Ruta /batalla no encontrada — acción local', e)
-  }
-}
-
-function handleHuir () {
-  mostrarCapturar.value = false
-  mostrarBuscar.value = false
+  mostrarBuscar.value = true
   pokemonData.value = null
   estadoBusqueda.value = 'no encontrado'
 }
