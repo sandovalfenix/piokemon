@@ -17,10 +17,22 @@ export const useEncounterStore = defineStore('encounter', () => {
    * region: string opcional
    * Ej: "kanto", "johto"
    */
+  /**
+   * Genera un encuentro. Retorna true si se encontró un Pokémon, false si no.
+   */
   function generateEncounter(region?: string) {
     const pokemon = generateRandomPokemon(region)
+
+    if (!pokemon) {
+      // No se encontraron pokémons para la región solicitada
+      wildPokemon.value = null
+      isEncounterActive.value = false
+      return false
+    }
+
     wildPokemon.value = pokemon
     isEncounterActive.value = true
+    return true
   }
 
   function endEncounter() {
