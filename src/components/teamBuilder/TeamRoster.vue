@@ -79,7 +79,7 @@ function handleClearTeam(): void {
         </button>
       </div>
       <p v-if="isTeamFull" class="text-sm text-yellow-700 mt-1">
-        ⚠️ Team is full (6/6). Remove a Pokemon to add more.
+        Team is full (6/6). Remove a Pokemon to add more.
       </p>
       <p v-else class="text-sm text-gray-600 mt-1">
         Drag to reorder • Position 1 is your team lead
