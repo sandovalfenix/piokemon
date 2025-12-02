@@ -1,31 +1,30 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: 1.2.0 → 1.3.0
-Change Type: MINOR - Enhanced testing discipline and added quality enforcement
+Version: 1.4.0 → 1.5.0
+Change Type: MINOR - Enhanced shadcn-vue as mandatory UI component system
 
 Modified Principles:
-- IV. Testing Culture - Added MANDATORY type-checking and test execution after critical features
-- VII. Quality Enforcement (NEW) - Added explicit validation checkpoints for feature integration
+- VI. UI/UX Design System → VI. shadcn-vue Component System (renamed and expanded)
+  - Made shadcn-vue usage NON-NEGOTIABLE for all UI components
+  - Added explicit component installation requirements
+  - Added theme customization guidelines
 
 Added Sections:
-- Core Principles: VII. Quality Enforcement - Test execution requirements for battle, team builder, and core modules
-- Development Workflow: Added "Feature Completion Checklist" section
+- None (principle expanded, not new)
 
 Removed Sections:
 - None
 
 Templates Status:
-✅ plan-template.md - No updates required (testing already part of Definition of Done)
-✅ spec-template.md - No updates required (testing acceptance criteria already defined)
-✅ tasks-template.md - No updates required (testing tasks follow from spec)
-✅ commands/*.md - No updates required (constitution check remains generic)
-⚠️  README.md - Should be updated to reference testing discipline in feature development
+✅ plan-template.md - No updates required (constitution check covers UI principles)
+✅ spec-template.md - No updates required (functional requirements cover component needs)
+✅ tasks-template.md - No updates required (follows from spec)
+✅ checklist-template.md - No updates required
 ✅ Constitution updated
 
 Follow-up TODOs:
-- Update README.md to include "Testing After Critical Features" section
-- Consider adding pre-commit hooks for type-check and lint
+- None - shadcn-vue configuration already in place (components.json, SHADCN-SETUP.md)
 -->
 
 # Pokémon MMO Constitution
@@ -149,19 +148,77 @@ After implementing changes to ANY of the following subsystems, developers MUST e
 
 **Rationale**: Complex interactions between battle, team builder, and state management create high risk for integration bugs. Type checking catches interface mismatches. Test execution validates business logic. Manual testing catches UX regressions. This checkpoint prevents "feature complete but system broken" scenarios.
 
-### VI. UI/UX Design System
+### VIII. PokeAPI as Single Source of Truth (NON-NEGOTIABLE)
 
-All user interfaces MUST follow a modern, minimalist design language using Tailwind CSS with glassomorphism and neumorphism aesthetics:
-- Use shadcn-vue components as the foundation for all UI elements (buttons, inputs, dialogs, etc.)
+ALL Pokémon game data MUST be sourced from [PokeAPI](https://pokeapi.co/). This includes:
+
+**Required Data Sources** (MUST use PokeAPI endpoints):
+- **Pokémon**: Species, stats, types, sprites → `https://pokeapi.co/api/v2/pokemon/{id or name}`
+- **Moves**: Name, type, power, accuracy, category, effects → `https://pokeapi.co/api/v2/move/{id or name}`
+- **Types**: Type chart, effectiveness relationships → `https://pokeapi.co/api/v2/type/{id or name}`
+- **Status Conditions**: Effect descriptions → referenced via move/ability metadata
+- **Abilities**: Name, effect descriptions → `https://pokeapi.co/api/v2/ability/{id or name}`
+
+**Implementation Requirements**:
+- NO hardcoded Pokémon/move/type data except for caching retrieved PokeAPI responses
+- ALL services fetching game data MUST use PokeAPI client (`src/services/teamBuilder/`, `src/services/typeChart/`)
+- Runtime type guards MUST validate PokeAPI responses before use
+- Caching is ENCOURAGED to reduce API calls (localStorage, in-memory cache)
+- Offline fallback data MAY be pre-fetched from PokeAPI, NOT manually created
+
+**Forbidden**:
+- Manually defining Pokémon stats, moves, or type effectiveness
+- Creating fictional Pokémon or moves not in PokeAPI
+- Hardcoding damage formulas or effectiveness values (derive from PokeAPI type chart)
+- Using alternative data sources (Bulbapedia scraping, fan databases)
+
+**Existing Services** (MUST be used for new features):
+- `src/services/teamBuilder/pokemonService.ts` - Pokémon data fetching
+- `src/services/teamBuilder/moveService.ts` - Move data fetching  
+- `src/services/typeChart/pokeApiClient.ts` - Type effectiveness data
+- `src/services/typeChart/typeChartService.ts` - Type chart calculations
+
+**Exception**: UI-only data (trainer names, dialogue, game-specific mechanics not in mainline games) may be defined locally.
+
+**Rationale**: PokeAPI provides canonical, accurate, and comprehensive Pokémon data. Using a single source ensures consistency, reduces maintenance burden, and guarantees correctness of game mechanics. Hardcoded data drifts from source and introduces bugs.
+
+### VI. shadcn-vue Component System (NON-NEGOTIABLE)
+
+ALL user interface components MUST be built using shadcn-vue as the primary component library. This is mandatory for maintaining consistency, accessibility, and design system coherence.
+
+**Required Usage**:
+- **Primitive Components**: ALL buttons, inputs, dialogs, dropdowns, cards, and form elements MUST use shadcn-vue components from `@/components/ui/`
+- **Component Installation**: New components MUST be added via `npx shadcn-vue@latest add <component>` - never copy/paste from external sources
+- **Import Pattern**: Always import from `@/components/ui/<component>` (e.g., `import { Button } from '@/components/ui/button'`)
+- **Customization**: Direct modification of shadcn-vue components in `src/components/ui/` is ALLOWED and ENCOURAGED to match the project's glassomorphism/neumorphism aesthetic
+
+**Design Language** (applied via Tailwind utilities):
 - Use Tailwind utility classes for all styling (NO custom CSS except when absolutely necessary)
 - Apply glassy, translucent backgrounds with backdrop blur effects (`backdrop-blur-*`, `bg-opacity-*`)
 - Implement soft neumorphic shadows for depth and tactile feel (`shadow-*` with subtle inset effects)
 - Maintain visual simplicity: clean layouts, generous whitespace, subtle animations
 - Color palette: soft, muted tones with high-contrast accents for interactive elements
 - Responsive by default: mobile-first approach using Tailwind breakpoints (`sm:`, `md:`, `lg:`, etc.)
-- All shadcn-vue components MUST be customized to align with glassomorphism/neumorphism aesthetic
 
-**Rationale**: Consistent, modern design language creates professional user experience while Tailwind ensures maintainability and rapid iteration. Glassomorphism/neumorphism provide visual appeal without complexity. shadcn-vue provides accessible, type-safe components that can be customized to match our design system.
+**Component Configuration** (defined in `components.json`):
+- Style: New York
+- Base color: Neutral
+- CSS variables: Enabled
+- Icon library: Lucide
+- Components path: `@/components/ui`
+- Utils path: `@/lib/utils`
+
+**Forbidden**:
+- Creating custom button, input, dialog, or form components without using shadcn-vue as the base
+- Using raw HTML elements (`<button>`, `<input>`, `<select>`) where shadcn-vue equivalents exist
+- Installing alternative component libraries (Vuetify, Element Plus, PrimeVue, Naive UI, etc.)
+- Copying shadcn-vue component code from external websites instead of using the CLI
+
+**Available Components** (add more as needed via CLI):
+- Button, Card, Dialog, Input, Select, Dropdown Menu, Tooltip, Toast, etc.
+- Full list: https://www.shadcn-vue.com/docs/components
+
+**Rationale**: shadcn-vue provides accessible, type-safe, and customizable components built on Radix Vue primitives. Using a single component system ensures consistency, reduces design debt, and enables rapid iteration while maintaining accessibility standards.
 
 ## Architecture & Tech Stack
 
@@ -321,4 +378,4 @@ MUST pass before merge:
 
 ---
 
-**Version**: 1.3.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-12-01
+**Version**: 1.5.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-12-02
