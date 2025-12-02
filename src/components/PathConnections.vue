@@ -1,5 +1,10 @@
 <template>
-  <svg class="path-connections" :viewBox="`0 0 ${props.width} ${props.height}`" preserveAspectRatio="none">
+  <svg
+    v-if="renderAvailable"
+    class="path-connections"
+    :viewBox="`0 0 ${props.renderWidth} ${props.renderHeight}`"
+    preserveAspectRatio="none"
+  >
     <path
       v-for="path in paths"
       :key="path.id"
@@ -22,16 +27,29 @@ interface Path {
 // CORRECCIÓN: La prop debe ser 'zones'.
 const props = defineProps<{
   zones: Zone[];
-  width: number;
+  width: number; // diseño (coord system)
   height: number;
+  renderWidth?: number; // contenedor completo en pixeles
+  renderHeight?: number;
+  imageWidth?: number; // caja real de la imagen dentro del contenedor
+  imageHeight?: number;
+  imageOffsetX?: number; // offset de la imagen dentro del contenedor
+  imageOffsetY?: number;
 }>();
 
+const renderAvailable = computed(() => !!props.renderWidth && !!props.renderHeight && !!props.imageWidth && !!props.imageHeight);
+
 const getPathD = (start: { x: number; y: number }, end: { x: number; y: number }): string => {
-  // Las líneas deben conectar el centro del nodo (25px)
-  const startX = start.x;
-  const startY = start.y;
-  const endX = end.x;
-  const endY = end.y;
+  // Calcular en coordenadas de píxeles dentro del contenedor (usando la caja real de la imagen)
+  const imgW = props.imageWidth || props.renderWidth || props.width;
+  const imgH = props.imageHeight || props.renderHeight || props.height;
+  const offX = props.imageOffsetX || 0;
+  const offY = props.imageOffsetY || 0;
+
+  const startX = offX + (start.x / props.width) * imgW;
+  const startY = offY + (start.y / props.height) * imgH;
+  const endX = offX + (end.x / props.width) * imgW;
+  const endY = offY + (end.y / props.height) * imgH;
 
   return `M ${startX} ${startY} L ${endX} ${endY}`;
 };
@@ -40,6 +58,7 @@ const paths = computed<Path[]>(() => {
   const result: Path[] = [];
   
   if (!props.zones || props.zones.length === 0) return result; 
+  if (!renderAvailable.value) return result;
 
   const zoneMap = new Map(props.zones.map(z => [z.id, z]));
 

@@ -1,9 +1,15 @@
 <template>
   <div class="page-container">
-    <h1>Mapa de Progresión del Mundo</h1>
-    <p class="status-bar">Bienvenido, Aventurero. {{ statusMessage }}</p>
-    
-    <WorldMapView />
+    <div class="map-background"></div>
+
+    <div class="content-overlay">
+      <h1>Mapa de Progresión del Mundo</h1>
+      <p class="status-bar">
+        Bienvenido, Aventurero. {{ statusMessage }}
+      </p>
+
+      <WorldMapView />
+    </div>
   </div>
 </template>
 
@@ -15,41 +21,61 @@ import WorldMapView from '../components/WorldMapView.vue';
 const mapStore = useMapStore();
 
 const totalZones = computed(() => mapStore.allZones.length);
-const completedZones = computed(() => mapStore.allZones.filter(z => z.state === 'completed').length);
+const completedZones = computed(() => 
+  mapStore.allZones.filter(z => z.state === 'completed').length
+);
 
 const statusMessage = ref('Cargando el mapa...');
 
 onMounted(async () => {
-  // Simula la carga de datos
-  await new Promise(resolve => setTimeout(resolve, 500)); 
-  
+  await new Promise(resolve => setTimeout(resolve, 500));
   statusMessage.value = `Has completado ${completedZones.value} de ${totalZones.value} zonas. ¡A seguir!`;
 });
 </script>
 
 <style scoped>
 .page-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Fondo del mapa */
+.map-background {
+  position: absolute;
+  inset: 0;
+  background-image: url('@/assets/world-map.png'); /* ← cambia ruta */
+  background-size: cover;     /* hace que NO se deforme */
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1; /* detrás de todo */
+  filter: brightness(1.1); /* opcional */
+}
+
+/* Contenido encima del mapa */
+.content-overlay {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Ocupa toda la pantalla, el scroll lo maneja WorldMapView */
-  width: 100%;
-  height: 100vh; 
-  background-color: #1a1a2e;
+  padding-top: 20px;
   color: #fff;
-  overflow: hidden; /* Evita doble scroll */
 }
 
 h1 {
-  margin-top: 20px;
   color: #a7ff83;
 }
 
 .status-bar {
   margin-bottom: 20px;
   padding: 10px 20px;
-  background-color: #334466;
-  border-radius: 5px;
+  background-color: rgba(51, 68, 102, 0.7);
+  border-radius: 6px;
   font-style: italic;
+  backdrop-filter: blur(3px);
 }
 </style>

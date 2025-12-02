@@ -19,13 +19,22 @@ const props = defineProps<{
   zone: Zone;
   mapWidth: number;
   mapHeight: number;
+  imageWidth?: number;
+  imageHeight?: number;
+  imageOffsetX?: number;
+  imageOffsetY?: number;
 }>();
 
 const emit = defineEmits(['node-click']);
 
 const nodeStyle = computed(() => ({
-  left: `${(props.zone.position.x / props.mapWidth) * 100}%`,
-  top: `${(props.zone.position.y / props.mapHeight) * 100}%`,
+  // Si se proporcionan dimensiones de la imagen, calcular la posición en px dentro del contenedor
+  left: props.imageWidth
+    ? `${(props.imageOffsetX || 0) + (props.zone.position.x / props.mapWidth) * (props.imageWidth || 0)}px`
+    : `${(props.zone.position.x / props.mapWidth) * 100}%`,
+  top: props.imageHeight
+    ? `${(props.imageOffsetY || 0) + (props.zone.position.y / props.mapHeight) * (props.imageHeight || 0)}px`
+    : `${(props.zone.position.y / props.mapHeight) * 100}%`,
 }));
 
 const handleClick = () => {
