@@ -11,7 +11,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const { currentView, logMessages, playerMoves, isAttacking } = props
 
 
 </script>
@@ -19,13 +18,13 @@ const { currentView, logMessages, playerMoves, isAttacking } = props
 <template>
   <div class="control-area">
     <!-- Vista principal -->
-    <template v-if="currentView === 'main'">
+    <template v-if="props.currentView === 'main'">
       <!-- Contenedor de Log y Botones lado a lado -->
       <div class="main-layout">
         <!-- LogPanel en el lado izquierdo -->
         <div class="log-section">
           <LogPanel
-            :messages="logMessages"
+            :messages="props.logMessages"
             :max-messages="8"
             :is-battle-style="true"
           />
@@ -50,12 +49,12 @@ const { currentView, logMessages, playerMoves, isAttacking } = props
     </template>
 
     <!-- MoveSelector con LogPanel a su lado -->
-    <template v-else-if="currentView === 'fight'">
+    <template v-else-if="props.currentView === 'fight'">
       <div class="fight-layout">
         <!-- LogPanel en el lado izquierdo -->
         <div class="log-section">
           <LogPanel
-            :messages="logMessages"
+            :messages="props.logMessages"
             :max-messages="8"
             :is-battle-style="true"
           />
@@ -64,9 +63,9 @@ const { currentView, logMessages, playerMoves, isAttacking } = props
         <!-- MoveSelector -->
         <div class="move-section">
           <MoveSelector
-            :moves="playerMoves"
+            :moves="props.playerMoves"
             :is-battle-style="true"
-            :disabled="isAttacking"
+            :disabled="props.isAttacking"
             @select-move="(id: string) => $emit('select-move', id)"
             @back="$emit('back')"
           />

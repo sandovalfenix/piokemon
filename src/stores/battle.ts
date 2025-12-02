@@ -189,14 +189,30 @@ export const useBattleStore = defineStore('battle', {
     },
 
     async selectPlayerMove(moveId: string) {
-      if (this.phase !== 'select' || this.winner) return
+      console.log('[BattleStore] selectPlayerMove called:', {
+        moveId,
+        phase: this.phase,
+        winner: this.winner,
+        playerMoves: this.player.moves.map(m => ({ id: m.id, name: m.name }))
+      })
+
+      if (this.phase !== 'select' || this.winner) {
+        console.log('[BattleStore] selectPlayerMove blocked:', { phase: this.phase, winner: this.winner })
+        return
+      }
 
       this.phase = 'resolving'
       const rng = createSeededRng(this.seed ?? Date.now())
 
       // Get player move
       const playerMove = this.player.moves.find((m) => m.id === moveId)
-      if (!playerMove) return
+      if (!playerMove) {
+        console.error('[BattleStore] Move not found:', moveId)
+        this.phase = 'select' // Reset phase if move not found
+        return
+      }
+
+      console.log('[BattleStore] Found player move:', playerMove)
 
       // Determine turn order by speed
       const playerFirst = this.player.stats.speed >= this.npc.stats.speed
@@ -305,6 +321,13 @@ export const useBattleStore = defineStore('battle', {
       attackerLabel: 'player' | 'npc',
       rng: Rng
     ) {
+      console.log('[BattleStore] executeAttack:', {
+        attacker: attacker.name,
+        defender: defender.name,
+        move: { id: move.id, name: move.name, power: move.power, category: move.category },
+        attackerLabel
+      })
+
       // Accuracy check
       const accuracyRoll = rng.next() * 100
       const hit = accuracyRoll <= move.accuracy
@@ -363,8 +386,32 @@ export const useBattleStore = defineStore('battle', {
             rng,
           })
 
+          console.log('[BattleStore] Damage calculation:', {
+            level: attacker.level,
+            power: move.power,
+            atk,
+            def,
+            category: move.category,
+            effectiveness,
+            damage,
+            defenderHpBefore: defender.currentHp
+          })
+
           // Apply damage to defender
           defender.currentHp = Math.max(0, defender.currentHp - damage)
+
+          // IMPORTANT: Also update the store state directly to ensure reactivity
+          if (attackerLabel === 'player') {
+            this.npc.currentHp = defender.currentHp
+          } else {
+            this.player.currentHp = defender.currentHp
+          }
+
+          console.log('[BattleStore] After damage:', {
+            defenderHpAfter: defender.currentHp,
+            storePlayerHp: this.player.currentHp,
+            storeNpcHp: this.npc.currentHp
+          })
 
           // Show damage message + hit sound (triggered by log watch)
           this.log.push(`¡${defender.name} recibió ${damage} puntos de daño!`)
