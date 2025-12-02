@@ -69,17 +69,23 @@ export const useMapStore = defineStore('map', () => {
         if (zoneIndex === -1) return;
 
         // 1. Marcar la zona actual como completada
-        zones.value[zoneIndex].state = 'completed';
-        zones.value[zoneIndex].progress = 100;
+        const zone = zones.value[zoneIndex];
+        if (!zone) return;
+
+        zone.state = 'completed';
+        zone.progress = 100;
 
         // 2. Activar la siguiente zona si existe
-        const nextZoneId = zones.value[zoneIndex].nextZoneId;
-        
+        const nextZoneId = zone.nextZoneId;
+
         if (nextZoneId) {
             const nextZoneIndex = zones.value.findIndex(z => z.id === nextZoneId);
             if (nextZoneIndex !== -1) {
-                zones.value[nextZoneIndex].state = 'active';
-                zones.value[nextZoneIndex].progress = 0;
+                const nextZone = zones.value[nextZoneIndex];
+                if (nextZone) {
+                    nextZone.state = 'active';
+                    nextZone.progress = 0;
+                }
             }
         }
         

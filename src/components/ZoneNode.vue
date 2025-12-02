@@ -1,7 +1,7 @@
 <template>
   <button
     :class="['zone-node', `state-${zone.state}`]"
-    :style="{ left: zone.position.x + 'px', top: zone.position.y + 'px' }"
+    :style="nodeStyle"
     @click="handleClick"
     :title="zone.name"
   >
@@ -12,14 +12,21 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
+import { computed, defineProps, defineEmits } from 'vue';
 import type { Zone } from '../types/zone';
 
 const props = defineProps<{
   zone: Zone;
+  mapWidth: number;
+  mapHeight: number;
 }>();
 
 const emit = defineEmits(['node-click']);
+
+const nodeStyle = computed(() => ({
+  left: `${(props.zone.position.x / props.mapWidth) * 100}%`,
+  top: `${(props.zone.position.y / props.mapHeight) * 100}%`,
+}));
 
 const handleClick = () => {
   emit('node-click', props.zone);

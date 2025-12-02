@@ -1,13 +1,15 @@
 <template>
   <div class="world-map-view">
     <div class="map-canvas">
-      <PathConnections :zones="mapStore.allZones" />
+      <PathConnections :zones="mapStore.allZones" :width="MAP_WIDTH" :height="MAP_HEIGHT" />
 
       <ZoneNode
         v-for="zone in mapStore.allZones"
         :key="zone.id"
         :zone="zone"
-        @node-click="mapStore.setSelectedZone" 
+        :map-width="MAP_WIDTH"
+        :map-height="MAP_HEIGHT"
+        @node-click="mapStore.setSelectedZone"
       />
     </div>
 
@@ -27,6 +29,9 @@ import PathConnections from './PathConnections.vue';
 
 const mapStore = useMapStore();
 
+const MAP_WIDTH = 800;
+const MAP_HEIGHT = 1200;
+
 const handleEnterZone = (zoneId: number) => {
   console.log(`¡Entrando a la Zona ID: ${zoneId}! Redirigiendo...`);
   
@@ -44,16 +49,16 @@ const handleEnterZone = (zoneId: number) => {
 .world-map-view {
   width: 100%;
   height: 100vh;
-  overflow-y: auto; 
+  overflow-y: auto;
   position: relative;
   background-color: #2c3e50;
+  padding: 20px 0 40px;
 }
 
 .map-canvas {
   position: relative;
-  /* Altura que permite el scroll (mayor a 100vh) */
-  height: 1200px; 
-  width: 800px;
-  margin: 0 auto; 
+  width: min(900px, 95vw);
+  aspect-ratio: 2 / 3;
+  margin: 0 auto 30px;
 }
 </style>

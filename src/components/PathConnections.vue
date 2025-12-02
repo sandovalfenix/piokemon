@@ -1,5 +1,5 @@
 <template>
-  <svg class="path-connections">
+  <svg class="path-connections" :viewBox="`0 0 ${props.width} ${props.height}`" preserveAspectRatio="none">
     <path
       v-for="path in paths"
       :key="path.id"
@@ -22,6 +22,8 @@ interface Path {
 // CORRECCIÓN: La prop debe ser 'zones'.
 const props = defineProps<{
   zones: Zone[];
+  width: number;
+  height: number;
 }>();
 
 const getPathD = (start: { x: number; y: number }, end: { x: number; y: number }): string => {
