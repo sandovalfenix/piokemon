@@ -21,7 +21,16 @@ const router = createRouter({
       name: 'team-builder',
       component: TeamBuilderView,
     },
+      {
+    path: '/gyms',
+    name: 'gyms',
+    component: GymSelection
+  }
+
   ],
 })
 
 export default router
+import GymSelection from '@/views/GymSelection.vue'
+
+

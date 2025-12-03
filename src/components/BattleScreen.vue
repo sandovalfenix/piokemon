@@ -51,10 +51,10 @@ import { useSpriteLoader } from '../composables/useSpriteLoader'
 import { itemService } from '@/services/itemService'
 import { SAMPLE_NPC } from '@/data/pokemon'
 import { createHowlerAudio, DEFAULT_BATTLE_SOUNDS } from '@/services/audio/howlerAudio'
-import { getRandomTrainer } from '@/data/trainersData'
+import { BattleType } from '@/data/battleTypes'
+import { gymLeaders } from '@/data/gymLeaders'
 import type { Trainer } from '@/data/trainers'
 import type { Pokemon } from '@/domain/battle/engine/entities'
-import type { TrainerData } from '@/data/trainersData'
 import type { TeamMember, Move as TeamBuilderMove } from '@/models/teamBuilder'
 import type { Item } from '@/models/item'
 
@@ -62,6 +62,7 @@ import type { Item } from '@/models/item'
 interface Props {
   trainer?: Trainer
   playerTeam?: Pokemon[]
+  gymLeaderId?: number
 }
 
 const props = defineProps<Props>()
@@ -71,6 +72,19 @@ const battleStore = useBattleStore()
 const teamStore = useTeamStore()
 const router = useRouter()
 const { rivalRemainingPokemon, startBattle: startTrainerBattle } = useTrainerBattle()
+
+// Gym battle state
+const currentBattleType = ref<BattleType>(BattleType.WILD)
+const currentGymLeader = ref<number | null>(null)
+
+const currentGymLeaderInfo = computed(() => {
+  if (currentGymLeader.value !== null) {
+    return gymLeaders.find(l => l.id === currentGymLeader.value)
+  }
+  return null
+})
+
+const isGymBattle = computed(() => currentBattleType.value === BattleType.GYM_LEADER)
 
 // Convert Team Builder Pokemon to Battle Engine format (T027)
 const convertTeamMemberToBattlePokemon = (teamMember: TeamMember): Pokemon => {
@@ -149,7 +163,6 @@ const enemySprite = useSpriteLoader({
 const currentView = ref<'main' | 'fight' | 'bag' | 'pokemon' | 'trainer-waiting' | 'player-team-switch' | 'enemy-team-switch'>('main')
 const battleMenuView = computed(() => currentView.value as 'main' | 'fight')
 const shakeEffect = ref<{ active: boolean; target: 'player' | 'enemy' }>({ active: false, target: 'player' })
-const waitingTrainer = ref<TrainerData | null>(null)
 const waitingForTrainerSwitch = ref(false)
 const isAttacking = ref(false)
 const isBattleReady = ref(false) // Track if battle is fully initialized
@@ -217,8 +230,11 @@ const trainerName = computed(() => {
 })
 
 const enemyTrainerName = computed(() => {
-  if (isTrainerBattle.value) {
-    return `${props.trainer!.title} ${props.trainer!.name}`
+  if (isGymBattle.value && currentGymLeaderInfo.value) {
+    return `${currentGymLeaderInfo.value.name} - Líder de ${currentGymLeaderInfo.value.city}`
+  }
+  if (isTrainerBattle.value && props.trainer) {
+    return `${props.trainer.title} ${props.trainer.name}`
   }
   return 'Pokémon Salvaje'
 })
@@ -237,6 +253,11 @@ const handlePokemon = () => {
 }
 
 const handleRun = () => {
+  if (isGymBattle.value) {
+    battleStore.log.push('¡No puedes escapar de un desafío de gimnasio!')
+    return
+  }
+
   if (isTrainerBattle.value) {
     battleStore.log.push('¡No puedes escapar de una batalla con un entrenador!')
     return
@@ -302,7 +323,6 @@ const handleUseItem = (item: Item) => {
 }
 
 const handleTrainerPokemonSelected = async (pokemonIndex: number) => {
-  if (waitingForTrainerSwitch.value && waitingTrainer.value) {
     const selectedPokemon = battleStore.npcTeam[pokemonIndex]
     if (selectedPokemon) {
       battleStore.currentNpcIndex = pokemonIndex
@@ -345,14 +365,40 @@ onMounted(async () => {
     return
   }
 
-  if (isTrainerBattle.value && props.trainer) {
+  // Detectar si es batalla de gimnasio
+  if (props.gymLeaderId !== undefined) {
+    const leader = gymLeaders.find(l => l.id === props.gymLeaderId)
+    if (!leader) {
+      battleError.value = 'Líder de gimnasio no encontrado'
+      return
+    }
+
+    currentGymLeader.value = props.gymLeaderId
+    currentBattleType.value = BattleType.GYM_LEADER
+
+    // Crear entrenador temporal con datos del líder
+    const gymTrainer: Trainer = {
+      id: leader.id.toString(),
+      name: leader.name,
+      title: `Líder de ${leader.city}`,
+      team: [], // Se llenará con tu lógica existente si es necesario
+    }
+    await startTrainerBattle(gymTrainer, team)
+    battleStore.log.push(`¡${leader.name} te desafía!`)
+    battleStore.log.push(`"¡Soy ${leader.name}, líder de ${leader.city}!"`)
+    battleStore.log.push(`"¡Especialista en tipo ${leader.type}!"`)
+    battleStore.log.push(`¡${leader.name} envió a ${battleStore.npc.name}!`)
+    battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
+  } else if (isTrainerBattle.value && props.trainer) {
     // Batalla contra entrenador
+    currentBattleType.value = BattleType.TRAINER
     await startTrainerBattle(props.trainer, team)
     battleStore.log.push(`¡${enemyTrainerName.value} quiere luchar!`)
     battleStore.log.push(`¡${props.trainer.name} envió a ${battleStore.npc.name}!`)
     battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
   } else {
     // Batalla salvaje - usar equipo del jugador
+    currentBattleType.value = BattleType.WILD
     const npcTeamToUse = [structuredClone(SAMPLE_NPC)]
 
     await battleStore.startBattle(team, npcTeamToUse)
@@ -413,6 +459,15 @@ watch(() => battleStore.log, () => {
     </div>
 
     <div v-else class="battle-screen">
+      <!-- Banner de batalla de gimnasio -->
+      <div v-if="isGymBattle && currentGymLeaderInfo" class="gym-battle-banner">
+        <div class="gym-badge-icon">🏅</div>
+        <div class="gym-info">
+          <span class="gym-leader-name">{{ currentGymLeaderInfo.name }}</span>
+          <span class="gym-type">Tipo {{ currentGymLeaderInfo.type }}</span>
+        </div>
+      </div>
+
       <!-- Campo de batalla -->
       <BattleField
         :player-pokemon="battleStore.player"
@@ -601,5 +656,50 @@ watch(() => battleStore.log, () => {
     height: auto;
     aspect-ratio: 3 / 2;
   }
+}
+
+/* Estilos para banner de gimnasio */
+.gym-battle-banner {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border: 3px solid oklch(0.3 0.1 40);
+  border-radius: 8px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 100;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+.gym-badge-icon {
+  font-size: 24px;
+  animation: pulse 2s infinite;
+}
+
+.gym-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gym-leader-name {
+  font-size: 10px;
+  font-weight: bold;
+  color: oklch(0.3 0.1 40);
+}
+
+.gym-type {
+  font-size: 7px;
+  color: oklch(0.4 0.08 40);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 </style>

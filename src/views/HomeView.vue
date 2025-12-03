@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import TradeWithNpc from '@/components/TradeWithNpc.vue'
-import MyTeam from '@/components/MyTeam.vue'
+import MyTeam from '@/views/GymSelection.vue'
 
 const router = useRouter()
 

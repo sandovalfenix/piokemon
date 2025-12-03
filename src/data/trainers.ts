@@ -11,7 +11,6 @@ export interface Trainer {
   title: string // "Gym Leader", "Elite Four", etc.
   team: Pokemon[]
   sprite?: string
-  reward: number
 }
 
 /**
@@ -21,7 +20,6 @@ export const TRAINER_BROCK: Trainer = {
   id: 'trainer_brock',
   name: 'Brock',
   title: 'Gym Leader',
-  reward: 2400,
   team: [
     {
       id: 'brock_geodude',
@@ -87,7 +85,6 @@ export const TRAINER_MISTY: Trainer = {
   id: 'trainer_misty',
   name: 'Misty',
   title: 'Gym Leader',
-  reward: 2400,
   team: [
     {
       id: 'misty_staryu',
@@ -153,7 +150,6 @@ export const TRAINER_SURGE: Trainer = {
   id: 'trainer_surge',
   name: 'Lt. Surge',
   title: 'Gym Leader',
-  reward: 2800,
   team: [
     {
       id: 'surge_voltorb',
@@ -219,7 +215,6 @@ export const TRAINER_ERIKA: Trainer = {
   id: 'trainer_erika',
   name: 'Erika',
   title: 'Gym Leader',
-  reward: 2400,
   team: [
     {
       id: 'erika_victreebel',
@@ -285,7 +280,6 @@ export const TRAINER_BLAINE: Trainer = {
   id: 'trainer_blaine',
   name: 'Blaine',
   title: 'Gym Leader',
-  reward: 2800,
   team: [
     {
       id: 'blaine_growlithe',
@@ -382,11 +376,4 @@ export function getTrainerFullName(trainer: Trainer): string {
   return `${trainer.title} ${trainer.name}`
 }
 
-/**
- * Obtener la recompensa total del entrenador
- * @param trainer - Entrenador
- * @returns Cantidad de dinero ganado al vencer al entrenador
- */
-export function getTrainerReward(trainer: Trainer): number {
-  return trainer.reward
-}
+
