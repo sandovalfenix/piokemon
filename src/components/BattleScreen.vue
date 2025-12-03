@@ -323,18 +323,17 @@ const handleUseItem = (item: Item) => {
 }
 
 const handleTrainerPokemonSelected = async (pokemonIndex: number) => {
-    const selectedPokemon = battleStore.npcTeam[pokemonIndex]
-    if (selectedPokemon) {
-      battleStore.currentNpcIndex = pokemonIndex
-      battleStore.npc = selectedPokemon
-      battleStore.log.push(`¡${waitingTrainer.value.name} envió a ${selectedPokemon.name}!`)
+  const selectedPokemon = battleStore.npcTeam[pokemonIndex]
+  if (selectedPokemon) {
+    battleStore.currentNpcIndex = pokemonIndex
+    battleStore.npc = selectedPokemon
+    battleStore.log.push(`¡${waitingTrainer.value.name} envió a ${selectedPokemon.name}!`)
 
-      waitingForTrainerSwitch.value = false
-      waitingTrainer.value = null
-      currentView.value = 'main'
+    waitingForTrainerSwitch.value = false
+    waitingTrainer.value = null
+    currentView.value = 'main'
 
-      await new Promise(resolve => setTimeout(resolve, 600))
-    }
+    await new Promise(resolve => setTimeout(resolve, 600))
   }
 }
 

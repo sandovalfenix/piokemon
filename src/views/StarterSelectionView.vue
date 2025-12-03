@@ -146,7 +146,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+  <div class="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
     <!-- Animated Background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <!-- Floating Pokeballs -->
@@ -204,7 +204,7 @@ onMounted(async () => {
         <!-- Professor Welcome -->
         <div class="text-center animate-fade-in-up">
           <div class="mb-8">
-            <div class="w-32 h-32 mx-auto bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl">
+            <div class="w-32 h-32 mx-auto bg-linear-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl">
               <span class="text-6xl">👨‍🔬</span>
             </div>
           </div>
