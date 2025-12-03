@@ -1,183 +1,167 @@
 // src/data/gymLeaders.ts
+// Cali-themed Gym Leaders based on local landmarks and culture
+// Source: src/assets/docs/Lider_*.md
 
 export interface GymLeader {
   id: number
   name: string
   city: string
+  location: string
   badge: string
   badgeImage: string
+  badgeImageTransparent: string
   type: string
+  secondaryType?: string
   difficulty: number
   team: {
     pokemon: string
     pokemonId: number
     level: number
   }[]
+  signaturePokemon: string
   trainerClass: string
   quote: string
+  quoteDefeat: string
+  quoteBattle: string
   spriteUrl: string
+  mission: string
 }
 
 export const gymLeaders: GymLeader[] = [
   {
     id: 1,
-    name: "Brock",
-    city: "Ciudad Plateada",
-    badge: "Medalla Roca",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/boulder-badge.png",
+    name: "José",
+    city: "Cali",
+    location: "Cristo Rey",
+    badge: "Medalla Valle Vivo",
+    badgeImage: "src/assets/images/Medallas/Valle_Vivo.png",
+    badgeImageTransparent: "src/assets/images/Medallas/bottomless/Valle_Vivo.png",
     type: "Roca",
+    secondaryType: "Tierra",
     difficulty: 1,
     team: [
       { pokemon: "geodude", pokemonId: 74, level: 10 },
-      { pokemon: "geodude", pokemonId: 74, level: 11 },
+      { pokemon: "sandshrew", pokemonId: 27, level: 11 },
       { pokemon: "onix", pokemonId: 95, level: 12 },
-      { pokemon: "geodude", pokemonId: 74, level: 11 },
-      { pokemon: "graveler", pokemonId: 75, level: 13 },
-      { pokemon: "onix", pokemonId: 95, level: 14 }
+      { pokemon: "rhyhorn", pokemonId: 111, level: 13 },
+      { pokemon: "graveler", pokemonId: 75, level: 14 },
+      { pokemon: "golem", pokemonId: 76, level: 15 } // Rocazaur representation
     ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡Mis Pokémon tipo Roca te harán morder el polvo!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/brock.png"
+    signaturePokemon: "Rocazaur",
+    trainerClass: "Guardián de Piedra",
+    quote: "La montaña te ha aceptado. Ahora, veamos si también puedes resistir su fuerza.",
+    quoteDefeat: "Has demostrado respeto por la tierra. Esta medalla te pertenece.",
+    quoteBattle: "¡La tierra no se domina, la tierra protege a quienes la respetan!",
+    spriteUrl: "src/assets/images/Lideres/Lider_José-Cristo_Rey.png",
+    mission: "Corazón del Cerro - Reparar deslizamiento, enfrentar Pokémon salvajes tipo Roca/Tierra, rescatar Pokémon atrapado"
   },
   {
     id: 2,
-    name: "Misty",
-    city: "Ciudad Celeste",
-    badge: "Medalla Cascada",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/cascade-badge.png",
+    name: "Manuel",
+    city: "Cali",
+    location: "Parque de la Caña - Acuaparque",
+    badge: "Medalla Oleada Viva",
+    badgeImage: "src/assets/images/Medallas/Medalla_Oleada_Viva.png",
+    badgeImageTransparent: "src/assets/images/Medallas/bottomless/Medalla_Oleada_Viva.png",
     type: "Agua",
+    secondaryType: "Planta",
     difficulty: 2,
     team: [
-      { pokemon: "psyduck", pokemonId: 54, level: 18 },
-      { pokemon: "staryu", pokemonId: 120, level: 17 },
-      { pokemon: "goldeen", pokemonId: 118, level: 17 },
-      { pokemon: "shellder", pokemonId: 90, level: 18 },
-      { pokemon: "staryu", pokemonId: 120, level: 19 },
-      { pokemon: "starmie", pokemonId: 121, level: 21 }
+      { pokemon: "lotad", pokemonId: 270, level: 18 },
+      { pokemon: "psyduck", pokemonId: 54, level: 19 },
+      { pokemon: "tentacool", pokemonId: 72, level: 20 },
+      { pokemon: "lombre", pokemonId: 271, level: 21 },
+      { pokemon: "golduck", pokemonId: 55, level: 22 },
+      { pokemon: "ludicolo", pokemonId: 272, level: 24 } // Funplash representation
     ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡Mi política es atacar con el poder de los Pokémon tipo Agua!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/misty.png"
+    signaturePokemon: "Funplash",
+    trainerClass: "Guardián del Agua y la Diversión",
+    quote: "Las piscinas ya están limpias y el parque vuelve a respirar. Si tú también estás listo para pelear con responsabilidad… entonces demuestra que tu espíritu fluye tan fuerte como el agua clara.",
+    quoteDefeat: "¡Has demostrado que la diversión verdadera también exige respeto! Que esta victoria te recuerde: un buen entrenador cuida el agua antes de usarla.",
+    quoteBattle: "El agua limpia corre más poderosa. Esto no es solo un combate — es proteger el parque.",
+    spriteUrl: "src/assets/images/Lideres/Lider_Manuel-Parque_de_la_Caña.png",
+    mission: "El agua no fluye - Abrir tres válvulas de filtración custodiadas por entrenadores acuáticos"
   },
   {
     id: 3,
-    name: "Lt. Surge",
-    city: "Ciudad Carmín",
-    badge: "Medalla Trueno",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/thunder-badge.png",
+    name: "Rafael",
+    city: "Cali",
+    location: "Plazoleta Jairo Varela",
+    badge: "Medalla Ritmo Pacífico",
+    badgeImage: "src/assets/images/Medallas/Medalla_del_Ritmo_Pacífico.png",
+    badgeImageTransparent: "src/assets/images/Medallas/bottomless/Medalla_del_Ritmo_Pacífico.png",
     type: "Eléctrico",
+    secondaryType: "Normal", // Sonido represented as Normal
     difficulty: 3,
     team: [
-      { pokemon: "voltorb", pokemonId: 100, level: 21 },
-      { pokemon: "pikachu", pokemonId: 25, level: 18 },
-      { pokemon: "magnemite", pokemonId: 81, level: 20 },
-      { pokemon: "voltorb", pokemonId: 100, level: 21 },
-      { pokemon: "magneton", pokemonId: 82, level: 22 },
-      { pokemon: "raichu", pokemonId: 26, level: 24 }
+      { pokemon: "jigglypuff", pokemonId: 39, level: 26 },
+      { pokemon: "voltorb", pokemonId: 100, level: 27 },
+      { pokemon: "electrode", pokemonId: 101, level: 28 },
+      { pokemon: "pikachu", pokemonId: 25, level: 29 },
+      { pokemon: "wigglytuff", pokemonId: 40, level: 30 },
+      { pokemon: "raichu", pokemonId: 26, level: 32 } // Melodión representation
     ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡Mis Pokémon eléctricos te electrocutarán!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/lt-surge.png"
+    signaturePokemon: "Melodión",
+    trainerClass: "Guardián del Ritmo del Valle",
+    quote: "Aquí en Cali, la fuerza no se mide solo en golpes, sino en compás. Si pudiste seguir el ritmo de la Plazoleta, estás listo para enfrentar la música misma.",
+    quoteDefeat: "Qué orgulloso estaría Jairo Varela de vos. Esta Medalla del Ritmo Pacífico te pertenece. Recordá siempre: un verdadero entrenador lucha con armonía antes que con fuerza.",
+    quoteBattle: "La música nunca se rinde, siempre vuelve más fuerte. ¡Melodión, que el Valle escuche nuestro ritmo!",
+    spriteUrl: "src/assets/images/Lideres/Lider_Rafael-Plazoleta_Jairo_Varela.png",
+    mission: "Ensayo en la Plazoleta - Completar minijuego musical, enfrentar Pokémon tipo Sonido/Eléctrico"
   },
   {
     id: 4,
-    name: "Erika",
-    city: "Ciudad Azulona",
-    badge: "Medalla Arcoíris",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rainbow-badge.png",
-    type: "Planta",
+    name: "Sofía",
+    city: "Cali",
+    location: "La Ermita",
+    badge: "Medalla Cielo Sagrado",
+    badgeImage: "src/assets/images/Medallas/El_Cielo_Sagrado.jpg",
+    badgeImageTransparent: "src/assets/images/Medallas/bottomless/El_Cielo_Sagrado-Photoroom.png",
+    type: "Volador",
+    secondaryType: "Eléctrico",
     difficulty: 4,
     team: [
-      { pokemon: "tangela", pokemonId: 114, level: 29 },
-      { pokemon: "weepinbell", pokemonId: 70, level: 27 },
-      { pokemon: "gloom", pokemonId: 44, level: 26 },
-      { pokemon: "bellsprout", pokemonId: 69, level: 24 },
-      { pokemon: "victreebel", pokemonId: 71, level: 29 },
-      { pokemon: "vileplume", pokemonId: 45, level: 30 }
+      { pokemon: "pidgey", pokemonId: 16, level: 32 },
+      { pokemon: "spearow", pokemonId: 21, level: 33 },
+      { pokemon: "pidgeotto", pokemonId: 17, level: 34 },
+      { pokemon: "fearow", pokemonId: 22, level: 35 },
+      { pokemon: "zapdos", pokemonId: 145, level: 38 }, // Cielavión representation
+      { pokemon: "pidgeot", pokemonId: 18, level: 40 }
     ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡La naturaleza y yo somos uno!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/erika.png"
+    signaturePokemon: "Cielavión",
+    trainerClass: "Guardiana del Viento de Cali",
+    quote: "El cielo no pertenece a quien lo mira, sino a quien se atreve a volar. Has seguido las corrientes del viento, has ayudado a quien lo necesitaba y no temiste a la altura ni a la tormenta. Muéstrame si tus alas están listas.",
+    quoteDefeat: "Has enfrentado la tormenta y aún sigues en pie… Eso solo lo logran quienes realmente escuchan al cielo. Acepta la Medalla Cielo Sagrado. Que nunca olvides: la verdadera fuerza es aquella que levanta a los demás.",
+    quoteBattle: "El viento se vuelve más fuerte… No caeremos desde estas alturas. ¡Cielavión, vuela más alto y descarga toda tu convicción!",
+    spriteUrl: "src/assets/images/Lideres/Lider_Sofia-La_Ermita.png",
+    mission: "Auxilio Ascendente - Ayudar a Pokémon ave herido a llegar a la parte alta de la Ermita"
   },
   {
     id: 5,
-    name: "Koga",
-    city: "Ciudad Fucsia",
-    badge: "Medalla Alma",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/soul-badge.png",
-    type: "Veneno",
+    name: "Valeria",
+    city: "Cali",
+    location: "Zoológico de Cali",
+    badge: "Medalla Selva Pacífica",
+    badgeImage: "src/assets/images/Medallas/Medalla_Selva_Pacífica.png",
+    badgeImageTransparent: "src/assets/images/Medallas/bottomless/Medalla_Selva_Pacífica.png",
+    type: "Planta",
+    secondaryType: "Tierra",
     difficulty: 5,
     team: [
-      { pokemon: "koffing", pokemonId: 109, level: 37 },
-      { pokemon: "grimer", pokemonId: 88, level: 37 },
-      { pokemon: "koffing", pokemonId: 109, level: 39 },
-      { pokemon: "muk", pokemonId: 89, level: 40 },
-      { pokemon: "weezing", pokemonId: 110, level: 42 },
-      { pokemon: "weezing", pokemonId: 110, level: 43 }
+      { pokemon: "bulbasaur", pokemonId: 1, level: 38 },
+      { pokemon: "sandslash", pokemonId: 28, level: 39 },
+      { pokemon: "ivysaur", pokemonId: 2, level: 40 },
+      { pokemon: "nidoking", pokemonId: 34, level: 41 },
+      { pokemon: "venusaur", pokemonId: 3, level: 43 },
+      { pokemon: "persian", pokemonId: 53, level: 45 } // Jagualux representation (feline)
     ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡El veneno es mi arte ninja!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/koga.png"
-  },
-  {
-    id: 6,
-    name: "Sabrina",
-    city: "Ciudad Azafrán",
-    badge: "Medalla Pantano",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/marsh-badge.png",
-    type: "Psíquico",
-    difficulty: 6,
-    team: [
-      { pokemon: "abra", pokemonId: 63, level: 38 },
-      { pokemon: "kadabra", pokemonId: 64, level: 37 },
-      { pokemon: "mr-mime", pokemonId: 122, level: 38 },
-      { pokemon: "slowbro", pokemonId: 80, level: 39 },
-      { pokemon: "venomoth", pokemonId: 49, level: 40 },
-      { pokemon: "alakazam", pokemonId: 65, level: 43 }
-    ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡Puedo leer tu mente!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/sabrina.png"
-  },
-  {
-    id: 7,
-    name: "Blaine",
-    city: "Isla Canela",
-    badge: "Medalla Volcán",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/volcano-badge.png",
-    type: "Fuego",
-    difficulty: 7,
-    team: [
-      { pokemon: "growlithe", pokemonId: 58, level: 42 },
-      { pokemon: "vulpix", pokemonId: 37, level: 40 },
-      { pokemon: "ponyta", pokemonId: 77, level: 42 },
-      { pokemon: "ninetales", pokemonId: 38, level: 43 },
-      { pokemon: "rapidash", pokemonId: 78, level: 45 },
-      { pokemon: "arcanine", pokemonId: 59, level: 47 }
-    ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡Mis Pokémon quemarán cualquier desafío!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/blaine.png"
-  },
-  {
-    id: 8,
-    name: "Giovanni",
-    city: "Ciudad Verde",
-    badge: "Medalla Tierra",
-    badgeImage: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/earth-badge.png",
-    type: "Tierra",
-    difficulty: 8,
-    team: [
-      { pokemon: "rhyhorn", pokemonId: 111, level: 45 },
-      { pokemon: "dugtrio", pokemonId: 51, level: 42 },
-      { pokemon: "nidoqueen", pokemonId: 31, level: 44 },
-      { pokemon: "nidoking", pokemonId: 34, level: 45 },
-      { pokemon: "rhydon", pokemonId: 112, level: 48 },
-      { pokemon: "rhydon", pokemonId: 112, level: 50 }
-    ],
-    trainerClass: "Líder de Gimnasio",
-    quote: "¡El poder de la Tierra es supremo!",
-    spriteUrl: "https://img.pokemondb.net/sprites/black-white/normal/giovanni.png"
+    signaturePokemon: "Jagualux",
+    trainerClass: "Guardiana del Valle Vivo",
+    quote: "Aquí no se lucha solo con fuerza, sino con respeto. Si fuiste capaz de ayudar a un pequeño sin esperar nada, estás listo para enfrentar a la selva misma.",
+    quoteDefeat: "Qué orgulloso estaría el bosque de vos. Esta Medalla Selva Pacífica te pertenece. Recordá siempre: un verdadero entrenador protege antes de atacar.",
+    quoteBattle: "La naturaleza siempre se levanta más fuerte. ¡Jagualux, contale quién somos!",
+    spriteUrl: "src/assets/images/Lideres/Lider_Valeria-Zoológico_de_Cali.png",
+    mission: "Rescate en el Río Lili - Resolver puzzle ambiental, enfrentar Pokémon salvajes, liberar Pokémon atrapado"
   }
 ]
 
@@ -190,4 +174,6 @@ export const typeColors: Record<string, string> = {
   'Psíquico': '#F85888',
   'Fuego': '#F08030',
   'Tierra': '#E0C068',
+  'Volador': '#A890F0',
+  'Normal': '#A8A878',
 }
