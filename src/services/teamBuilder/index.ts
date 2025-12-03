@@ -45,3 +45,12 @@ export {
   clearTeamFromLocalStorage,
   hasTeamInLocalStorage,
 } from './teamCache'
+
+// Starter service
+export {
+  GEN1_STARTERS,
+  STARTER_INFO,
+  fetchStarterPokemon,
+  getStarterInfo,
+} from './starterService'
+export type { StarterName, StarterInfo } from './starterService'

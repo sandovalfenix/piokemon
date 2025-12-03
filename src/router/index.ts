@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import BattleView from '@/views/BattleView.vue'
 import TeamBuilderView from '@/views/TeamBuilderView.vue'
+import StarterSelectionView from '@/views/StarterSelectionView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
     {
       path: '/team-builder',
       name: 'team-builder',
+      component: StarterSelectionView,
+    },
+    {
+      path: '/team-builder/full',
+      name: 'team-builder-full',
       component: TeamBuilderView,
     },
   ],

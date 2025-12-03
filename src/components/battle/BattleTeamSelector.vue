@@ -30,7 +30,7 @@ const showTrainer = computed(() => true)
           <p class="trainer-title">Tu equipo Pokémon</p>
         </div>
         <div class="trainer-sprite">
-          <span class="trainer-avatar">👨‍💼</span>
+          <span class="trainer-avatar">AVATAR TRAINER HEREEEE PEDIRLE A JUANJOSE</span>
         </div>
       </div>
     </div>

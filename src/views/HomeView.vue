@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import TradeWithNpc from '@/components/TradeWithNpc.vue'
-import MyTeam from '@/components/MyTeam.vue'
+
 
 const router = useRouter()
 
@@ -17,12 +16,9 @@ function navigateToTeamBuilder() {
 
     <div class="navigation-buttons">
       <button class="nav-button team-builder-button" @click="navigateToTeamBuilder">
-        Team Builder
+Batallas
       </button>
     </div>
-
-    <TradeWithNpc />
-    <MyTeam />
   </main>
 </template>
 

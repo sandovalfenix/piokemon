@@ -403,7 +403,6 @@ watch(() => battleStore.log, () => {
     <!-- T008: Error state when no team available -->
     <div v-if="battleError" class="error-screen">
       <div class="error-content">
-        <div class="error-icon">⚠️</div>
         <h2 class="error-title">¡Error!</h2>
         <p class="error-message">{{ battleError }}</p>
         <button class="error-button" @click="goToTeamBuilder">
@@ -515,7 +514,6 @@ watch(() => battleStore.log, () => {
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  font-family: 'Press Start 2P', 'Courier New', monospace;
 }
 
 .control-area-wrapper {
@@ -552,7 +550,6 @@ watch(() => battleStore.log, () => {
   background: oklch(var(--color-card));
   border: 4px solid oklch(var(--color-border));
   border-radius: 8px;
-  font-family: 'Press Start 2P', 'Courier New', monospace;
 }
 
 .error-content {
