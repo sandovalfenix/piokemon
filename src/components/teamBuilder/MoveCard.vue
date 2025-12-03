@@ -1,5 +1,6 @@
 <!--
-  MoveCard Component
+
+MoveCard Component
   Feature: 003-pokemon-team-builder
   Task: T022
 
