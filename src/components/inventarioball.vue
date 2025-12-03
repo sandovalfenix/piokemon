@@ -67,7 +67,7 @@ function getBallImage(type: string): string {
           
 
           <!-- Carrusel horizontal -->
-          <div ref="carousel" class="flex overflow-x-auto gap-6 px-8 scroll-smooth scrollbar-hide">
+          <div ref="carousel" class="flex overflow-x-auto justify-between gap-6 px-8 scroll-smooth scrollbar-hide">
             <div
               v-for="ball in inventory"
               :key="ball.type"
