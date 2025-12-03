@@ -12,11 +12,10 @@ const emit = defineEmits<{
 }>()
 
 const defaultInventory: BallItem[] = [
-  { type: 'pokeball', label: 'Poké Ball', count: 10 },
+  { type: 'poke-ball', label: 'Poké Ball', count: 10 },
   { type: 'great-ball', label: 'Great Ball', count: 5 },
   { type: 'ultra-ball', label: 'Ultra Ball', count: 2 },
-  { type: 'master-ball', label: 'Master Ball', count: 1 },
-  { type: 'premier-ball', label: 'Premier Ball', count: 3 }
+  { type: 'master-ball', label: 'Master Ball', count: 1 }
 ]
 
 const inventory = ref<BallItem[]>(props.inventory && Array.isArray(props.inventory) ? [...props.inventory] : defaultInventory)
@@ -45,13 +44,6 @@ function cerrar() {
   emit('cerrar')
 }
 
-function scrollLeft() {
-  carousel.value?.scrollBy({ left: -150, behavior: 'smooth' })
-}
-
-function scrollRight() {
-  carousel.value?.scrollBy({ left: 150, behavior: 'smooth' })
-}
 
 // API de imágenes: Pokémon Database
 function getBallImage(type: string): string {
@@ -64,18 +56,15 @@ function getBallImage(type: string): string {
     <Card class="w-full max-w-3xl mx-auto border border-border shadow-xl bg-gradient-to-br from-pink-100 via-indigo-100 to-blue-100">
       <CardHeader class="border-b border-border flex items-center justify-between">
         <CardTitle class="text-2xl font-bold text-foreground">🎒 Mochila de Pokéballs</CardTitle>
-        <button @click="cerrar" class="text-sm text-muted-foreground hover:text-foreground">Cerrar ✕</button>
+        <button
+        @click="cerrar"
+          class="text-sm px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
+        > Cerrar ✕ </button>
       </CardHeader>
 
       <CardContent class="p-4">
         <div class="relative">
-          <!-- Flecha izquierda -->
-          <button
-            @click="scrollLeft"
-            class="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow"
-          >
-            ◀
-          </button>
+          
 
           <!-- Carrusel horizontal -->
           <div ref="carousel" class="flex overflow-x-auto gap-6 px-8 scroll-smooth scrollbar-hide">
@@ -91,13 +80,7 @@ function getBallImage(type: string): string {
             </div>
           </div>
 
-          <!-- Flecha derecha -->
-          <button
-            @click="scrollRight"
-            class="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow"
-          >
-            ▶
-          </button>
+         
         </div>
 
         <!-- Características de la pokéball seleccionada -->
