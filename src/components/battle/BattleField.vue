@@ -17,18 +17,6 @@ interface Props {
 }
 
 const props = defineProps<Props>()
-const {
-  playerPokemon,
-  npcPokemon,
-  playerSprite,
-  enemySprite,
-  playerHpPercent,
-  enemyHpPercent,
-  shakeEffect,
-  isTrainerBattle,
-  rivalRemainingPokemon,
-  npcTeamLength,
-} = props
 
 const getHpColor = (percent: number) => {
   if (percent > 50) return '#10b981'
@@ -43,24 +31,24 @@ const getHpColor = (percent: number) => {
     <div class="enemy-info-panel">
       <div class="info-box enemy-box">
         <div class="name-level-row">
-          <span class="pokemon-name">{{ npcPokemon.name }}</span>
+          <span class="pokemon-name">{{ props.npcPokemon.name }}</span>
         </div>
-        <div class="level-row">:L{{ npcPokemon.level }}</div>
+        <div class="level-row">:L{{ props.npcPokemon.level }}</div>
         <div class="hp-display">
           <span class="hp-text">HP</span>
           <div class="hp-bar-outer">
             <div
               class="hp-bar-inner"
               :style="{
-                width: enemyHpPercent + '%',
-                backgroundColor: getHpColor(enemyHpPercent),
+                width: props.enemyHpPercent + '%',
+                backgroundColor: getHpColor(props.enemyHpPercent),
               }"
             />
           </div>
         </div>
         <!-- Equipo rival disponible -->
-        <div v-if="isTrainerBattle" class="team-indicator">
-          Equipo: {{ rivalRemainingPokemon }}/{{ npcTeamLength }}
+        <div v-if="props.isTrainerBattle" class="team-indicator">
+          Equipo: {{ props.rivalRemainingPokemon }}/{{ props.npcTeamLength }}
         </div>
       </div>
     </div>
@@ -70,23 +58,23 @@ const getHpColor = (percent: number) => {
       <div class="sprite-platform enemy-platform"></div>
       <!-- Loading skeleton for enemy sprite -->
       <div
-        v-if="enemySprite.isLoading.value"
+        v-if="props.enemySprite.isLoading.value"
         class="animate-pulse bg-gray-200 w-40 h-40 rounded-full"
       ></div>
       <!-- Enemy sprite with error fallback -->
       <img
-        v-else-if="!enemySprite.error.value"
-        :src="enemySprite.spriteUrl.value"
-        :alt="npcPokemon.name"
+        v-else-if="!props.enemySprite.error.value"
+        :src="props.enemySprite.spriteUrl.value"
+        :alt="props.npcPokemon.name"
         :class="[
           'pokemon-sprite enemy-sprite',
-          { shake: shakeEffect.active && shakeEffect.target === 'enemy' },
+          { shake: props.shakeEffect.active && props.shakeEffect.target === 'enemy' },
         ]"
       />
       <!-- Error fallback: show Pokemon name -->
       <div v-else class="flex flex-col items-center justify-center w-40 h-40">
         <div class="text-2xl">❓</div>
-        <div class="text-sm text-gray-600">{{ npcPokemon.name }}</div>
+        <div class="text-sm text-gray-600">{{ props.npcPokemon.name }}</div>
       </div>
     </div>
 
@@ -95,23 +83,23 @@ const getHpColor = (percent: number) => {
       <div class="sprite-platform player-platform"></div>
       <!-- Loading skeleton for player sprite -->
       <div
-        v-if="playerSprite.isLoading.value"
+        v-if="props.playerSprite.isLoading.value"
         class="animate-pulse bg-gray-200 w-40 h-40 rounded-full"
       ></div>
       <!-- Player sprite with error fallback -->
       <img
-        v-else-if="!playerSprite.error.value"
-        :src="playerSprite.spriteUrl.value"
-        :alt="playerPokemon.name"
+        v-else-if="!props.playerSprite.error.value"
+        :src="props.playerSprite.spriteUrl.value"
+        :alt="props.playerPokemon.name"
         :class="[
           'pokemon-sprite player-sprite',
-          { shake: shakeEffect.active && shakeEffect.target === 'player' },
+          { shake: props.shakeEffect.active && props.shakeEffect.target === 'player' },
         ]"
       />
       <!-- Error fallback: show Pokemon name -->
       <div v-else class="flex flex-col items-center justify-center w-40 h-40">
         <div class="text-2xl">❓</div>
-        <div class="text-sm text-gray-600">{{ playerPokemon.name }}</div>
+        <div class="text-sm text-gray-600">{{ props.playerPokemon.name }}</div>
       </div>
     </div>
 
@@ -119,30 +107,30 @@ const getHpColor = (percent: number) => {
     <div class="player-info-panel">
       <div class="info-box player-box">
         <div class="name-level-row">
-          <span class="pokemon-name">{{ playerPokemon.name }}</span>
+          <span class="pokemon-name">{{ props.playerPokemon.name }}</span>
         </div>
-        <div class="level-row">:L{{ playerPokemon.level }}</div>
+        <div class="level-row">:L{{ props.playerPokemon.level }}</div>
         <div class="hp-display">
           <span class="hp-text">HP</span>
           <div class="hp-bar-outer">
             <div
               class="hp-bar-inner"
               :style="{
-                width: playerHpPercent + '%',
-                backgroundColor: getHpColor(playerHpPercent),
+                width: props.playerHpPercent + '%',
+                backgroundColor: getHpColor(props.playerHpPercent),
               }"
             />
           </div>
         </div>
-        <div class="hp-numbers">{{ playerPokemon.currentHp }} / {{ playerPokemon.stats.hp }}</div>
+        <div class="hp-numbers">{{ props.playerPokemon.currentHp }} / {{ props.playerPokemon.stats.hp }}</div>
       </div>
     </div>
 
     <!-- StatusPanel -->
     <StatusPanel
-      v-if="playerPokemon && npcPokemon"
-      :player-pokemon="playerPokemon"
-      :enemy-pokemon="npcPokemon"
+      v-if="props.playerPokemon && props.npcPokemon"
+      :player-pokemon="props.playerPokemon"
+      :enemy-pokemon="props.npcPokemon"
       class="status-overlay"
     />
   </div>
