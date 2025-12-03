@@ -33,11 +33,6 @@ export function useTrainerBattle() {
   })
 
   /**
-   * Obtener la recompensa de la batalla
-   */
-  const battleReward = computed(() => currentTrainer.value?.reward ?? 0)
-
-  /**
    * Verificar si el jugador ganó
    */
   const playerWon = computed(() => battleStore.winner === 'player')
@@ -74,7 +69,6 @@ export function useTrainerBattle() {
 
     // Computados
     trainerFullName,
-    battleReward,
     playerWon,
     playerLost,
     rivalRemainingPokemon,
