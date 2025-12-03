@@ -1,0 +1,74 @@
+[
+    {
+        "id": "pokeball",
+        "name": "Poké Ball",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png",
+        "value": 200,
+        "rarity": "common",
+        "type": "ball",
+        "quantity": 1
+    },
+    {
+        "id": "greatball",
+        "name": "Great Ball",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/great-ball.png",
+        "value": 600,
+        "rarity": "rare",
+        "type": "ball",
+        "quantity": 1
+    },
+    {
+        "id": "ultraball",
+        "name": "Ultra Ball",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/ultra-ball.png",
+        "value": 1200,
+        "rarity": "epic",
+        "type": "ball",
+        "quantity": 1
+    },
+    {
+        "id": "masterball",
+        "name": "Master Ball",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png",
+        "value": 100000,
+        "rarity": "legendary",
+        "type": "ball",
+        "quantity": 1
+    },
+    {
+        "id": "potion",
+        "name": "Potion",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/potion.png",
+        "value": 300,
+        "rarity": "common",
+        "type": "medicine",
+        "quantity": 1
+    },
+    {
+        "id": "superpotion",
+        "name": "Super Potion",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-potion.png",
+        "value": 700,
+        "rarity": "rare",
+        "type": "medicine",
+        "quantity": 1
+    },
+    {
+        "id": "hyperpotion",
+        "name": "Hyper Potion",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/hyper-potion.png",
+        "value": 1200,
+        "rarity": "epic",
+        "type": "medicine",
+        "quantity": 1
+    },
+    {
+        "id": "maxpotion",
+        "name": "Max Potion",
+        "image": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/max-potion.png",
+        "value": 2500,
+        "rarity": "mythical",
+        "type": "medicine",
+        "quantity": 1
+    }
+]

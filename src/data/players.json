@@ -1,0 +1,34 @@
+{
+    "local": {
+        "name": "Ash Ketchum",
+        "money": 5000,
+        "inventory": [
+            {
+                "itemId": "pokeball",
+                "quantity": 5
+            },
+            {
+                "itemId": "potion",
+                "quantity": 10
+            },
+            {
+                "itemId": "greatball",
+                "quantity": 2
+            }
+        ]
+    },
+    "remote": {
+        "name": "Gary Oak",
+        "money": 10000,
+        "inventory": [
+            {
+                "itemId": "ultraball",
+                "quantity": 1
+            },
+            {
+                "itemId": "superpotion",
+                "quantity": 5
+            }
+        ]
+    }
+}

@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Custom styles */
+:root {
+    color-scheme: dark;
+}
+
+body {
+    @apply bg-gray-950 text-white;
+}
