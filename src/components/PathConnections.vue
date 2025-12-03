@@ -67,7 +67,7 @@ const paths = computed<Path[]>(() => {
       const nextZone = zoneMap.get(zone.nextZoneId);
       if (nextZone) {
         // Determinar el estado de la línea
-        let state: ZoneState = zone.state === 'completed' ? 'completed' : nextZone.state;
+        const state: ZoneState = zone.state === 'completed' ? 'completed' : nextZone.state;
 
         result.push({
           id: `${zone.id}-${nextZone.id}`,
