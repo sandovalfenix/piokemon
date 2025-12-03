@@ -47,7 +47,8 @@ const initialZones: Zone[] = [
         name: 'Parque de la Caña',
         description: 'El destino final. Demuestra todo lo que has aprendido.',
         position: { x: 600, y: 1450 },
-        state: 'locked',
+        state: 'active',
+        progress: 10,
         requirements: 'Completar "Cristo de Caña"',
     },
 ];

@@ -167,6 +167,7 @@ const handleEnterZone = (zoneId: number) => {
   // Mapeo de zonas a rutas
   const zoneRoutes: Record<number, string> = {
     4: '/zona/gimnasio-cristo-rey', // Cristo de Caña -> Gimnasio
+    5: '/zona/parque-de-la-cana',   // Parque de la Caña -> Parque de la Caña
   };
 
   const route = zoneRoutes[zoneId];
