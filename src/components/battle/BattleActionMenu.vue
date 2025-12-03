@@ -31,7 +31,7 @@ const props = defineProps<Props>()
         </div>
 
         <!-- Botones de acciones en el lado derecho -->
-        <div class="action-panel">
+        <div class="action-panel ">
           <button class="action-btn" @click="$emit('fight')">
             <span class="action-text">FIGHT</span>
           </button>
@@ -79,7 +79,6 @@ const props = defineProps<Props>()
 </template>
 
 <style scoped>
-/* AGRANDADO: Más altura para el panel */
 .control-area {
   height: 100%;
   background: oklch(var(--color-muted));

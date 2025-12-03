@@ -154,19 +154,19 @@ const getHpColor = (percent: number) => {
 }
 
 .enemy-platform {
-  width: 80px;
-  height: 20px;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.2), transparent);
-  top: 42%;
-  right: 22%;
+  width: 240px;
+  height: 60px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.8), transparent);
+  top: 50%;
+  right: 12%;
 }
 
 .player-platform {
-  width: 90px;
-  height: 25px;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.25), transparent);
-  bottom: 22%;
-  left: 12%;
+  width: 220px;
+  height: 48px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.7), transparent);
+  bottom: -2%;
+  left: 16%;
 }
 
 .pokemon-sprite {
@@ -178,16 +178,16 @@ const getHpColor = (percent: number) => {
 .enemy-sprite {
   width: 150px;
   height: 150px;
-  top: 30%;
-  right: 16%;
+  top: 26%;
+  right: 20%;
   animation-delay: 0s;
 }
 
 .player-sprite {
-  width: 180px;
-  height: 180px;
-  bottom: 10%;
-  left: 5%;
+  width: 220px;
+  height: 220px;
+  bottom: -4%;
+  left: 10%;
   animation-delay: 1.5s;
   transform: scaleX(-1);
 }
