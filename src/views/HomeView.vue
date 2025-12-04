@@ -1,93 +1,233 @@
 <script setup lang="ts">
+/**
+ * HomeView - Simplified Lobby
+ * Feature: 006-battle-module-update (Clarification: Lobby Flow Refactor)
+ *
+ * Shows only:
+ * - Welcome text
+ * - "Battle" button (auto-selects next opponent in progression)
+ * - "Wild Encounter" button
+ *
+ * Flow Guard: Checks hasStarter flag before allowing battle
+ */
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { useTeamStore } from '@/stores/team'
+import { useProgressStore } from '@/stores/progress'
+import { getRandomUndefeatedNpc } from '@/data/thematicNpcs'
+import { gymLeaders } from '@/data/gymLeaders'
 
 const router = useRouter()
+const teamStore = useTeamStore()
+const progressStore = useProgressStore()
 
-function navigateToTeamBuilder() {
-  router.push('/team-builder')
+// Modal state for "No Starter" warning
+const showNoStarterModal = ref(false)
+
+/**
+ * Check if player has a starter (hasStarter flag)
+ */
+function hasStarter(): boolean {
+  return teamStore.hasStarter
+}
+
+/**
+ * Navigate to starter selection
+ */
+function goToStarterSelection() {
+  showNoStarterModal.value = false
+  router.push('/starter-selection')
+}
+
+/**
+ * Handle "Battle" button click
+ * Auto-selects next opponent in linear progression
+ */
+function handleBattleClick() {
+  // Flow Guard: Check for starter
+  if (!hasStarter()) {
+    showNoStarterModal.value = true
+    return
+  }
+
+  // Check if game is complete
+  if (progressStore.isGameComplete) {
+    // All gym leaders defeated - maybe show a message?
+    console.log('[HomeView] Game complete - no more story battles')
+    return
+  }
+
+  // Determine next opponent
+  const canChallengeGym = progressStore.canChallengeGymLeader(progressStore.currentGym)
+
+  if (canChallengeGym) {
+    // Challenge Gym Leader
+    const gymLeader = gymLeaders.find(g => g.id === progressStore.currentGym)
+    if (gymLeader) {
+      sessionStorage.setItem('battleTarget', JSON.stringify({
+        type: 'gym-leader',
+        id: gymLeader.id,
+      }))
+      router.push('/battle')
+    }
+  } else {
+    // Challenge random undefeated NPC from current gym's pool
+    const npc = getRandomUndefeatedNpc(progressStore.defeatedTrainers)
+    if (npc) {
+      sessionStorage.setItem('battleTarget', JSON.stringify({
+        type: 'npc',
+        id: npc.id,
+      }))
+      router.push('/battle')
+    }
+  }
+}
+
+/**
+ * Handle "Wild Encounter" button click
+ */
+function handleWildBattleClick() {
+  // Flow Guard: Check for starter
+  if (!hasStarter()) {
+    showNoStarterModal.value = true
+    return
+  }
+
+  sessionStorage.setItem('battleTarget', JSON.stringify({
+    type: 'wild',
+  }))
+  router.push('/battle')
 }
 </script>
 
 <template>
-  <main>
-    <h1>Pokémon MMO</h1>
-    <p>Welcome! Visit the Battle page to test the battle system.</p>
+  <main class="lobby-container">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <h1 class="title">Pokémon MMO</h1>
+      <p class="subtitle">¡Bienvenido, entrenador!</p>
+    </section>
 
-    <div class="navigation-buttons">
-      <button class="nav-button team-builder-button" @click="navigateToTeamBuilder">
-Batallas
-      </button>
-    </div>
+    <!-- Battle Buttons -->
+    <section class="battle-section">
+      <Button
+        class="battle-btn story-btn"
+        size="lg"
+        :disabled="progressStore.isGameComplete"
+        @click="handleBattleClick"
+      >
+        {{ progressStore.isGameComplete ? 'Campeón' : 'Batalla' }}
+      </Button>
+
+      <Button
+        class="pi- battle-btn wild-btn"
+        size="lg"
+        variant="outline"
+        @click="handleWildBattleClick"
+      >
+        Encuentro Salvaje
+      </Button>
+    </section>
+
+    <!-- No Starter Modal -->
+    <Dialog v-model:open="showNoStarterModal">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>¡Necesitas un Pokémon!</DialogTitle>
+          <DialogDescription>
+            Antes de comenzar tu aventura, debes elegir tu Pokémon inicial.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button @click="goToStarterSelection">
+            Elegir Pokémon Inicial
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </main>
 </template>
 
 <style scoped>
-main {
-  text-align: center;
-  padding: 2rem;
-}
-
-.navigation-buttons {
+.lobby-container {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 16px;
-  margin: 24px 0;
+  min-height: 80vh;
+  padding: 2rem;
+  text-align: center;
 }
 
-.nav-button {
-  padding: 16px 32px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  color: #fff;
+.welcome-section {
+  margin-bottom: 3rem;
 }
 
-.nav-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.team-builder-button {
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #666;
 }
 
 .battle-section {
   display: flex;
-  justify-content: space-around;
-  margin-top: 2rem;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
 }
 
-.pokemon-card {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  border-radius: 8px;
-  width: 200px;
+.battle-btn {
+  width: 100%;
+  font-size: 1.25rem;
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-button {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  background-color: #42b983;
+.battle-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.story-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
-button:hover {
-  background-color: #369870;
+.story-btn:disabled {
+  background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+  color: #333;
+  opacity: 1;
 }
 
-.gameOver {
-  background-color: #ffdddd;
-  border: 1px solid #ff5c5c;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  color: #a70000;
+.wild-btn {
+  background: white;
+  color: #2e7d32;
+  border: 2px solid #4caf50;
+}
+
+.wild-btn:hover {
+  background: #e8f5e9;
 }
 </style>

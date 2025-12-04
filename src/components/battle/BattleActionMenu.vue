@@ -8,9 +8,13 @@ interface Props {
   logMessages: string[]
   playerMoves: Move[]
   isAttacking: boolean
+  /** Feature 006: Disable items in battle (always true for now) */
+  disableItems?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  disableItems: true, // Items disabled by default per Feature 006
+})
 
 
 </script>
@@ -35,7 +39,12 @@ const props = defineProps<Props>()
           <button class="action-btn" @click="$emit('fight')">
             <span class="action-text">FIGHT</span>
           </button>
-          <button class="action-btn" @click="$emit('bag')">
+          <button
+            class="action-btn"
+            :disabled="props.disableItems"
+            :class="{ 'opacity-50 cursor-not-allowed': props.disableItems }"
+            @click="!props.disableItems && $emit('bag')"
+          >
             <span class="action-text">BAG</span>
           </button>
           <button class="action-btn" @click="$emit('pokemon')">

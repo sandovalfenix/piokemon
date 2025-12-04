@@ -7,7 +7,6 @@ const selectedLeader = ref<number | null>(null)
 const hoveredLeader = ref<number | null>(null)
 
 const challengeLeader = (gymLeaderId: number) => {
-  console.log('🎯 Desafiando al líder de gimnasio:', gymLeaderId)
   selectedLeader.value = gymLeaderId
 
   // Navegación a batalla con pequeña animación

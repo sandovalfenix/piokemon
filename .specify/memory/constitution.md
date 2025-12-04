@@ -1,30 +1,27 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: 1.4.0 → 1.5.0
-Change Type: MINOR - Enhanced shadcn-vue as mandatory UI component system
+Version: 1.5.0 → 1.6.0
+Change Type: MINOR - Added Tailwind-Only Styling principle
 
 Modified Principles:
-- VI. UI/UX Design System → VI. shadcn-vue Component System (renamed and expanded)
-  - Made shadcn-vue usage NON-NEGOTIABLE for all UI components
-  - Added explicit component installation requirements
-  - Added theme customization guidelines
+- None renamed
 
 Added Sections:
-- None (principle expanded, not new)
+- I. Tailwind-Only Styling (NON-NEGOTIABLE) - All component styles MUST use Tailwind CSS utility classes
 
 Removed Sections:
 - None
 
 Templates Status:
-✅ plan-template.md - No updates required (constitution check covers UI principles)
+✅ plan-template.md - No updates required (constitution check covers styling principle)
 ✅ spec-template.md - No updates required (functional requirements cover component needs)
 ✅ tasks-template.md - No updates required (follows from spec)
 ✅ checklist-template.md - No updates required
 ✅ Constitution updated
 
 Follow-up TODOs:
-- None - shadcn-vue configuration already in place (components.json, SHADCN-SETUP.md)
+- None - Tailwind CSS already configured in project (tailwind.config.js)
 -->
 
 # Pokémon MMO Constitution
@@ -54,7 +51,47 @@ Follow-up TODOs:
 
 ## Core Principles
 
-### I. Component-First Architecture
+### I. Tailwind-Only Styling (NON-NEGOTIABLE)
+
+ALL component styling MUST be implemented using Tailwind CSS utility classes exclusively. This is mandatory for maintaining consistency, reducing CSS complexity, and ensuring rapid development.
+
+**Required Usage**:
+- **All Styles via Utilities**: Every visual style (spacing, colors, typography, layout, effects) MUST use Tailwind utility classes directly in templates
+- **No Custom CSS**: `<style>` blocks are FORBIDDEN except for absolutely unavoidable edge cases (e.g., third-party library overrides) with explicit justification comment
+- **No `@apply` Directive**: Avoid `@apply` in CSS - use utility classes directly in markup
+- **Component Variants**: Use `class-variance-authority` (cva) for component variants, NOT CSS classes
+- **Dynamic Classes**: Use `clsx` or `cn()` helper from `@/lib/utils` for conditional class application
+
+**Tailwind Best Practices**:
+- Use semantic color tokens defined in `tailwind.config.js` (e.g., `bg-primary`, `text-muted-foreground`)
+- Apply responsive design with breakpoint prefixes (`sm:`, `md:`, `lg:`, `xl:`, `2xl:`)
+- Use state variants for interactivity (`hover:`, `focus:`, `active:`, `disabled:`)
+- Leverage Tailwind's spacing scale consistently (e.g., `p-4`, `gap-2`, `m-auto`)
+- Use `@container` queries via Tailwind for component-level responsive design
+
+**Design Language** (applied via Tailwind utilities):
+- Glassy/translucent backgrounds: `backdrop-blur-*`, `bg-*/opacity-*`
+- Neumorphic shadows: `shadow-*` with subtle inset effects
+- Clean layouts: generous whitespace (`space-y-*`, `gap-*`)
+- Subtle animations: `transition-*`, `duration-*`, `ease-*`
+- Color palette: soft, muted tones (`bg-muted`, `text-muted-foreground`) with high-contrast accents
+
+**Forbidden**:
+- `<style>` or `<style scoped>` blocks in Vue components (except documented exceptions)
+- Inline `style=""` attributes (use Tailwind classes instead)
+- External CSS files for component styling
+- CSS-in-JS solutions (styled-components, emotion, etc.)
+- CSS modules
+- SASS/SCSS/LESS preprocessors for component styles
+
+**Exception Process**: If custom CSS is absolutely required (e.g., third-party library conflicts):
+1. Document the specific reason in a comment above the `<style>` block
+2. Minimize scope: use `:deep()` selectors only when necessary
+3. Prefer Tailwind `@layer` directives if extending base styles
+
+**Rationale**: Tailwind's utility-first approach eliminates CSS specificity wars, ensures consistent design tokens, enables rapid prototyping, reduces bundle size through PurgeCSS, and makes styles immediately visible in markup without context-switching to CSS files.
+
+### II. Component-First Architecture
 
 Every feature MUST be implemented as a self-contained Vue component with clear, single responsibility. Components MUST:
 - Have a defined interface (props, events, slots)
@@ -65,7 +102,7 @@ Every feature MUST be implemented as a self-contained Vue component with clear, 
 
 **Rationale**: Ensures modularity, reusability, and prevents tight coupling that hinders refactoring.
 
-### II. Type Safety (NON-NEGOTIABLE)
+### III. Type Safety (NON-NEGOTIABLE)
 
 TypeScript MUST be used for all source code with `strict: true`. All rules:
 - NO `any` types except in extraordinary circumstances with explicit justification comment
@@ -76,7 +113,7 @@ TypeScript MUST be used for all source code with `strict: true`. All rules:
 
 **Rationale**: Catches 80%+ of bugs at compile time, enables confident refactoring, serves as living documentation.
 
-### III. State Management Discipline
+### IV. State Management Discipline
 
 Application state MUST follow clear data flow patterns:
 - Global state ONLY in Pinia stores (no Vue.observable hacks)
@@ -87,7 +124,7 @@ Application state MUST follow clear data flow patterns:
 
 **Rationale**: Predictable state flow prevents debugging nightmares and enables time-travel debugging with Vue devtools.
 
-### IV. Testing Culture
+### V. Testing Culture
 
 Testing requirements by component type:
 - **Stores**: Unit tests REQUIRED covering all actions and state mutations
@@ -106,7 +143,7 @@ Test-first approach ENCOURAGED but not mandatory. All PRs MUST include tests for
 
 **Rationale**: Game logic complexity demands verifiable correctness; tests enable fearless refactoring. Type safety catches integration bugs before runtime. Critical features like battle and team builder require validation to prevent cascading failures.
 
-### V. Performance & Accessibility
+### VI. Performance & Accessibility
 
 Performance targets (MUST NOT regress):
 - Lighthouse Performance score ≥90
@@ -182,7 +219,7 @@ ALL Pokémon game data MUST be sourced from [PokeAPI](https://pokeapi.co/). This
 
 **Rationale**: PokeAPI provides canonical, accurate, and comprehensive Pokémon data. Using a single source ensures consistency, reduces maintenance burden, and guarantees correctness of game mechanics. Hardcoded data drifts from source and introduces bugs.
 
-### VI. shadcn-vue Component System (NON-NEGOTIABLE)
+### IX. shadcn-vue Component System (NON-NEGOTIABLE)
 
 ALL user interface components MUST be built using shadcn-vue as the primary component library. This is mandatory for maintaining consistency, accessibility, and design system coherence.
 
@@ -190,15 +227,7 @@ ALL user interface components MUST be built using shadcn-vue as the primary comp
 - **Primitive Components**: ALL buttons, inputs, dialogs, dropdowns, cards, and form elements MUST use shadcn-vue components from `@/components/ui/`
 - **Component Installation**: New components MUST be added via `npx shadcn-vue@latest add <component>` - never copy/paste from external sources
 - **Import Pattern**: Always import from `@/components/ui/<component>` (e.g., `import { Button } from '@/components/ui/button'`)
-- **Customization**: Direct modification of shadcn-vue components in `src/components/ui/` is ALLOWED and ENCOURAGED to match the project's glassomorphism/neumorphism aesthetic
-
-**Design Language** (applied via Tailwind utilities):
-- Use Tailwind utility classes for all styling (NO custom CSS except when absolutely necessary)
-- Apply glassy, translucent backgrounds with backdrop blur effects (`backdrop-blur-*`, `bg-opacity-*`)
-- Implement soft neumorphic shadows for depth and tactile feel (`shadow-*` with subtle inset effects)
-- Maintain visual simplicity: clean layouts, generous whitespace, subtle animations
-- Color palette: soft, muted tones with high-contrast accents for interactive elements
-- Responsive by default: mobile-first approach using Tailwind breakpoints (`sm:`, `md:`, `lg:`, etc.)
+- **Customization**: Direct modification of shadcn-vue components in `src/components/ui/` is ALLOWED and ENCOURAGED to match the project's design language
 
 **Component Configuration** (defined in `components.json`):
 - Style: New York
@@ -282,9 +311,9 @@ src/
 
 **Style Guidelines**:
 - Use `<script setup lang="ts">` syntax
-- Order: template → script → style
-- Scoped styles only (`<style scoped>`) - prefer Tailwind utilities over custom styles
-- Tailwind classes preferred: use utility-first approach, avoid `@apply` unless absolutely necessary
+- Order: template → script (NO `<style>` blocks - use Tailwind utilities)
+- ALL styling via Tailwind utility classes - `<style>` blocks are FORBIDDEN (see Principle I)
+- Use `cn()` helper from `@/lib/utils` for conditional class application
 - ESLint/Prettier enforced (run `npm run lint` before commit)
 - Max file length: 300 lines (split if exceeded)
 
@@ -378,4 +407,4 @@ MUST pass before merge:
 
 ---
 
-**Version**: 1.5.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-12-02
+**Version**: 1.6.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-12-03

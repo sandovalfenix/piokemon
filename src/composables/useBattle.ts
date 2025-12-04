@@ -44,11 +44,11 @@ export function useBattle() {
   // Verifica si puede cambiar Pokémon
   const canSwitch = computed(() => battleConfig.value.canSwitch);
 
-  // Obtiene la música de batalla
-  const battleMusic = computed(() => battleConfig.value.musicTrack);
+  // Obtiene la música de batalla (removed - musicTrack not in BattleConfig)
+  const battleMusic = computed(() => 'battle-theme');
 
-  // Obtiene el fondo de batalla
-  const battleBackground = computed(() => battleConfig.value.background);
+  // Obtiene el fondo de batalla (removed - background not in BattleConfig)
+  const battleBackground = computed(() => 'default-bg');
 
   return {
     currentBattleType,

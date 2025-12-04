@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { useBattleStore } from '@/stores/battle'
-import type { Trainer } from '@/data/gymLadders'
+import type { Trainer } from '@/data/trainers'
 import type { Pokemon } from '@/domain/battle/engine/entities'
 
 /**

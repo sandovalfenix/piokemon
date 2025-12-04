@@ -40,6 +40,7 @@ const typeColor = computed(() => {
   const type = props.pokemon.types[0]?.toLowerCase() || 'normal'
   const colors: Record<string, string> = {
     grass: 'bg-green-500',
+    poison: 'bg-purple-500',
     fire: 'bg-orange-500',
     water: 'bg-blue-500',
     normal: 'bg-gray-500',
@@ -110,27 +111,6 @@ function handleSelect() {
         {{ starterInfo.description }}
       </p>
 
-      <!-- Stats Preview -->
-      <div class="w-full bg-black/20 rounded-lg p-3 mb-4">
-        <div class="grid grid-cols-2 gap-2 text-xs text-white/90">
-          <div class="flex justify-between">
-            <span>HP:</span>
-            <span class="font-bold">{{ pokemon.stats.hp }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>ATK:</span>
-            <span class="font-bold">{{ pokemon.stats.attack }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>DEF:</span>
-            <span class="font-bold">{{ pokemon.stats.defense }}</span>
-          </div>
-          <div class="flex justify-between">
-            <span>SPD:</span>
-            <span class="font-bold">{{ pokemon.stats.speed }}</span>
-          </div>
-        </div>
-      </div>
 
       <!-- Select Button -->
       <Button

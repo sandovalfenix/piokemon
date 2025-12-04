@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import BattleView from '@/views/BattleView.vue'
 import TeamBuilderView from '@/views/TeamBuilderView.vue'
 import StarterSelectionView from '@/views/StarterSelectionView.vue'
+import GymSelection from '@/views/GymSelection.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,23 +21,21 @@ const router = createRouter({
     {
       path: '/team-builder',
       name: 'team-builder',
+      component: TeamBuilderView,
+    },
+    {
+      path: '/starter-selection',
+      name: 'starter-selection',
       component: StarterSelectionView,
     },
     {
-      path: '/team-builder/full',
-      name: 'team-builder-full',
-      component: TeamBuilderView,
+      path: '/gyms',
+      name: 'gyms',
+      component: GymSelection,
     },
-      {
-    path: '/gyms',
-    name: 'gyms',
-    component: GymSelection
-  }
-
   ],
 })
 
 export default router
-import GymSelection from '@/views/GymSelection.vue'
 
 

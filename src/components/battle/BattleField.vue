@@ -140,7 +140,7 @@ const getHpColor = (percent: number) => {
 .battlefield {
   flex: 1;
   position: relative;
-  background-image: url('@/assets/battlefield.png');
+  background-image: url('@/assets/Images/battle/battlefield.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

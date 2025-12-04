@@ -92,7 +92,7 @@ export async function fetchPokemon(
     return pokemonCache.get(id)!
   }
 
-  
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
@@ -218,8 +218,10 @@ export async function fetchPokemonBatch(ids: number[]): Promise<Pokemon[]> {
  * User Story 4: Start Battle with Custom Team
  *
  * Maps internal TeamMember format → battle engine Pokemon format
- * HP calculation: ((2 * base + 31 + (EV / 4)) * level / 100) + level + 10
- * For simplicity, assuming max IVs (31) and zero EVs, level 50
+ * Uses Gen III+ stat formula with IVs=0, EVs=0 per spec (no IV/EV system)
+ *
+ * HP Formula: floor((2 * base + IV) * level / 100) + level + 10
+ * Other Stats: floor((2 * base + IV) * level / 100) + 5
  *
  * @param teamMember - TeamMember from team builder
  * @returns Pokemon in battle engine format
@@ -229,32 +231,50 @@ export function transformTeamMemberToBattlePokemon(
 ): import('@/domain/battle/engine/entities').Pokemon {
   const { pokemon, selectedMoves, level } = teamMember
 
-  // Calculate HP using Pokemon formula (simplified for level 50)
-  // HP = ((2 * base + 31 + (EV / 4)) * level / 100) + level + 10
-  // Assuming max IVs (31) and zero EVs:
-  // HP = ((2 * base + 31) * 50 / 100) + 50 + 10
-  const maxHp = Math.floor(((2 * pokemon.stats.hp + 31) * level) / 100) + level + 10
+  // IVs and EVs are 0 per spec (no IV/EV system)
+  const iv = 0
+  const ev = 0
 
-  // Map team builder Move → battle Move (simplified for MVP)
-  // Battle engine only supports 'physical' | 'special', convert 'status' to 'special'
-  const battleMoves: import('@/domain/battle/engine/entities').Move[] = selectedMoves.map(
-    (move) => {
-      const rawCategory = move.category.toLowerCase()
-      // Status moves are treated as 'special' for battle engine compatibility
-      const category: 'physical' | 'special' = rawCategory === 'status' ? 'special' : (rawCategory as 'physical' | 'special')
+  // Calculate stats using Gen III+ formula
+  // HP = floor((2 * base + IV + floor(EV/4)) * level / 100) + level + 10
+  const maxHp = Math.floor(((2 * pokemon.stats.hp + iv + Math.floor(ev / 4)) * level) / 100) + level + 10
 
-      return {
-        id: move.id.toString(),
-        name: move.name,
-        type: move.type as import('@/domain/battle/engine/entities').Type,
-        power: move.power ?? 0, // Status moves have null power
-        accuracy: move.accuracy ?? 100, // Accuracy-ignoring moves (null) → 100
-        category,
-      }
-    }
+  // Other stats = floor((2 * base + IV + floor(EV/4)) * level / 100) + 5
+  const calcStat = (base: number) =>
+    Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100) + 5
+
+  // Filter out status moves - only Physical and Special are allowed in battle
+  // Per Feature 006 spec: status moves are excluded from battle
+  const damagingMoves = selectedMoves.filter((move) => {
+    const category = move.category.toLowerCase()
+    return category === 'physical' || category === 'special'
+  })
+
+  // Map team builder Move → battle Move
+  const battleMoves: import('@/domain/battle/engine/entities').Move[] = damagingMoves.map(
+    (move) => ({
+      id: move.id.toString(),
+      name: move.name,
+      type: move.type as import('@/domain/battle/engine/entities').Type,
+      power: move.power ?? 40, // Fallback power if null
+      accuracy: move.accuracy ?? 100,
+      category: move.category.toLowerCase() as 'physical' | 'special',
+    })
   )
 
-  // Map team builder Pokemon → battle Pokemon
+  // Fallback: if no damaging moves, add Tackle
+  if (battleMoves.length === 0) {
+    battleMoves.push({
+      id: 'tackle',
+      name: 'Tackle',
+      type: 'Normal',
+      power: 40,
+      accuracy: 100,
+      category: 'physical',
+    })
+  }
+
+  // Map team builder Pokemon → battle Pokemon with calculated stats
   return {
     id: pokemon.id.toString(),
     name: pokemon.name,
@@ -262,11 +282,11 @@ export function transformTeamMemberToBattlePokemon(
     level,
     stats: {
       hp: maxHp,
-      atk: pokemon.stats.attack,
-      def: pokemon.stats.defense,
-      spAtk: pokemon.stats.spAttack,
-      spDef: pokemon.stats.spDefense,
-      speed: pokemon.stats.speed,
+      atk: calcStat(pokemon.stats.attack),
+      def: calcStat(pokemon.stats.defense),
+      spAtk: calcStat(pokemon.stats.spAttack),
+      spDef: calcStat(pokemon.stats.spDefense),
+      speed: calcStat(pokemon.stats.speed),
     },
     currentHp: maxHp,
     moves: battleMoves,

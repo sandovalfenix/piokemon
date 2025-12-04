@@ -49,7 +49,6 @@ import { useTrainerBattle } from '../composables/useTrainerBattle'
 import { useAudio } from '../composables/useAudio'
 import { useSpriteLoader } from '../composables/useSpriteLoader'
 import { itemService } from '@/services/itemService'
-import { SAMPLE_NPC } from '@/data/pokemon'
 import { createHowlerAudio, DEFAULT_BATTLE_SOUNDS } from '@/services/audio/howlerAudio'
 import { BattleType } from '@/data/battleTypes'
 import { gymLeaders } from '@/data/gymLeaders'
@@ -128,7 +127,6 @@ const getPlayerTeam = computed(() => {
     const convertedTeam = teamStore.roster.map(convertTeamMemberToBattlePokemon)
     // Validate that at least the lead Pokémon has moves
     if (convertedTeam[0] && convertedTeam[0].moves.length > 0) {
-      console.log('[BattleScreen] Using Team Builder team:', convertedTeam.length, 'Pokemon')
       return convertedTeam
     }
     console.warn('[BattleScreen] Team Builder team invalid (no moves), aborting battle start')
@@ -167,6 +165,9 @@ const waitingForTrainerSwitch = ref(false)
 const isAttacking = ref(false)
 const isBattleReady = ref(false) // Track if battle is fully initialized
 const battleError = ref<string | null>(null) // T008: Track battle initialization errors
+
+// Trainer waiting screen state
+const waitingTrainer = ref<import('@/data/trainersData').TrainerData | null>(null)
 
 // Watch para sonidos sincronizados
 watch(
@@ -327,7 +328,8 @@ const handleTrainerPokemonSelected = async (pokemonIndex: number) => {
   if (selectedPokemon) {
     battleStore.currentNpcIndex = pokemonIndex
     battleStore.npc = selectedPokemon
-    battleStore.log.push(`¡${waitingTrainer.value.name} envió a ${selectedPokemon.name}!`)
+    const trainerName = waitingTrainer.value?.name ?? 'El rival'
+    battleStore.log.push(`¡${trainerName} envió a ${selectedPokemon.name}!`)
 
     waitingForTrainerSwitch.value = false
     waitingTrainer.value = null
@@ -397,10 +399,17 @@ onMounted(async () => {
     battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
   } else {
     // Batalla salvaje - usar equipo del jugador
+    // Feature 006: Wild battle team should be hydrated externally in BattleView
     currentBattleType.value = BattleType.WILD
-    const npcTeamToUse = [structuredClone(SAMPLE_NPC)]
 
-    await battleStore.startBattle(team, npcTeamToUse)
+    // The NPC team should already be set up by BattleView before this component loads
+    // If no trainer team provided, we expect the battle to be initialized via props.playerTeam
+    if (!props.playerTeam || props.playerTeam.length === 0) {
+      console.error('[BattleScreen] Wild battle requires pre-hydrated teams')
+      return
+    }
+
+    await battleStore.startBattle(team, props.playerTeam)
     battleStore.log.push('¡Un Pokémon salvaje apareció!')
     battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
   }
@@ -431,11 +440,17 @@ watch(() => battleStore.log, () => {
     if (battleStore.npcTeamRemaining > 0 && battleStore.winner === null) {
       // Mostrar equipo del enemigo con imágenes
       setTimeout(() => {
-        const randomTrainer = getRandomTrainer()
-        waitingTrainer.value = randomTrainer
+        // Use current battle opponent info for trainer display
+        const trainerData: import('@/data/trainersData').TrainerData = {
+          id: String(battleStore.opponentId ?? 'trainer'),
+          name: battleStore.opponentName ?? 'Entrenador',
+          description: '¡Eligiendo su próximo Pokémon!',
+          imageUrl: '/images/trainers/default.png',
+        }
+        waitingTrainer.value = trainerData
         waitingForTrainerSwitch.value = true
         currentView.value = 'enemy-team-switch'
-        battleStore.log.push(`¡${randomTrainer.name} elige su próximo Pokémon!`)
+        battleStore.log.push(`¡${trainerData.name} elige su próximo Pokémon!`)
       }, 1000)
     }
   }

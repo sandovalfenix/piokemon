@@ -8,9 +8,9 @@
 import { ref, computed, watch } from 'vue'
 import type { Pokemon, Move } from '@/models/teamBuilder'
 import { fetchMovesBatch } from '@/services/teamBuilder'
-import PhysicalIcon from '@/assets/Battle/Physical.png'
-import SpecialIcon from '@/assets/Battle/Special.png'
-import StatusIcon from '@/assets/Battle/Status.png'
+import PhysicalIcon from '@/assets/Images/Battle/Physical.png'
+import SpecialIcon from '@/assets/Images/Battle/Special.png'
+import StatusIcon from '@/assets/Images/Battle/Status.png'
 
 interface Props {
   pokemon: Pokemon | null

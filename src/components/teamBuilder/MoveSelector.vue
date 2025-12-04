@@ -83,7 +83,6 @@ function handleAddMove(move: Move): void {
 
   selectedMoves.value.push(move)
   emit('moves-selected', selectedMoves.value)
-  console.log(`[MoveSelector] Added move: ${move.name} (${selectedMoves.value.length}/4)`)
 }
 
 /**
@@ -94,7 +93,6 @@ function handleRemoveMove(move: Move): void {
   if (index !== -1) {
     selectedMoves.value.splice(index, 1)
     emit('moves-selected', selectedMoves.value)
-    console.log(`[MoveSelector] Removed move: ${move.name} (${selectedMoves.value.length}/4)`)
   }
 }
 
@@ -104,7 +102,6 @@ function handleRemoveMove(move: Move): void {
 function clearSelection(): void {
   selectedMoves.value = []
   emit('moves-selected', [])
-  console.log('[MoveSelector] Cleared all selected moves')
 }
 
 /**

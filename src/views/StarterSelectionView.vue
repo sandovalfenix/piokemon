@@ -15,6 +15,12 @@ import { useTeamStore } from '@/stores/team'
 import { fetchStarterPokemon } from '@/services/teamBuilder/starterService'
 import { fetchMovesBatch } from '@/services/teamBuilder/moveService'
 import type { Pokemon, Move, TeamMember } from '@/models/teamBuilder'
+import Bulbasaur from '@/assets/images/pokemon/bulbasaur.png'
+import Charmander from '@/assets/images/pokemon/charmander.png'
+import Squirtle from '@/assets/images/pokemon/squirtle.png'
+import Pikachu from '@/assets/images/pokemon/pikachu.png'
+import ProfesorOak from '@/assets/images/ProfesorOak.png'
+
 
 const router = useRouter()
 const teamStore = useTeamStore()
@@ -78,7 +84,7 @@ async function confirmSelection() {
 
   try {
     // Fetch the first 4 moves for the starter
-    const moveIds = selectedStarter.value.moves.slice(0, 4).map(m => m.id)
+    const moveIds = selectedStarter.value.moves.slice(0, 4).map((m) => m.id)
     const moves = await fetchMovesBatch(moveIds)
 
     // Filter out any null results
@@ -108,6 +114,9 @@ async function confirmSelection() {
     teamStore.addPokemon(teamMember)
     teamStore.saveTeam()
 
+    // Feature 006: Set hasStarter flag
+    teamStore.setHasStarter(true)
+
     // Navigate to home or team builder
     router.push({ name: 'home' })
   } catch (err) {
@@ -127,9 +136,17 @@ function skipIntro() {
 
 /**
  * Check if user already has a team
+ * Feature 006: Also check hasStarter flag
  */
 onMounted(async () => {
   teamStore.loadTeam()
+
+  // Feature 006: If player already has starter, redirect to home with message
+  if (teamStore.hasStarter) {
+    console.log('[StarterSelection] Player already has starter, redirecting...')
+    router.replace({ name: 'home' })
+    return
+  }
 
   // If user already has a team, redirect to home
   if (roster.value.length > 0) {
@@ -146,45 +163,34 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden"
+  >
     <!-- Animated Background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
       <!-- Floating Pokeballs -->
       <div class="absolute top-20 left-10 w-16 h-16 opacity-10 animate-float">
-        <svg viewBox="0 0 100 100" class="w-full h-full">
-          <circle cx="50" cy="50" r="48" fill="red" />
-          <rect x="2" y="47" width="96" height="6" fill="black" />
-          <circle cx="50" cy="50" r="48" fill="none" stroke="black" stroke-width="4" />
-          <circle cx="50" cy="50" r="16" fill="white" stroke="black" stroke-width="4" />
-          <circle cx="50" cy="50" r="8" fill="white" stroke="black" stroke-width="2" />
-          <path d="M2 50 Q 50 30 98 50" fill="red" />
-        </svg>
+        <img :src="Bulbasaur" class="w-full h-full" />
       </div>
-      <div class="absolute top-40 right-20 w-24 h-24 opacity-10 animate-float-delayed">
-        <svg viewBox="0 0 100 100" class="w-full h-full">
-          <circle cx="50" cy="50" r="48" fill="red" />
-          <rect x="2" y="47" width="96" height="6" fill="black" />
-          <circle cx="50" cy="50" r="48" fill="none" stroke="black" stroke-width="4" />
-          <circle cx="50" cy="50" r="16" fill="white" stroke="black" stroke-width="4" />
-          <circle cx="50" cy="50" r="8" fill="white" stroke="black" stroke-width="2" />
-          <path d="M2 50 Q 50 30 98 50" fill="red" />
-        </svg>
+      <div class="absolute top-40 right-14  w-24 h-24 opacity-10 animate-float-delayed">
+        <img :src="Charmander" class="w-full h-full" />
       </div>
-      <div class="absolute bottom-32 left-1/4 w-20 h-20 opacity-10 animate-float">
-        <svg viewBox="0 0 100 100" class="w-full h-full">
-          <circle cx="50" cy="50" r="48" fill="red" />
-          <rect x="2" y="47" width="96" height="6" fill="black" />
-          <circle cx="50" cy="50" r="48" fill="none" stroke="black" stroke-width="4" />
-          <circle cx="50" cy="50" r="16" fill="white" stroke="black" stroke-width="4" />
-          <circle cx="50" cy="50" r="8" fill="white" stroke="black" stroke-width="2" />
-          <path d="M2 50 Q 50 30 98 50" fill="red" />
-        </svg>
+      <div class="absolute bottom-32 left-10 w-20 h-20 opacity-10 animate-float">
+        <img :src="Squirtle" class="w-full h-full" />
+      </div>
+
+      <div class="absolute bottom-40 right-14 w-20 h-20 opacity-10 animate-float">
+        <img :src="Pikachu" class="w-full h-full" />
       </div>
 
       <!-- Sparkles -->
-      <div class="absolute top-1/3 left-1/3 w-2 h-2 bg-yellow-300 rounded-full animate-sparkle" />
-      <div class="absolute top-1/4 right-1/3 w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-delayed" />
-      <div class="absolute bottom-1/3 right-1/4 w-2 h-2 bg-yellow-300 rounded-full animate-sparkle" />
+      <div class="absolute top-1/3 left-10 w-2 h-2 bg-yellow-300 rounded-full animate-sparkle" />
+      <div
+        class="absolute top-1/4 right-16 w-2 h-2 bg-yellow-300 rounded-full animate-sparkle-delayed"
+      />
+      <div
+        class="absolute bottom-1/3 right-14 w-2 h-2 bg-yellow-300 rounded-full animate-sparkle"
+      />
     </div>
 
     <!-- Intro Screen -->
@@ -204,8 +210,10 @@ onMounted(async () => {
         <!-- Professor Welcome -->
         <div class="text-center animate-fade-in-up">
           <div class="mb-8">
-            <div class="w-32 h-32 mx-auto bg-linear-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl">
-              <span class="text-6xl">👨‍🔬</span>
+            <div
+              class="w-32 h-32 mx-auto bg-linear-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl"
+            >
+              <img class="" :src="ProfesorOak"/>
             </div>
           </div>
 
@@ -226,28 +234,24 @@ onMounted(async () => {
     </Transition>
 
     <!-- Main Content -->
-    <div
-      v-if="!showIntro"
-      class="relative z-10 container mx-auto px-4 py-8"
-    >
+    <div v-if="!showIntro" class="relative z-10 container mx-auto px-4 py-8">
       <!-- Header -->
       <header class="text-center mb-12">
         <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg">
           Choose Your Partner!
         </h1>
         <p class="text-xl text-slate-300 max-w-2xl mx-auto">
-          These are the three Pokémon I have prepared for new trainers.
-          Choose wisely - this Pokémon will be your loyal companion!
+          These are the three Pokémon I have prepared for new trainers. Choose wisely - this Pokémon
+          will be your loyal companion!
         </p>
       </header>
 
       <!-- Loading State -->
-      <div
-        v-if="isLoading"
-        class="flex flex-col items-center justify-center py-20"
-      >
+      <div v-if="isLoading" class="flex flex-col items-center justify-center py-20">
         <div class="relative">
-          <div class="w-24 h-24 border-4 border-slate-600 border-t-yellow-400 rounded-full animate-spin" />
+          <div
+            class="w-24 h-24 border-4 border-slate-600 border-t-yellow-400 rounded-full animate-spin"
+          />
           <div class="absolute inset-0 flex items-center justify-center">
             <span class="text-3xl">🔴</span>
           </div>
@@ -256,10 +260,7 @@ onMounted(async () => {
       </div>
 
       <!-- Error State -->
-      <div
-        v-else-if="error"
-        class="flex flex-col items-center justify-center py-20"
-      >
+      <div v-else-if="error" class="flex flex-col items-center justify-center py-20">
         <div class="text-6xl mb-4">😢</div>
         <p class="text-red-400 text-lg mb-4">{{ error }}</p>
         <Button
@@ -272,10 +273,7 @@ onMounted(async () => {
       </div>
 
       <!-- Starter Selection Grid -->
-      <div
-        v-else
-        class="space-y-12"
-      >
+      <div v-else class="space-y-12">
         <!-- Pokemon Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
           <StarterPokemonCard
@@ -298,12 +296,11 @@ onMounted(async () => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
           >
-            <div
-              v-if="selectedStarter"
-              class="text-center"
-            >
+            <div v-if="selectedStarter" class="text-center">
               <p class="text-slate-300 mb-4">
-                You selected <span class="text-yellow-400 font-bold">{{ selectedStarter.name }}</span>!
+                You selected
+                <span class="text-yellow-400 font-bold">{{ selectedStarter.name }}</span
+                >!
               </p>
 
               <Button
@@ -313,38 +310,46 @@ onMounted(async () => {
                 @click="confirmSelection"
               >
                 <span v-if="isConfirming" class="flex items-center gap-2">
-                  <span class="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  <span
+                    class="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"
+                  />
                   Starting Adventure...
                 </span>
-                <span v-else class="flex items-center gap-2">
-                   Begin Adventure!
-                </span>
+                <span v-else class="flex items-center gap-2"> Begin Adventure! </span>
               </Button>
             </div>
           </Transition>
 
-          <p
-            v-if="!selectedStarter"
-            class="text-slate-400 animate-pulse"
-          >
+          <p v-if="!selectedStarter" class="text-slate-400 animate-pulse">
             Click on a Pokémon to select it
           </p>
         </div>
       </div>
-
     </div>
   </div>
 </template>
 
 <style>
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(10deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
 }
 
 @keyframes sparkle {
-  0%, 100% { opacity: 0; transform: scale(0); }
-  50% { opacity: 1; transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes fade-in-up {

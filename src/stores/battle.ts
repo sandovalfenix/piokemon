@@ -7,9 +7,11 @@ import { createSeededRng } from '@/domain/battle/calc/rng'
 import { createStrategicAI } from '@/domain/battle/ai/strategicAI'
 import { computeTypeMultiplier } from '@/domain/battle/calc/typeChart'
 import { calculateDamage } from '@/domain/battle/calc/damage'
-import { SAMPLE_NPC } from '@/data/pokemon'
+import { calculateScaledLevel } from '@/domain/battle/calc/levelScaling'
+import { filterUsableMoves } from '@/domain/battle/engine/moveFilter'
 import { useTypeChartStore } from './typeChart'
 import { useTeamStore } from './team'
+import { useProgressStore } from './progress'
 import { validatePokemonType } from '@/services/typeChart/typeChartService'
 import { transformTeamMemberToBattlePokemon } from '@/services/teamBuilder'
 import { applyMoveEffect, type BattlePokemon } from '@/services/battle/battleEffectService'
@@ -23,6 +25,40 @@ function validatePokemonTypes(pokemon: Pokemon, typeChart: Record<string, Record
       console.warn(`[BattleStore] Invalid type "${type}" found in ${pokemon.name}, using fallback data`)
     }
   }
+}
+
+/**
+ * Scale Pokemon stats based on level difference
+ * Uses simplified stat scaling formula
+ */
+function scaleStatsForLevel(pokemon: Pokemon, newLevel: number): Pokemon {
+  const originalLevel = pokemon.level
+  if (originalLevel === newLevel) return pokemon
+
+  // Scale factor based on level ratio (simplified formula)
+  const scaleFactor = newLevel / originalLevel
+
+  return {
+    ...pokemon,
+    level: newLevel,
+    stats: {
+      hp: Math.max(1, Math.floor(pokemon.stats.hp * scaleFactor)),
+      atk: Math.max(1, Math.floor(pokemon.stats.atk * scaleFactor)),
+      def: Math.max(1, Math.floor(pokemon.stats.def * scaleFactor)),
+      spAtk: Math.max(1, Math.floor(pokemon.stats.spAtk * scaleFactor)),
+      spDef: Math.max(1, Math.floor(pokemon.stats.spDef * scaleFactor)),
+      speed: Math.max(1, Math.floor(pokemon.stats.speed * scaleFactor)),
+    },
+    currentHp: Math.max(1, Math.floor(pokemon.stats.hp * scaleFactor)),
+  }
+}
+
+/**
+ * Get the highest level among opponent team
+ */
+function getOpponentMaxLevel(team: Pokemon[]): number {
+  if (team.length === 0) return 1
+  return Math.max(...team.map(p => p.level))
 }
 
 const PLACEHOLDER_MOVE: Move = {
@@ -62,20 +98,37 @@ function clonePokemon(pokemon: Pokemon): Pokemon {
   }
 }
 
+import type { OpponentType } from '@/models/battleOutcome'
+
+// Extended battle state with opponent tracking for Feature 006
+interface ExtendedBattleState extends BattleState {
+  seed?: string | number
+  ai: AI
+  /** Feature 006: Track opponent type for victory/defeat handling */
+  opponentType?: OpponentType
+  /** Feature 006: Track opponent ID for progress updates */
+  opponentId?: string | number
+  /** Feature 006: Opponent display name */
+  opponentName?: string
+}
+
 export const useBattleStore = defineStore('battle', {
-  state: (): BattleState & { seed?: string | number; ai: AI } => ({
+  state: (): ExtendedBattleState => ({
     turn: 1,
     phase: 'select',
     player: createPlaceholderPokemon(),
-    npc: clonePokemon(SAMPLE_NPC),
+    npc: createPlaceholderPokemon(),
     playerTeam: [],
-    npcTeam: [clonePokemon(SAMPLE_NPC)],
+    npcTeam: [],
     currentPlayerIndex: 0,
     currentNpcIndex: 0,
     winner: null,
     log: [],
     seed: undefined,
     ai: createStrategicAI(),
+    opponentType: undefined,
+    opponentId: undefined,
+    opponentName: undefined,
   }),
 
   getters: {
@@ -100,7 +153,7 @@ export const useBattleStore = defineStore('battle', {
       }
 
       // Deep clone teams to ensure we have fresh Pokemon with full HP
-      const playerTeamClone = playerTeam.map(p => clonePokemon(p))
+      let playerTeamClone = playerTeam.map(p => clonePokemon(p))
       const npcTeamClone = npcTeam.map(p => clonePokemon(p))
 
       if (playerTeamClone.length === 0) {
@@ -109,6 +162,24 @@ export const useBattleStore = defineStore('battle', {
       if (npcTeamClone.length === 0) {
         throw new Error('Cannot start battle: NPC team is empty')
       }
+
+      // Feature 006: Apply dynamic level scaling
+      // Player Pokemon scale to (opponent max level - 2)
+      const opponentMaxLevel = getOpponentMaxLevel(npcTeamClone)
+      const scaledPlayerLevel = calculateScaledLevel(opponentMaxLevel)
+
+      playerTeamClone = playerTeamClone.map(p => {
+        const scaled = scaleStatsForLevel(p, scaledPlayerLevel)
+        // Filter out status moves (only Physical/Special allowed)
+        scaled.moves = filterUsableMoves(scaled.moves)
+        // Ensure at least one move (fallback to Struggle-like move)
+        if (scaled.moves.length === 0) {
+          scaled.moves = [PLACEHOLDER_MOVE]
+        }
+        return scaled
+      })
+
+      console.log(`[BattleStore] Level scaling applied: opponent max ${opponentMaxLevel} -> player scaled to ${scaledPlayerLevel}`)
 
       // Validate all Pokemon types
       const allPokemon = [...playerTeamClone, ...npcTeamClone]
@@ -136,6 +207,8 @@ export const useBattleStore = defineStore('battle', {
      * Feature: 003-pokemon-team-builder
      * User Story 4: Start Battle with Custom Team
      *
+     * Updated Feature 006: Apply dynamic level scaling
+     *
      * @param seed - Optional RNG seed for deterministic battles
      * @throws Error if team is empty or lead Pokemon has no moves
      */
@@ -152,7 +225,7 @@ export const useBattleStore = defineStore('battle', {
         throw new Error('Cannot start battle: team is empty')
       }
 
-      const convertedTeam = teamStore.roster
+      let convertedTeam = teamStore.roster
         .map(transformTeamMemberToBattlePokemon)
         .map(pokemon => {
           // Manual deep clone to avoid structuredClone issues with complex objects
@@ -172,7 +245,39 @@ export const useBattleStore = defineStore('battle', {
         throw new Error('Cannot start battle: team is empty')
       }
 
-      const npcTeam = [clonePokemon(SAMPLE_NPC)]
+      // Feature 006: This method is deprecated
+      // Battles should now be initialized via battleInitService which uses PokéAPI
+      // This fallback creates a placeholder battle for testing only
+      console.warn('[BattleStore] startBattleWithCustomTeam is deprecated. Use battleInitService instead.')
+
+      const placeholderNpc: Pokemon = {
+        id: 'placeholder-opponent',
+        name: 'Entrenador',
+        types: ['Normal'],
+        level: 5,
+        stats: { hp: 50, atk: 50, def: 50, spAtk: 50, spDef: 50, speed: 50 },
+        currentHp: 50,
+        moves: [PLACEHOLDER_MOVE],
+      }
+      const npcTeam = [placeholderNpc]
+
+      // Feature 006: Apply dynamic level scaling
+      // Player Pokemon scale to (opponent max level - 2)
+      const opponentMaxLevel = getOpponentMaxLevel(npcTeam)
+      const scaledPlayerLevel = calculateScaledLevel(opponentMaxLevel)
+
+      convertedTeam = convertedTeam.map(p => {
+        const scaled = scaleStatsForLevel(p, scaledPlayerLevel)
+        // Filter out status moves (only Physical/Special allowed)
+        scaled.moves = filterUsableMoves(scaled.moves)
+        // Ensure at least one move (fallback to Struggle-like move)
+        if (scaled.moves.length === 0) {
+          scaled.moves = [PLACEHOLDER_MOVE]
+        }
+        return scaled
+      })
+
+      console.log(`[BattleStore] Level scaling applied: opponent max ${opponentMaxLevel} -> player scaled to ${scaledPlayerLevel}`)
 
       // Validate Pokemon types for both teams
       for (const pokemon of convertedTeam) {
@@ -270,6 +375,12 @@ export const useBattleStore = defineStore('battle', {
       if (this.winner) {
         await new Promise(resolve => setTimeout(resolve, 500))
         this.log.push(this.winner === 'player' ? '¡Ganaste la batalla!' : '¡Perdiste la batalla!')
+
+        // Feature 006: Update progress on player victory
+        if (this.winner === 'player') {
+          this.handleVictory()
+        }
+
         this.phase = 'ended'
       } else {
         // Increment turn and return to select phase
@@ -438,6 +549,31 @@ export const useBattleStore = defineStore('battle', {
           }
         }
       }
+    },
+
+    /**
+     * Feature 006: Handle victory - update progress based on opponent type
+     */
+    handleVictory() {
+      const progressStore = useProgressStore()
+
+      if (this.opponentType === 'thematic-npc' && this.opponentId) {
+        progressStore.defeatNpc(this.opponentId as string)
+        console.log(`[BattleStore] Progress updated: Defeated NPC ${this.opponentId}`)
+      } else if (this.opponentType === 'gym-leader' && this.opponentId) {
+        progressStore.defeatGymLeader(this.opponentId as number)
+        console.log(`[BattleStore] Progress updated: Defeated Gym Leader ${this.opponentId}`)
+      }
+      // Wild battles don't update progress
+    },
+
+    /**
+     * Feature 006: Set opponent info for progress tracking
+     */
+    setOpponentInfo(type: OpponentType, id?: string | number, name?: string) {
+      this.opponentType = type
+      this.opponentId = id
+      this.opponentName = name
     },
 
     endBattle() {

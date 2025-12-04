@@ -11,6 +11,11 @@ export function createStrategicAI(): AI {
       const { attacker, defender, rng } = ctx
       const moves = attacker.moves
 
+      // Validate that we have at least one move
+      if (!moves || moves.length === 0) {
+        throw new Error('No moves available')
+      }
+
       // Calculate effectiveness for each move
       const moveScores = moves.map((move) => {
         const effectiveness = computeTypeMultiplier(

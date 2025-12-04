@@ -59,7 +59,6 @@ async function loadAllPokemon() {
       return match && match[1] ? parseInt(match[1], 10) : 0
     }).filter((id) => id > 0)
 
-    console.log(`[PokemonCatalog] Fetching ${ids.length} Pokemon...`)
 
     // Batch fetch all Pokemon data in chunks of 50
     const chunkSize = 50
@@ -69,11 +68,9 @@ async function loadAllPokemon() {
       const chunkIds = ids.slice(i, i + chunkSize)
       const results = await fetchPokemonBatch(chunkIds)
       chunks.push(...results.filter((p): p is Pokemon => p !== null))
-      console.log(`[PokemonCatalog] Loaded ${chunks.length}/${ids.length} Pokemon`)
     }
 
     allPokemon.value = chunks
-    console.log(`[PokemonCatalog] All Pokemon loaded: ${allPokemon.value.length}`)
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Failed to load Pokemon'
     error.value = errorMessage
@@ -103,7 +100,6 @@ function retry() {
 
 function handlePokemonClick(pokemon: Pokemon) {
   emit('pokemon-select', pokemon)
-  console.log(`[PokemonCatalog] Pokemon selected: ${pokemon.name}`)
 }
 
 onMounted(() => {

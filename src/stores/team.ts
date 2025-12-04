@@ -1,11 +1,12 @@
 /**
  * Team Builder Store
  * Feature: 003-pokemon-team-builder
+ * Updated: 006-battle-module-update (hasStarter flag)
  *
  * Pinia store for managing Pokemon team roster
  */
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { TeamMember, Team, ValidationResult, Pokemon } from '@/models/teamBuilder'
 import {
@@ -14,12 +15,22 @@ import {
   clearTeamFromLocalStorage,
 } from '@/services/teamBuilder'
 
+const HAS_STARTER_KEY = 'pokemon-mmo-has-starter'
+
 export const useTeamStore = defineStore('team', () => {
   // State
   const roster = ref<TeamMember[]>([])
   const selectedPokemon = ref<Pokemon | null>(null)
   const lastSavedAt = ref<Date | null>(null)
   const saveError = ref<string | null>(null)
+
+  /** Feature 006: Flag to track if player has selected their starter */
+  const hasStarter = ref<boolean>(localStorage.getItem(HAS_STARTER_KEY) === 'true')
+
+  // Watch hasStarter and sync to localStorage
+  watch(hasStarter, (newValue) => {
+    localStorage.setItem(HAS_STARTER_KEY, newValue ? 'true' : 'false')
+  })
 
   // Computed
   const teamSize = computed(() => roster.value.length)
@@ -29,6 +40,14 @@ export const useTeamStore = defineStore('team', () => {
     const lead = roster.value[0]
     return lead !== undefined && lead.selectedMoves.length > 0
   })
+
+  /**
+   * Feature 006: Set hasStarter flag when player confirms starter selection
+   */
+  function setHasStarter(value: boolean): void {
+    hasStarter.value = value
+    console.log(`[TeamStore] hasStarter set to ${value}`)
+  }
 
   /**
    * Add Pokemon to roster
@@ -209,12 +228,25 @@ export const useTeamStore = defineStore('team', () => {
     }
   }
 
+  /**
+   * Heal all team members to full HP
+   * Feature: 006-battle-module-update (T032)
+   */
+  function healTeam(): void {
+    roster.value.forEach((member) => {
+      member.currentHp = member.maxHp
+    })
+    saveTeam()
+    console.log('[TeamStore] Team healed to full HP')
+  }
+
   return {
     // State
     roster,
     selectedPokemon,
     lastSavedAt,
     saveError,
+    hasStarter,
 
     // Computed
     teamSize,
@@ -231,5 +263,7 @@ export const useTeamStore = defineStore('team', () => {
     loadTeam,
     deleteTeam,
     selectPokemon,
+    setHasStarter,
+    healTeam,
   }
 })
