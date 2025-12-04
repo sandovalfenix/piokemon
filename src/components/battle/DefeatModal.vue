@@ -53,7 +53,7 @@ function handleClose() {
         <div
           class="w-24 h-24 rounded-full bg-red-900/50 flex items-center justify-center border-2 border-red-600/50"
         >
-          <span class="text-5xl">💀</span>
+          <i class="pi pi-times-circle text-5xl text-red-500"></i>
         </div>
 
         <p class="text-slate-400 text-sm text-center max-w-xs">

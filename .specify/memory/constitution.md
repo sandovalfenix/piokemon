@@ -1,27 +1,28 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version: 1.5.0 → 1.6.0
-Change Type: MINOR - Added Tailwind-Only Styling principle
+Version: 1.6.0 → 1.7.0
+Change Type: MINOR - Added Icon System principle (No Emojis)
 
 Modified Principles:
 - None renamed
 
 Added Sections:
-- I. Tailwind-Only Styling (NON-NEGOTIABLE) - All component styles MUST use Tailwind CSS utility classes
+- X. Icon System - No Emojis (NON-NEGOTIABLE) - All icons MUST use PrimeIcons or PNG assets, emojis are FORBIDDEN
 
 Removed Sections:
 - None
 
 Templates Status:
-✅ plan-template.md - No updates required (constitution check covers styling principle)
+✅ plan-template.md - No updates required (constitution check covers icon principle)
 ✅ spec-template.md - No updates required (functional requirements cover component needs)
 ✅ tasks-template.md - No updates required (follows from spec)
 ✅ checklist-template.md - No updates required
 ✅ Constitution updated
 
 Follow-up TODOs:
-- None - Tailwind CSS already configured in project (tailwind.config.js)
+- Review existing components for emoji usage and replace with PrimeIcons
+- Install @primevue/icons if not already present
 -->
 
 # Pokémon MMO Constitution
@@ -249,6 +250,59 @@ ALL user interface components MUST be built using shadcn-vue as the primary comp
 
 **Rationale**: shadcn-vue provides accessible, type-safe, and customizable components built on Radix Vue primitives. Using a single component system ensures consistency, reduces design debt, and enables rapid iteration while maintaining accessibility standards.
 
+### X. Icon System - No Emojis (NON-NEGOTIABLE)
+
+ALL icons and visual indicators MUST use proper icon libraries or image assets. Emoji characters are FORBIDDEN in the user interface.
+
+**Required Icon Sources** (in order of preference):
+1. **PrimeIcons**: Vue-native icon library with consistent design
+   - Install: `npm install primeicons`
+   - Import: `import 'primeicons/primeicons.css'`
+   - Usage: `<i class="pi pi-check"></i>` or via PrimeVue components
+   - Documentation: https://primevue.org/icons
+2. **Lucide Icons**: Already configured with shadcn-vue
+   - Import: `import { IconName } from 'lucide-vue-next'`
+   - Usage: `<IconName class="h-4 w-4" />`
+3. **PNG/SVG Assets**: For custom or game-specific icons
+   - Location: `src/assets/icons/` or `public/icons/`
+   - Format: PNG (with 2x retina versions) or optimized SVG
+   - Naming: kebab-case (e.g., `pokeball-icon.png`, `status-burn.svg`)
+
+**Implementation Requirements**:
+- ALL visual indicators (success, error, warning, info) MUST use icon components
+- Game-specific icons (Pokéballs, type icons, status effects) SHOULD use PNG/SVG assets
+- Icon sizes MUST be consistent: use Tailwind classes (`h-4 w-4`, `h-5 w-5`, `h-6 w-6`)
+- Icons MUST have appropriate `aria-label` or be `aria-hidden="true"` if decorative
+- Color MUST be applied via Tailwind classes (`text-green-500`, `text-destructive`)
+
+**Forbidden**:
+- Emoji characters in templates (`🎉`, `❌`, `✅`, `⚠️`, `🔥`, etc.)
+- Emoji in component props or state that renders to UI
+- Unicode symbols used as icons (✓, ✗, ★, etc.)
+- Inline SVG without proper optimization
+- Icon fonts other than PrimeIcons (Font Awesome, Material Icons, etc.)
+
+**Migration Guide** (for existing emoji usage):
+| Emoji | Replace With |
+|-------|--------------|
+| ✅ ✓ | `<i class="pi pi-check text-green-500"></i>` |
+| ❌ ✗ | `<i class="pi pi-times text-red-500"></i>` |
+| ⚠️ | `<i class="pi pi-exclamation-triangle text-yellow-500"></i>` |
+| 🎉 | `<i class="pi pi-star-fill text-yellow-400"></i>` |
+| 💨 | `<i class="pi pi-cloud text-gray-400"></i>` |
+| 🏠 | `<i class="pi pi-home"></i>` |
+| 📦 | `<i class="pi pi-box"></i>` |
+| 🎯 | `<i class="pi pi-bullseye"></i>` |
+| 🎾 | PNG asset: `pokeball-icon.png` |
+
+**Exception Process**: If a specific icon is not available in PrimeIcons or Lucide:
+1. Search for closest equivalent in existing libraries
+2. If none exists, create/source a PNG/SVG asset
+3. Add to `src/assets/icons/` with appropriate naming
+4. Document in component where it's used
+
+**Rationale**: Emojis render inconsistently across browsers, operating systems, and devices. They cannot be styled (color, size) with CSS. Icon libraries provide consistent, accessible, and customizable visual elements that integrate with the design system. PrimeIcons specifically offers a comprehensive set optimized for Vue applications.
+
 ## Architecture & Tech Stack
 
 **Core Stack** (changes require constitutional amendment):
@@ -407,4 +461,4 @@ MUST pass before merge:
 
 ---
 
-**Version**: 1.6.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-12-03
+**Version**: 1.7.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-12-04

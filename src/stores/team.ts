@@ -118,7 +118,6 @@ export const useTeamStore = defineStore('team', () => {
       member.position = index
     })
 
-    console.log(`[TeamStore] Removed ${removed.pokemon.name} from position ${position}`)
   }
 
   /**

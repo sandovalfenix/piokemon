@@ -28,7 +28,7 @@ export interface ProgressState {
 // =============================================================================
 
 /** LocalStorage key for progress data */
-export const PROGRESS_STORAGE_KEY = 'pkmn-progress'
+export const PROGRESS_STORAGE_KEY = 'pokemon-team-v1'
 
 /** Default state for new games */
 export const DEFAULT_PROGRESS: ProgressState = {

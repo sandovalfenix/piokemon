@@ -143,7 +143,6 @@ onMounted(async () => {
 
   // Feature 006: If player already has starter, redirect to home with message
   if (teamStore.hasStarter) {
-    console.log('[StarterSelection] Player already has starter, redirecting...')
     router.replace({ name: 'home' })
     return
   }
@@ -253,7 +252,7 @@ onMounted(async () => {
             class="w-24 h-24 border-4 border-slate-600 border-t-yellow-400 rounded-full animate-spin"
           />
           <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-3xl">🔴</span>
+            <i class="pi pi-circle text-3xl text-red-500"></i>
           </div>
         </div>
         <p class="mt-6 text-slate-400 text-lg">Loading Pokémon data...</p>
@@ -261,7 +260,9 @@ onMounted(async () => {
 
       <!-- Error State -->
       <div v-else-if="error" class="flex flex-col items-center justify-center py-20">
-        <div class="text-6xl mb-4">😢</div>
+        <div class="text-6xl mb-4">
+          <i class="pi pi-times-circle text-red-500"></i>
+        </div>
         <p class="text-red-400 text-lg mb-4">{{ error }}</p>
         <Button
           variant="outline"

@@ -435,3 +435,110 @@ export function getCacheStats(): { pokemonCount: number; moveCount: number } {
     moveCount: Object.keys(memoryCache.moves).length,
   }
 }
+
+// =============================================================================
+// Wild Encounter API (Feature: 007-wild-encounter-capture)
+// =============================================================================
+
+/**
+ * Data needed for wild encounter display
+ */
+export interface WildPokemonData {
+  id: number
+  name: string
+  types: string[]
+  sprite: string
+  stats: {
+    hp: number
+    attack: number
+    defense: number
+    spAttack: number
+    spDefense: number
+    speed: number
+  }
+}
+
+/**
+ * Fetch Pokemon data for wild encounter (minimal data, fast)
+ * Only fetches what's needed for capture: name, types, sprite, base stats
+ * Does NOT fetch moves (not needed for capture)
+ *
+ * @param pokemonId - PokéAPI Pokemon ID
+ * @returns WildPokemonData for encounter display
+ */
+export async function fetchWildPokemon(pokemonId: number): Promise<WildPokemonData> {
+  // Check memory cache first
+  const cached = memoryCache.pokemon[pokemonId]
+
+  if (cached) {
+    console.log(`[PokemonHydration] Using cached data for Pokemon ${pokemonId}`)
+    return {
+      id: pokemonId,
+      name: cached.name,
+      types: cached.types,
+      sprite: getOfficialArtwork(pokemonId),
+      stats: {
+        hp: cached.baseStats.hp,
+        attack: cached.baseStats.atk,
+        defense: cached.baseStats.def,
+        spAttack: cached.baseStats.spAtk,
+        spDefense: cached.baseStats.spDef,
+        speed: cached.baseStats.speed,
+      },
+    }
+  }
+
+  // Fetch from API
+  console.log(`[PokemonHydration] Fetching wild Pokemon ${pokemonId} from PokéAPI...`)
+  const apiData = await fetchPokemonFromAPI(pokemonId)
+
+  // Extract base stats
+  const statMap: Record<string, number> = {}
+  for (const stat of apiData.stats) {
+    statMap[stat.stat.name] = stat.base_stat
+  }
+
+  // Extract types
+  const types = apiData.types.map(t => TYPE_MAP[t.type.name] ?? 'Normal')
+
+  // Cache the base data (without moves for now)
+  const cachedData: CachedPokemonData = {
+    name: formatPokemonName(apiData.name),
+    types: types as Type[],
+    baseStats: {
+      hp: statMap['hp'] ?? 50,
+      atk: statMap['attack'] ?? 50,
+      def: statMap['defense'] ?? 50,
+      spAtk: statMap['special-attack'] ?? 50,
+      spDef: statMap['special-defense'] ?? 50,
+      speed: statMap['speed'] ?? 50,
+    },
+    moves: [], // Moves not needed for wild encounters
+  }
+
+  memoryCache.pokemon[pokemonId] = cachedData
+  saveCache()
+
+  return {
+    id: pokemonId,
+    name: cachedData.name,
+    types: types,
+    sprite: getOfficialArtwork(pokemonId),
+    stats: {
+      hp: cachedData.baseStats.hp,
+      attack: cachedData.baseStats.atk,
+      defense: cachedData.baseStats.def,
+      spAttack: cachedData.baseStats.spAtk,
+      spDefense: cachedData.baseStats.spDef,
+      speed: cachedData.baseStats.speed,
+    },
+  }
+}
+
+/**
+ * Get official artwork URL for a Pokemon
+ * Uses the official-artwork sprites from PokéAPI
+ */
+function getOfficialArtwork(pokemonId: number): string {
+  return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`
+}

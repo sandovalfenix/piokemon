@@ -73,7 +73,7 @@ const getHpColor = (percent: number) => {
       />
       <!-- Error fallback: show Pokemon name -->
       <div v-else class="flex flex-col items-center justify-center w-40 h-40">
-        <div class="text-2xl">❓</div>
+        <div class="text-2xl">?</div>
         <div class="text-sm text-gray-600">{{ props.npcPokemon.name }}</div>
       </div>
     </div>

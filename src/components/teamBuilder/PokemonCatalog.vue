@@ -137,7 +137,9 @@ onMounted(() => {
 
     <!-- Error state -->
     <div v-if="error" class="error-container">
-      <div class="error-icon">⚠️</div>
+      <div class="error-icon">
+        <i class="pi pi-exclamation-circle text-red-500 text-4xl"></i>
+      </div>
       <p class="error-message">{{ error }}</p>
       <button class="retry-button" @click="retry">Retry</button>
     </div>

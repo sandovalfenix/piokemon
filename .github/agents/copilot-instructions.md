@@ -11,6 +11,10 @@ Auto-generated from all feature plans. Last updated: 2025-11-29
 - [if applicable, e.g., PostgreSQL, CoreData, files or N/A] (005-battle-fixes-status-moves)
 - TypeScript 5.9+ (strict mode) + Vue 3.5+ (Composition API), Pinia 3+, Vue Router 4+, shadcn-vue (Radix Vue), Tailwind CSS 3+ (006-battle-module-update)
 - LocalStorage (browser) via Pinia store synchronization (006-battle-module-update)
+- TypeScript 5.9+ (strict mode) + Pinia 3+, Vue Router 4+, shadcn-vue, PokéAPI (007-wild-encounter-capture)
+- LocalStorage (team, pcBox, progress) (007-wild-encounter-capture)
+- TypeScript 5.9+ (strict mode) + Pinia 3+, Vue Router 4+, shadcn-vue (Radix Vue), Tailwind CSS 3+ (007-wild-encounter-capture)
+- LocalStorage for team and PC Box persistence (007-wild-encounter-capture)
 
 - TypeScript 5.9+ (strict mode) + Vue 3.5+, Pinia 3+, Vite 7+, native Fetch API (002-pokeapi-type-integration)
 
@@ -31,9 +35,9 @@ npm test; npm run lint
 TypeScript 5.9+ (strict mode): Follow standard conventions
 
 ## Recent Changes
+- 007-wild-encounter-capture: Added TypeScript 5.9+ (strict mode) + Pinia 3+, Vue Router 4+, shadcn-vue (Radix Vue), Tailwind CSS 3+
+- 007-wild-encounter-capture: Added TypeScript 5.9+ (strict mode) + Pinia 3+, Vue Router 4+, shadcn-vue, PokéAPI
 - 006-battle-module-update: Added TypeScript 5.9+ (strict mode) + Vue 3.5+ (Composition API), Pinia 3+, Vue Router 4+, shadcn-vue (Radix Vue), Tailwind CSS 3+
-- 005-battle-fixes-status-moves: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
-- 004-modern-battle-ui: Added TypeScript 5.9+ (strict mode), Vue 3.5+ with Composition API + Vue 3.5.22, Vite 7.1.11, Tailwind CSS 3.4.17, Pinia 3.0.3, shadcn-vue (Radix Vue 1.9.17), class-variance-authority 0.7.1
 
 
 <!-- MANUAL ADDITIONS START -->

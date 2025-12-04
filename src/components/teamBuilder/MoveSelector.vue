@@ -191,10 +191,11 @@ watch(
       <!-- Warning if 4 moves selected -->
       <div
         v-if="selectedMoves.length >= 4"
-        class="warning-message bg-yellow-50 border border-yellow-300 rounded p-3 mb-3"
+        class="warning-message bg-yellow-50 border border-yellow-300 rounded p-3 mb-3 flex items-center gap-2"
       >
+        <i class="pi pi-exclamation-circle text-yellow-600"></i>
         <p class="text-yellow-800 text-sm">
-          ⚠️ Maximum of 4 moves reached. Remove a move to add another.
+          Maximum of 4 moves reached. Remove a move to add another.
         </p>
       </div>
 

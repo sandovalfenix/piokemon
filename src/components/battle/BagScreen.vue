@@ -27,7 +27,7 @@ const useItem = (item: Item) => {
 
 <template>
   <div class="bag-panel">
-    <div class="bag-header">MOCHILA (Medicinas)</div>
+    <div class="bag-header" (Medicinas)</div>
 
     <div v-if="isLoading" class="loading-state">
       Loading

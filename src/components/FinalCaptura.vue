@@ -68,6 +68,10 @@
             <p class="text-lg font-semibold text-card-foreground">
               {{ pokemon.name }}
             </p>
+            <!-- Feature 007: Save location badge -->
+            <p v-if="saveLocationMessage" class="mt-2 text-sm font-medium text-primary">
+              {{ saveLocationMessage }}
+            </p>
           </div>
 
           <!-- Descripción según resultado -->
@@ -100,6 +104,14 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * FinalCaptura Component
+ * Feature: 007-wild-encounter-capture (T028)
+ *
+ * Shows capture result (success or escape).
+ * Displays where the Pokémon was saved (team or PC Box).
+ */
+import { computed } from 'vue'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
@@ -112,15 +124,27 @@ interface Pokemon {
 interface Props {
   resultado: 'capturado' | 'escapó'
   pokemon?: Pokemon
+  /** Feature 007: Where the Pokémon was saved */
+  saveLocation?: 'team' | 'pcbox'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   resultado: 'escapó',
+  saveLocation: 'team',
 })
 
 const emit = defineEmits<{
   'volver-inicio': []
 }>()
+
+/** Feature 007: Save location message */
+const saveLocationMessage = computed(() => {
+  if (props.resultado !== 'capturado') return ''
+  if (props.saveLocation === 'pcbox') {
+    return 'Enviado a PC Box (equipo lleno)'
+  }
+  return 'Añadido a tu equipo'
+})
 
 const handleOk = () => {
   emit('volver-inicio')

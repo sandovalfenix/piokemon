@@ -8,12 +8,12 @@ interface Props {
   logMessages: string[]
   playerMoves: Move[]
   isAttacking: boolean
-  /** Feature 006: Disable items in battle (always true for now) */
-  disableItems?: boolean
+  /** Feature 007: Is this a wild battle? Enables Pokéballs button */
+  isWildBattle?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  disableItems: true, // Items disabled by default per Feature 006
+  isWildBattle: false, // Pokéballs disabled by default (only in wild battles)
 })
 
 
@@ -39,13 +39,13 @@ const props = withDefaults(defineProps<Props>(), {
           <button class="action-btn" @click="$emit('fight')">
             <span class="action-text">FIGHT</span>
           </button>
-          <button
+                    <button
             class="action-btn"
-            :disabled="props.disableItems"
-            :class="{ 'opacity-50 cursor-not-allowed': props.disableItems }"
-            @click="!props.disableItems && $emit('bag')"
+            :disabled="!props.isWildBattle"
+            :class="{ 'opacity-50 cursor-not-allowed': !props.isWildBattle }"
+            @click="props.isWildBattle && $emit('bag')"
           >
-            <span class="action-text">BAG</span>
+            <span class="action-text">POKÉBALLS</span>
           </button>
           <button class="action-btn" @click="$emit('pokemon')">
             <span class="action-text">POKéMON</span>

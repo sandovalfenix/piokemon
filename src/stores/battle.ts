@@ -99,6 +99,20 @@ function clonePokemon(pokemon: Pokemon): Pokemon {
 }
 
 import type { OpponentType } from '@/models/battleOutcome'
+import type { MoveLearningModalState, MoveLearningCandidate } from '@/models/moveLearning'
+import { DEFAULT_MOVE_LEARNING_STATE } from '@/models/moveLearning'
+import type { WildBattlePokemon } from '@/models/capture'
+
+/** Feature 006: Defeat modal state */
+interface DefeatModalState {
+  isOpen: boolean
+  opponentName: string
+}
+
+const DEFAULT_DEFEAT_MODAL_STATE: DefeatModalState = {
+  isOpen: false,
+  opponentName: '',
+}
 
 // Extended battle state with opponent tracking for Feature 006
 interface ExtendedBattleState extends BattleState {
@@ -110,6 +124,12 @@ interface ExtendedBattleState extends BattleState {
   opponentId?: string | number
   /** Feature 006: Opponent display name */
   opponentName?: string
+  /** Feature 006 T030: Move learning modal state */
+  moveLearningState: MoveLearningModalState
+  /** Feature 006 T036: Defeat modal state */
+  defeatModalState: DefeatModalState
+  /** Feature 007: Wild Pokémon battle data for capture mechanics */
+  wildPokemonData?: WildBattlePokemon
 }
 
 export const useBattleStore = defineStore('battle', {
@@ -129,6 +149,9 @@ export const useBattleStore = defineStore('battle', {
     opponentType: undefined,
     opponentId: undefined,
     opponentName: undefined,
+    moveLearningState: { ...DEFAULT_MOVE_LEARNING_STATE },
+    defeatModalState: { ...DEFAULT_DEFEAT_MODAL_STATE },
+    wildPokemonData: undefined,
   }),
 
   getters: {
@@ -142,6 +165,12 @@ export const useBattleStore = defineStore('battle', {
       state.playerTeam.filter(p => p.currentHp > 0).length,
     npcTeamRemaining: (state) =>
       state.npcTeam.filter(p => p.currentHp > 0).length,
+    /** Feature 006: Check if move learning modal should be shown */
+    shouldShowMoveLearning: (state) => state.moveLearningState.isOpen,
+    /** Feature 006: Check if defeat modal should be shown */
+    shouldShowDefeatModal: (state) => state.defeatModalState.isOpen,
+    /** Feature 007: Check if this is a wild Pokémon battle (capture available) */
+    isWildBattle: (state) => state.opponentType === 'wild',
   },
 
   actions: {
@@ -425,6 +454,47 @@ export const useBattleStore = defineStore('battle', {
       }
     },
 
+    /**
+     * Feature 007: Execute only NPC's turn (used when player wastes turn on failed capture)
+     * This allows the wild Pokémon to attack after a capture attempt fails
+     */
+    async executeNpcTurn() {
+      if (this.phase !== 'select' || this.winner) {
+        console.log('[BattleStore] executeNpcTurn blocked:', { phase: this.phase, winner: this.winner })
+        return
+      }
+
+      this.phase = 'resolving'
+      const rng = createSeededRng(this.seed ?? Date.now())
+
+      // Get NPC move
+      const npcMoveId = this.ai.chooseMove({
+        attacker: this.npc,
+        defender: this.player,
+        rng
+      })
+      const npcMove = this.npc.moves.find(m => m.id === npcMoveId) ?? this.npc.moves[0]!
+
+      // Execute NPC attack
+      await this.executeAttack(this.npc, this.player, npcMove, 'npc', rng)
+
+      // Check if player fainted and switch if needed
+      if (this.player.currentHp <= 0 && !this.winner) {
+        await this.switchPlayerPokemon()
+      }
+
+      // Check for overall battle winner
+      if (this.winner) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        this.log.push(this.winner === 'player' ? '¡Ganaste la batalla!' : '¡Perdiste la batalla!')
+        this.phase = 'ended'
+      } else {
+        // Increment turn and return to select phase
+        this.turn++
+        this.phase = 'select'
+      }
+    },
+
     async executeAttack(
       attacker: Pokemon,
       defender: Pokemon,
@@ -574,6 +644,131 @@ export const useBattleStore = defineStore('battle', {
       this.opponentType = type
       this.opponentId = id
       this.opponentName = name
+    },
+
+    /**
+     * Feature 007: Set wild Pokémon data for capture mechanics
+     * @param data - Wild Pokémon battle data (null to clear)
+     */
+    setWildPokemonData(data: WildBattlePokemon | undefined) {
+      this.wildPokemonData = data
+      if (data) {
+        console.log(`[BattleStore] Wild Pokémon data set: ${data.pokemon.name} (Lv.${data.level}, HP: ${data.currentHp}/${data.maxHp})`)
+      } else {
+        console.log('[BattleStore] Wild Pokémon data cleared')
+      }
+    },
+
+    /**
+     * Feature 007: Update wild Pokémon HP during battle (for capture formula)
+     */
+    updateWildPokemonHp(currentHp: number) {
+      if (this.wildPokemonData) {
+        this.wildPokemonData.currentHp = Math.max(0, currentHp)
+      }
+    },
+
+    // =========================================================================
+    // Feature 006 T030: Move Learning Actions
+    // =========================================================================
+
+    /**
+     * Open move learning modal with candidates
+     */
+    openMoveLearning(candidates: MoveLearningCandidate[]) {
+      if (candidates.length === 0) return
+
+      this.moveLearningState = {
+        isOpen: true,
+        candidates,
+        currentIndex: 0,
+        selectedSlot: null,
+        hasDecided: false,
+      }
+    },
+
+    /**
+     * Select a move slot to replace (0-3)
+     */
+    selectMoveSlot(slot: number) {
+      if (slot >= 0 && slot < 4) {
+        this.moveLearningState.selectedSlot = slot
+      }
+    },
+
+    /**
+     * Confirm move replacement and advance to next candidate or close
+     */
+    confirmMoveReplacement() {
+      const state = this.moveLearningState
+      if (state.selectedSlot === null) return
+
+      const candidate = state.candidates[state.currentIndex]
+      if (candidate) {
+        // Replace the move in player team
+        const pokemon = this.playerTeam.find(p => p.id === candidate.pokemonId)
+        if (pokemon && state.selectedSlot < pokemon.moves.length) {
+          const oldMove = pokemon.moves[state.selectedSlot]
+          pokemon.moves[state.selectedSlot] = candidate.newMove
+          console.log(`[BattleStore] ${pokemon.name} forgot ${oldMove?.name} and learned ${candidate.newMove.name}`)
+        }
+      }
+
+      this.advanceMoveLearning()
+    },
+
+    /**
+     * Skip learning current move and advance
+     */
+    skipMoveLearning() {
+      const state = this.moveLearningState
+      const candidate = state.candidates[state.currentIndex]
+      if (candidate) {
+        console.log(`[BattleStore] ${candidate.pokemonName} did not learn ${candidate.newMove.name}`)
+      }
+      this.advanceMoveLearning()
+    },
+
+    /**
+     * Advance to next candidate or close modal
+     */
+    advanceMoveLearning() {
+      const state = this.moveLearningState
+      if (state.currentIndex < state.candidates.length - 1) {
+        state.currentIndex++
+        state.selectedSlot = null
+        state.hasDecided = false
+      } else {
+        this.closeMoveLearning()
+      }
+    },
+
+    /**
+     * Close move learning modal
+     */
+    closeMoveLearning() {
+      this.moveLearningState = { ...DEFAULT_MOVE_LEARNING_STATE }
+    },
+
+    // =========================================================================
+    // Feature 006 T036-37: Defeat Modal Actions
+    // =========================================================================
+
+    /**
+     * Open defeat modal
+     */
+    openDefeatModal(opponentName: string) {
+      this.defeatModalState = {
+        isOpen: true,
+        opponentName,
+      }
+    },
+
+    /**
+     * Close defeat modal
+     */
+    closeDefeatModal() {
+      this.defeatModalState = { ...DEFAULT_DEFEAT_MODAL_STATE }
     },
 
     endBattle() {

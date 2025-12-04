@@ -41,7 +41,6 @@ import BattleTeamSelector from './battle/BattleTeamSelector.vue'
 import PokemonTeamSwitcher from './battle/PokemonTeamSwitcher.vue'
 import PokemonSwitchModal from './battle/PokemonSwitchModal.vue'
 import TrainerWaitingScreen from './TrainerWaitingScreen.vue'
-import BagScreen from './battle/BagScreen.vue'
 import BattleField from './battle/BattleField.vue'
 import BattleActionMenu from './battle/BattleActionMenu.vue'
 import { useBattleStore } from '@/stores/battle'
@@ -49,14 +48,18 @@ import { useTeamStore } from '@/stores/team'
 import { useTrainerBattle } from '../composables/useTrainerBattle'
 import { useAudio } from '../composables/useAudio'
 import { useSpriteLoader } from '../composables/useSpriteLoader'
-import { itemService } from '@/services/itemService'
 import { createHowlerAudio, DEFAULT_BATTLE_SOUNDS } from '@/services/audio/howlerAudio'
 import { BattleType } from '@/data/battleTypes'
 import { gymLeaders } from '@/data/gymLeaders'
 import type { Trainer } from '@/data/trainers'
 import type { Pokemon } from '@/domain/battle/engine/entities'
-import type { TeamMember, Move as TeamBuilderMove } from '@/models/teamBuilder'
-import type { Item } from '@/models/item'
+import type { TeamMember, Move as TeamBuilderMove, PokemonType } from '@/models/teamBuilder'
+import PokeballsBag from './PokeballsBag.vue'
+import FinalCaptura from './FinalCaptura.vue'
+import CaptureOverlay from './capture/CaptureOverlay.vue'
+import { useCapture } from '@/composables/useCapture'
+import type { WildBattlePokemon, BallType } from '@/models/capture'
+import type { EncounteredPokemon } from '@/stores/useEncounterStore'
 
 // Props
 interface Props {
@@ -77,6 +80,9 @@ const { rivalRemainingPokemon, startBattle: startTrainerBattle } = useTrainerBat
 const currentBattleType = ref<BattleType>(BattleType.WILD)
 const currentGymLeader = ref<number | null>(null)
 
+// Feature 007: Wild Pokémon battle data for capture mechanics
+const wildPokemonData = ref<WildBattlePokemon | null>(null)
+
 const currentGymLeaderInfo = computed(() => {
   if (currentGymLeader.value !== null) {
     return gymLeaders.find(l => l.id === currentGymLeader.value)
@@ -85,6 +91,9 @@ const currentGymLeaderInfo = computed(() => {
 })
 
 const isGymBattle = computed(() => currentBattleType.value === BattleType.GYM_LEADER)
+
+// Feature 007: Is this a wild battle?
+const isWildBattle = computed(() => battleStore.isWildBattle)
 
 // Convert Team Builder Pokemon to Battle Engine format (T027)
 const convertTeamMemberToBattlePokemon = (teamMember: TeamMember): Pokemon => {
@@ -159,7 +168,7 @@ const enemySprite = useSpriteLoader({
 })
 
 // Estado de la batalla
-const currentView = ref<'main' | 'fight' | 'bag' | 'pokemon' | 'trainer-waiting' | 'player-team-switch' | 'enemy-team-switch'>('main')
+const currentView = ref<'main' | 'fight' | 'pokeball' | 'pokemon' | 'trainer-waiting' | 'player-team-switch' | 'enemy-team-switch'>('main')
 const battleMenuView = computed(() => currentView.value as 'main' | 'fight')
 const shakeEffect = ref<{ active: boolean; target: 'player' | 'enemy' }>({ active: false, target: 'player' })
 const waitingForTrainerSwitch = ref(false)
@@ -171,8 +180,18 @@ const battleError = ref<string | null>(null) // T008: Track battle initializatio
 const showSwitchModal = ref(false)
 const isForcedSwitch = ref(false) // True when Pokemon fainted
 
+// Feature 007: Capture success state
+const showCaptureSuccess = ref(false)
+const capturedPokemonData = ref<EncounteredPokemon | null>(null)
+const showCaptureOverlay = ref(false)
+const selectedBallType = ref<BallType | null>(null)
+
 // Trainer waiting screen state
 const waitingTrainer = ref<import('@/data/trainersData').TrainerData | null>(null)
+
+// Feature 007: Capture composable
+const { captureState, isCapturing, openBallSelector, closeBallSelector, attemptCapture, resetCapture } = useCapture()
+
 
 // Watch para sonidos sincronizados
 watch(
@@ -251,7 +270,7 @@ const handleFight = () => {
 }
 
 const handleBag = () => {
-  currentView.value = 'bag'
+  currentView.value = 'pokeball'
 }
 
 const handlePokemon = () => {
@@ -330,6 +349,9 @@ const handleCloseSwitchModal = () => {
   }
 }
 
+/*
+IN STOPPED FEATURE - ITEM USAGE IN BATTLE
+
 const handleUseItem = (item: Item) => {
   if (itemService.useItem(item.id)) {
     battleStore.log.push(`¡Has usado ${item.name}!`)
@@ -340,7 +362,171 @@ const handleUseItem = (item: Item) => {
       // Trigger enemy turn or whatever comes next
     }, 1000)
   }
+} */
+
+// ==========================================================================
+// Feature 007: Capture Handling
+// ==========================================================================
+
+/**
+ * T018: Handle Capturar button click
+ * Opens the ball selection overlay
+ * @deprecated - Now handled through PokeballsBag modal via handleBag
+ */
+function _handleCaptureClick() {
+  if (!isWildBattle.value) {
+    console.warn('[BattleScreen] Cannot capture - not a wild battle')
+    return
+  }
+  openBallSelector()
 }
+
+/**
+ * Feature 007: Handle ball selection from PokeballsBag
+ * Converts ball type and initiates capture attempt with animation
+ */
+async function handleBallSeleccionada(ballData: { type: string; label: string; count: number }) {
+  // Map ball type names to BallType
+  const ballTypeMap: Record<string, BallType> = {
+    'poke-ball': 'pokeball',
+    'great-ball': 'superball',
+    'ultra-ball': 'ultraball',
+    'master-ball': 'masterball',
+  }
+
+  const ballType = ballTypeMap[ballData.type] ?? 'pokeball'
+  selectedBallType.value = ballType
+
+  // Initialize wildPokemonData from current battle if not set
+  if (!wildPokemonData.value && isWildBattle.value) {
+    const npc = battleStore.npc
+
+    // Convert NPC moves to MoveReference format for TeamBuilder
+    const npcMoves = npc.moves?.map(m => ({
+      id: typeof m.id === 'number' ? m.id : parseInt(String(m.id)) || 33,
+      name: m.name || 'Tackle',
+    })) ?? [{ id: 33, name: 'Tackle' }]
+
+    wildPokemonData.value = {
+      pokemon: {
+        id: parseInt(npc.id) || 0,
+        name: npc.name,
+        types: npc.types as PokemonType[],
+        stats: {
+          hp: npc.stats.hp,
+          attack: npc.stats.atk,
+          defense: npc.stats.def,
+          spAttack: npc.stats.spAtk,
+          spDefense: npc.stats.spDef,
+          speed: npc.stats.speed,
+        },
+        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${npc.id}.png`,
+        moves: npcMoves,
+      },
+      level: npc.level,
+      currentHp: npc.currentHp,
+      maxHp: npc.stats.hp,
+      catchRate: 45, // Default catch rate
+    }
+  }
+
+  // Close PokeballsBag and show CaptureOverlay with animation
+  currentView.value = 'main'
+  showCaptureOverlay.value = true
+
+  // Execute capture attempt (this updates captureState with shakes, success, etc.)
+  await handleBallSelected(ballType)
+}
+
+/**
+ * T020: Handle ball selection from CaptureOverlay
+ */
+async function handleBallSelected(ballType: BallType) {
+  if (!wildPokemonData.value) return
+
+  // Update wild Pokémon HP from current battle state
+  const npcHp = battleStore.npcPokemon?.currentHp ?? wildPokemonData.value.currentHp
+  wildPokemonData.value.currentHp = npcHp
+
+  // Attempt capture
+  const result = await attemptCapture(ballType, wildPokemonData.value)
+}
+
+/**
+ * T021: Handle capture success
+ * Shows FinalCaptura screen and ends the battle
+ */
+function handleCaptureSuccess() {
+  showCaptureOverlay.value = false
+  showCaptureSuccess.value = true
+
+  // Add victory log message
+  if (wildPokemonData.value) {
+    battleStore.log.push(`¡Capturaste a ${wildPokemonData.value.pokemon.name}!`)
+  }
+
+  resetCapture()
+}
+
+/**
+ * T022: Handle capture failure
+ * Close overlay, continue battle (wild gets turn)
+ */
+async function handleCaptureFailure() {
+  showCaptureOverlay.value = false
+  resetCapture()
+
+  // Log the failure
+  if (wildPokemonData.value) {
+    battleStore.log.push(`¡${wildPokemonData.value.pokemon.name} escapó de la Pokéball!`)
+  }
+
+  // Wild Pokémon gets a free turn (attacks the player)
+  if (battleStore.npc.moves.length > 0) {
+    battleStore.log.push(`¡${battleStore.npc.name} salvaje aprovecha para atacar!`)
+    await battleStore.executeNpcTurn()
+  }
+}
+
+/**
+ * Handle capture overlay proceed button (after animation completes)
+ */
+function handleCaptureProceed() {
+  if (captureState.value.success) {
+    handleCaptureSuccess()
+  } else {
+    handleCaptureFailure()
+  }
+}
+
+/**
+ * Handle animation complete event from CaptureOverlay
+ * Called when the shake animation finishes
+ */
+function handleAnimationComplete() {
+  // The CaptureOverlay will show the result phase
+  // User clicks "proceed" which calls handleCaptureProceed
+}
+
+/**
+ * Handle capture overlay close (cancel)
+ */
+function handleCaptureClose() {
+  showCaptureOverlay.value = false
+  closeBallSelector()
+}
+
+/**
+ * Handle FinalCaptura close (after successful capture)
+ */
+function handleFinalCapturaClose() {
+  showCaptureSuccess.value = false
+  capturedPokemonData.value = null
+  wildPokemonData.value = null
+  selectedBallType.value = null
+  router.replace('/')
+}
+
 
 const handleTrainerPokemonSelected = async (pokemonIndex: number) => {
   const selectedPokemon = battleStore.npcTeam[pokemonIndex]
@@ -421,16 +607,24 @@ onMounted(async () => {
     // Feature 006: Wild battle team should be hydrated externally in BattleView
     currentBattleType.value = BattleType.WILD
 
-    // The NPC team should already be set up by BattleView before this component loads
-    // If no trainer team provided, we expect the battle to be initialized via props.playerTeam
-    if (!props.playerTeam || props.playerTeam.length === 0) {
-      console.error('[BattleScreen] Wild battle requires pre-hydrated teams')
-      return
+    // Feature 007: Check if battle was already started by BattleView
+    // BattleView calls startBattle with hydrated player and opponent teams
+    // We should NOT re-initialize here as it would overwrite the correct opponent
+    if (battleStore.playerTeam.length > 0 && battleStore.npcTeam.length > 0) {
+      battleStore.log.push('¡Un Pokémon salvaje apareció!')
+      battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
+    } else {
+      // Legacy fallback: If battle wasn't initialized, try to start it
+      if (!props.playerTeam || props.playerTeam.length === 0) {
+        console.error('[BattleScreen] Wild battle requires pre-hydrated teams')
+        return
+      }
+      // Note: This path should not be reached when using BattleView properly
+      console.warn('[BattleScreen] Starting wild battle from BattleScreen (legacy path)')
+      await battleStore.startBattle(team, battleStore.npcTeam.length > 0 ? battleStore.npcTeam : [])
+      battleStore.log.push('¡Un Pokémon salvaje apareció!')
+      battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
     }
-
-    await battleStore.startBattle(team, props.playerTeam)
-    battleStore.log.push('¡Un Pokémon salvaje apareció!')
-    battleStore.log.push(`¡Adelante, ${battleStore.player.name}!`)
   }
 
   // Mark battle as ready
@@ -498,7 +692,9 @@ watch(() => battleStore.log, () => {
     <div v-else class="battle-screen">
       <!-- Banner de batalla de gimnasio -->
       <div v-if="isGymBattle && currentGymLeaderInfo" class="gym-battle-banner">
-        <div class="gym-badge-icon">🏅</div>
+        <div class="gym-badge-icon">
+          <i class="pi pi-star text-yellow-500"></i>
+        </div>
         <div class="gym-info">
           <span class="gym-leader-name">{{ currentGymLeaderInfo.name }}</span>
           <span class="gym-type">Tipo {{ currentGymLeaderInfo.type }}</span>
@@ -527,6 +723,7 @@ watch(() => battleStore.log, () => {
           :log-messages="battleStore.log"
           :player-moves="battleStore.player.moves"
           :is-attacking="isAttacking"
+          :is-wild-battle="currentBattleType === BattleType.WILD"
           @fight="handleFight"
           @bag="handleBag"
           @pokemon="handlePokemon"
@@ -535,11 +732,11 @@ watch(() => battleStore.log, () => {
           @back="handleBack"
         />
 
-        <!-- Vista de mochila -->
-        <BagScreen
-          v-else-if="currentView === 'bag'"
-          @use-item="handleUseItem"
-          @back="handleBack"
+        <!-- Vista de Pokéballs -->
+        <PokeballsBag
+          v-else-if="currentView === 'pokeball'"
+          @ball-seleccionada="handleBallSeleccionada"
+          @cerrar="handleBack"
         />
 
         <!-- Vista de Pokémon -->
@@ -590,6 +787,37 @@ watch(() => battleStore.log, () => {
       :forced-switch="isForcedSwitch"
       @select="handleSwitchPokemon"
       @close="handleCloseSwitchModal"
+    />
+
+    <!-- Feature 007: Capture Shake Animation -->
+    <CaptureOverlay
+      :is-open="showCaptureOverlay"
+      :phase="captureState.phase"
+      :shakes="captureState.shakes"
+      :success="captureState.success"
+      :ball-type="captureState.selectedBall"
+      :saved-to="captureState.savedTo"
+      @animation-complete="handleAnimationComplete"
+      @proceed="handleCaptureProceed"
+      @close="handleCaptureClose"
+    />
+
+    <!-- Feature 007: Capture Success Screen -->
+    <FinalCaptura
+      v-if="showCaptureSuccess && wildPokemonData"
+      :resultado="'capturado'"
+      :pokemon="{
+        id: wildPokemonData.pokemon.id,
+        name: wildPokemonData.pokemon.name,
+        level: wildPokemonData.level,
+        region: 'kanto',
+        sprite: wildPokemonData.pokemon.sprite,
+        maxHp: wildPokemonData.maxHp,
+        currentHp: wildPokemonData.currentHp,
+        baseCatchRate: wildPokemonData.catchRate,
+      }"
+      :save-location="captureState.savedTo ?? 'team'"
+      @volver-inicio="handleFinalCapturaClose"
     />
   </div>
 </template>

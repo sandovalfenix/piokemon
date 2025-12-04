@@ -2,6 +2,7 @@
 /**
  * BattleView - Battle Orchestrator
  * Feature: 006-battle-module-update
+ * Updated: 007-wild-encounter-capture (Capture button for wild battles)
  *
  * Reads battleTarget from sessionStorage and hydrates teams from PokéAPI
  * before passing to BattleScreen component.
@@ -11,6 +12,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BattleScreen from '@/components/BattleScreen.vue'
 import DefeatModal from '@/components/battle/DefeatModal.vue'
+import MoveLearningModal from '@/components/battle/MoveLearningModal.vue'
 import { useTeamStore } from '@/stores/team'
 import { useBattleStore } from '@/stores/battle'
 import { useProgressStore } from '@/stores/progress'
@@ -19,6 +21,8 @@ import { gymLeaders } from '@/data/gymLeaders'
 import { selectWildPokemon } from '@/data/wildPokemonPool'
 import { hydrateTeam } from '@/services/pokeapi/pokemonHydrationService'
 import { transformTeamMemberToBattlePokemon } from '@/services/teamBuilder'
+import type { PokemonType } from '@/models/teamBuilder'
+import type { EncounteredPokemon } from '@/stores/useEncounterStore'
 import {
   Dialog,
   DialogContent,
@@ -44,6 +48,7 @@ const error = ref<string | null>(null)
 const battleTarget = ref<{
   type: 'npc' | 'gym-leader' | 'wild'
   id?: string | number
+  pokemonData?: EncounteredPokemon
 } | null>(null)
 
 // Hydrated teams
@@ -62,7 +67,13 @@ const trainerInfo = ref<TrainerInfo | null>(null)
 // Victory/Defeat modal state
 const showVictoryModal = ref(false)
 const showDefeatModal = ref(false)
-const showMoveLearningUI = ref(false) // TODO: Implement move learning
+
+// Move learning state (T034)
+const showMoveLearningModal = computed(() => battleStore.moveLearningState.isOpen)
+const currentMoveLearningCandidate = computed(() => {
+  const state = battleStore.moveLearningState
+  return state.candidates[state.currentIndex] ?? null
+})
 
 /**
  * Get wild Pokemon based on player progress
@@ -187,7 +198,26 @@ async function initializeBattle() {
 
       case 'wild': {
         opponentName.value = 'Pokémon Salvaje'
-        opponentConfig = getWildPokemon()
+
+        // Feature 007: Check for pre-fetched PokéAPI data from Capturar flow
+        if (battleTarget.value?.pokemonData) {
+          const pokeData = battleTarget.value.pokemonData
+          opponentName.value = `${pokeData.name} Salvaje`
+          opponentConfig = [{
+            pokemonId: pokeData.id,
+            level: pokeData.level,
+          }]
+
+          console.log('[BattleView] Wild encounter from Capturar:', {
+            name: pokeData.name,
+            level: pokeData.level,
+            types: pokeData.types,
+            catchRate: pokeData.catchRate ?? pokeData.baseCatchRate ?? 45,
+          })
+        } else {
+          // Legacy: Generate random wild Pokemon
+          opponentConfig = getWildPokemon()
+        }
 
         battleStore.$patch({
           opponentType: 'wild',
@@ -276,6 +306,9 @@ function handleDefeat() {
   // Show defeat modal first (heal happens when user closes)
   showDefeatModal.value = true
 }
+// ==========================================================================
+// Victory/Defeat Handlers
+// ==========================================================================
 
 /**
  * Close victory modal and redirect
@@ -293,6 +326,31 @@ function closeDefeatAndRedirect() {
   teamStore.healTeam()
   showDefeatModal.value = false
   router.replace('/')
+}
+
+/**
+ * T034: Handle move replacement in MoveLearningModal
+ */
+function handleMoveReplace(moveIndex: number) {
+  battleStore.selectMoveSlot(moveIndex)
+  battleStore.confirmMoveReplacement()
+
+  // If no more candidates, close and redirect
+  if (!battleStore.moveLearningState.isOpen) {
+    closeVictoryAndRedirect()
+  }
+}
+
+/**
+ * T034: Handle skip in MoveLearningModal
+ */
+function handleMoveSkip() {
+  battleStore.skipMoveLearning()
+
+  // If no more candidates, close and redirect
+  if (!battleStore.moveLearningState.isOpen) {
+    closeVictoryAndRedirect()
+  }
 }
 
 /**
@@ -331,7 +389,7 @@ watch(battleWinner, (winner) => {
     <!-- Loading State -->
     <div
       v-if="isLoading"
-      class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white"
+      class="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-slate-900 to-slate-800 text-white"
     >
       <div class="text-center">
         <div
@@ -344,7 +402,7 @@ watch(battleWinner, (winner) => {
     <!-- Error State -->
     <div
       v-else-if="error"
-      class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white"
+      class="flex flex-col items-center justify-center min-h-screen bg-linear-to-b from-slate-900 to-slate-800 text-white"
     >
       <div class="text-center">
         <h2 class="text-3xl mb-4">Error</h2>
@@ -360,7 +418,7 @@ watch(battleWinner, (winner) => {
     <BattleScreen
       v-else
       :trainer="trainerInfo ?? undefined"
-      :player-team="opponentTeam"
+      :player-team=" playerTeam"
     />
 
     <!-- Victory Modal -->
@@ -369,8 +427,8 @@ watch(battleWinner, (winner) => {
         class="sm:max-w-md bg-linear-to-b from-green-950/95 to-slate-900/95 backdrop-blur-lg border-green-800/50"
       >
         <DialogHeader>
-          <DialogTitle class="text-2xl font-bold text-green-400 text-center">
-            🏆 ¡Victoria!
+          <DialogTitle class="text-2xl font-bold text-green-400 text-center flex items-center justify-center gap-2">
+            <i class="pi pi-trophy"></i> ¡Victoria!
           </DialogTitle>
           <DialogDescription class="text-center text-slate-300 text-lg mt-2">
             Has derrotado a {{ opponentName }}.
@@ -380,7 +438,7 @@ watch(battleWinner, (winner) => {
           <div
             class="w-24 h-24 rounded-full bg-green-900/50 flex items-center justify-center border-2 border-green-600/50"
           >
-            <span class="text-5xl">🏆</span>
+            <i class="pi pi-trophy text-5xl text-yellow-500"></i>
           </div>
         </div>
         <DialogFooter class="sm:justify-center">
@@ -400,6 +458,17 @@ watch(battleWinner, (winner) => {
       :open="showDefeatModal"
       :opponent-name="opponentName"
       @close="closeDefeatAndRedirect"
+    />
+
+    <!-- Move Learning Modal (T034) -->
+    <MoveLearningModal
+      v-if="currentMoveLearningCandidate"
+      :open="showMoveLearningModal"
+      :pokemon-name="currentMoveLearningCandidate.pokemonName"
+      :new-move="currentMoveLearningCandidate.newMove"
+      :current-moves="currentMoveLearningCandidate.currentMoves"
+      @replace="handleMoveReplace"
+      @skip="handleMoveSkip"
     />
   </div>
 </template>

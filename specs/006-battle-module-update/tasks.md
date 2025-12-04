@@ -19,12 +19,12 @@
 
 **Purpose**: Project structure and new file scaffolding
 
-- [ ] T001 [P] Create `src/models/progressState.ts` with ProgressState interface and DEFAULT_PROGRESS constant
-- [ ] T002 [P] Create `src/models/battleOutcome.ts` with BattleOutcome, OpponentType, and BattleResult types
-- [ ] T003 [P] Create `src/models/moveLearning.ts` with MoveLearningState and MoveLearningCandidate interfaces
-- [ ] T004 [P] Create `src/data/thematicNpcs.ts` with ThematicNpc interface and empty array scaffold
-- [ ] T005 [P] Create `src/data/wildPokemonPool.ts` with WildPokemonEntry interface and Gen 1 pool
-- [ ] T006 Verify shadcn-vue Dialog and Select components are available via `npx shadcn-vue@latest add dialog select`
+- [X] T001 [P] Create `src/models/progressState.ts` with ProgressState interface and DEFAULT_PROGRESS constant
+- [X] T002 [P] Create `src/models/battleOutcome.ts` with BattleOutcome, OpponentType, and BattleResult types
+- [X] T003 [P] Create `src/models/moveLearning.ts` with MoveLearningState and MoveLearningCandidate interfaces
+- [X] T004 [P] Create `src/data/thematicNpcs.ts` with ThematicNpc interface and empty array scaffold
+- [X] T005 [P] Create `src/data/wildPokemonPool.ts` with WildPokemonEntry interface and Gen 1 pool
+- [X] T006 Verify shadcn-vue Dialog and Select components are available via `npx shadcn-vue@latest add dialog select`
 
 ---
 
@@ -34,13 +34,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create `src/stores/progress.ts` Pinia store with state, getters (isNpcDefeated, isGymLeaderDefeated, canChallenge), and actions (defeatNpc, defeatGymLeader, resetProgress)
-- [ ] T008 Create `src/services/progress/progressService.ts` with saveProgress(), loadProgress(), clearProgress() functions for LocalStorage sync
-- [ ] T009 Integrate progress store with LocalStorage via watch() in store initialization, call loadProgress() on store mount
-- [ ] T010 Create pure function `calculateScaledLevel(opponentLevel: number): number` in `src/domain/battle/calc/levelScaling.ts`
-- [ ] T011 Create pure function `filterUsableMoves(moves: Move[]): Move[]` in `src/domain/battle/engine/moveFilter.ts` to exclude status category
-- [ ] T012 [P] Add unit test `tests/unit/domain/battle/levelScaling.spec.ts` for calculateScaledLevel (test edge cases: level 1, 2, 3, 20)
-- [ ] T013 [P] Add unit test `tests/unit/domain/battle/moveFilter.spec.ts` for filterUsableMoves (test physical, special, status filtering)
+- [X] T007 Create `src/stores/progress.ts` Pinia store with state, getters (isNpcDefeated, isGymLeaderDefeated, canChallenge), and actions (defeatNpc, defeatGymLeader, resetProgress)
+- [X] T008 Create `src/services/progress/progressService.ts` with saveProgress(), loadProgress(), clearProgress() functions for LocalStorage sync
+- [X] T009 Integrate progress store with LocalStorage via watch() in store initialization, call loadProgress() on store mount
+- [X] T010 Create pure function `calculateScaledLevel(opponentLevel: number): number` in `src/domain/battle/calc/levelScaling.ts`
+- [X] T011 Create pure function `filterUsableMoves(moves: Move[]): Move[]` in `src/domain/battle/engine/moveFilter.ts` to exclude status category
+- [X] T012 [P] Add unit test `tests/unit/domain/battle/levelScaling.spec.ts` for calculateScaledLevel (test edge cases: level 1, 2, 3, 20)
+- [X] T013 [P] Add unit test `tests/unit/domain/battle/moveFilter.spec.ts` for filterUsableMoves (test physical, special, status filtering)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -58,12 +58,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Modify `src/stores/battle.ts` - apply level scaling in battle initialization using calculateScaledLevel()
-- [ ] T016 [US1] Modify `src/stores/battle.ts` - recalculate stats (HP, Atk, Def, etc.) based on scaled level
-- [ ] T017 [US1] Modify `src/components/MoveSelector.vue` - filter moves using filterUsableMoves() to hide Status category
-- [ ] T018 [US1] Modify `src/components/BattleScreen.vue` - remove any Item button/menu references from battle UI
-- [ ] T019 [US1] Modify `src/stores/battle.ts` - remove XP awarding logic from battle end handler
-- [ ] T020 [US1] Modify `src/stores/battle.ts` - remove currency awarding logic from battle end handler
+- [X] T015 [US1] Modify `src/stores/battle.ts` - apply level scaling in battle initialization using calculateScaledLevel()
+- [X] T016 [US1] Modify `src/stores/battle.ts` - recalculate stats (HP, Atk, Def, etc.) based on scaled level
+- [X] T017 [US1] Modify `src/components/MoveSelector.vue` - filter moves using filterUsableMoves() to hide Status category
+- [X] T018 [US1] Modify `src/components/BattleScreen.vue` - remove any Item button/menu references from battle UI
+- [X] T019 [US1] Modify `src/stores/battle.ts` - remove XP awarding logic from battle end handler
+- [X] T020 [US1] Modify `src/stores/battle.ts` - remove currency awarding logic from battle end handler
 
 **Checkpoint**: Player can complete battle with scaled levels, filtered moves, no items/XP/currency
 
@@ -77,14 +77,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Populate `src/data/thematicNpcs.ts` with 3-5 NPCs per gym (15-25 total), each with gymId, order, team, and quotes
-- [ ] T022 [US2] Add helper function `getNpcsByGym(gymId: number)` in `src/data/thematicNpcs.ts`
-- [ ] T023 [US2] Add helper function `areGymNpcsDefeated(gymId: number, defeatedIds: string[])` in `src/data/thematicNpcs.ts`
-- [ ] T024 [US2] Add `getAvailableChallenges()` getter to `src/stores/progress.ts` - returns current NPCs and unlocked gym leader
-- [ ] T025 [US2] Modify `src/views/HomeView.vue` - display available challenges from progress store
-- [ ] T026 [US2] Modify `src/views/HomeView.vue` - show progression UI with earned badges and current gym
-- [ ] T027 [US2] Create `src/services/battle/battleInitService.ts` - function to create BattleContext from NPC/GymLeader/Wild selection
-- [ ] T028 [US2] Modify `src/stores/battle.ts` - call progress.defeatNpc() or progress.defeatGymLeader() on victory
+- [X] T021 [US2] Populate `src/data/thematicNpcs.ts` with 3-5 NPCs per gym (15-25 total), each with gymId, order, team, and quotes
+- [X] T022 [US2] Add helper function `getNpcsByGym(gymId: number)` in `src/data/thematicNpcs.ts`
+- [X] T023 [US2] Add helper function `areGymNpcsDefeated(gymId: number, defeatedIds: string[])` in `src/data/thematicNpcs.ts`
+- [X] T024 [US2] Add `getAvailableChallenges()` getter to `src/stores/progress.ts` - returns current NPCs and unlocked gym leader
+- [X] T025 [US2] Modify `src/views/HomeView.vue` - display available challenges from progress store
+- [X] T026 [US2] Modify `src/views/HomeView.vue` - show progression UI with earned badges and current gym
+- [X] T027 [US2] Create `src/services/battle/battleInitService.ts` - function to create BattleContext from NPC/GymLeader/Wild selection
+- [X] T028 [US2] Modify `src/stores/battle.ts` - call progress.defeatNpc() or progress.defeatGymLeader() on victory
 
 **Checkpoint**: Player can progress through NPCs → Gym Leader → Next Gym in linear order
 
@@ -98,12 +98,12 @@
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] Create `src/components/battle/MoveLearningModal.vue` using Shadcn Dialog - display new move, current 4 moves, replace/skip options
-- [ ] T030 [US3] Add move learning state to `src/stores/battle.ts` - moveLearningState: MoveLearningState
-- [ ] T031 [US3] Create `src/services/battle/moveLearnService.ts` - checkMoveLearningEligibility(), applyMoveReplacement()
-- [ ] T032 [US3] Create `healTeam()` action in `src/stores/team.ts` - set currentHp = maxHp for all Pokemon
-- [ ] T033 [US3] Modify `src/stores/battle.ts` victory handler - call healTeam(), check move learning, navigate to '/'
-- [ ] T034 [US3] Integrate `MoveLearningModal.vue` in `src/views/BattleView.vue` - show modal when moveLearningState.isOpen
+- [X] T029 [US3] Create `src/components/battle/MoveLearningModal.vue` using Shadcn Dialog - display new move, current 4 moves, replace/skip options
+- [X] T030 [US3] Add move learning state to `src/stores/battle.ts` - moveLearningState: MoveLearningState
+- [X] T031 [US3] Create `src/services/battle/moveLearnService.ts` - checkMoveLearningEligibility(), applyMoveReplacement()
+- [X] T032 [US3] Create `healTeam()` action in `src/stores/team.ts` - set currentHp = maxHp for all Pokemon
+- [X] T033 [US3] Modify `src/stores/battle.ts` victory handler - call healTeam(), check move learning, navigate to '/'
+- [X] T034 [US3] Integrate `MoveLearningModal.vue` in `src/views/BattleView.vue` - show modal when moveLearningState.isOpen
 
 **Checkpoint**: Victory triggers heal + optional move learning + lobby redirect
 
@@ -117,12 +117,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T035 [US4] Create `src/components/battle/DefeatModal.vue` using Shadcn Dialog - defeat message, opponent name, Return to Lobby button
-- [ ] T036 [US4] Add defeat modal state to `src/stores/battle.ts` - defeatModalState: DefeatModalState
-- [ ] T037 [US4] Modify `src/stores/battle.ts` defeat handler - set defeatModalState.isOpen = true, populate opponent info
-- [ ] T038 [US4] Integrate `DefeatModal.vue` in `src/views/BattleView.vue` - show modal when defeatModalState.isOpen
-- [ ] T039 [US4] Implement modal close handler - call healTeam(), navigate to '/', reset modal state
-- [ ] T040 [US4] Verify defeated trainer remains re-challengeable (no call to defeatNpc/defeatGymLeader on loss)
+- [X] T035 [US4] Create `src/components/battle/DefeatModal.vue` using Shadcn Dialog - defeat message, opponent name, Return to Lobby button
+- [X] T036 [US4] Add defeat modal state to `src/stores/battle.ts` - defeatModalState: DefeatModalState
+- [X] T037 [US4] Modify `src/stores/battle.ts` defeat handler - set defeatModalState.isOpen = true, populate opponent info
+- [X] T038 [US4] Integrate `DefeatModal.vue` in `src/views/BattleView.vue` - show modal when defeatModalState.isOpen
+- [X] T039 [US4] Implement modal close handler - call healTeam(), navigate to '/', reset modal state
+- [X] T040 [US4] Verify defeated trainer remains re-challengeable (no call to defeatNpc/defeatGymLeader on loss)
 
 **Checkpoint**: Defeat shows polished modal, team heals on return, trainer remains available
 
@@ -136,13 +136,13 @@
 
 ### Implementation for User Story 5
 
-- [ ] T041 [US5] Create `src/components/battle/WildBattleButton.vue` - styled Button that triggers wild encounter
-- [ ] T042 [US5] Add `selectWildPokemon()` function to `src/data/wildPokemonPool.ts` - weighted random selection
-- [ ] T043 [US5] Add `calculateTeamAverageLevel(team: Pokemon[])` function to `src/domain/battle/calc/levelScaling.ts`
-- [ ] T044 [US5] Create `initWildBattle()` action in `src/stores/battle.ts` - spawn wild Pokemon, scale to team avg - 2
-- [ ] T045 [US5] Integrate `WildBattleButton.vue` in `src/views/HomeView.vue` - visible alongside story progression
-- [ ] T046 [US5] Modify wild battle victory handler - NO move learning trigger, immediate heal + lobby redirect
-- [ ] T047 [US5] Verify no capture/Pokeball UI appears in wild battles (opponentType === 'wild' check)
+- [X] T041 [US5] Create `src/components/battle/WildBattleButton.vue` - styled Button that triggers wild encounter
+- [X] T042 [US5] Add `selectWildPokemon()` function to `src/data/wildPokemonPool.ts` - weighted random selection
+- [X] T043 [US5] Add `calculateTeamAverageLevel(team: Pokemon[])` function to `src/domain/battle/calc/levelScaling.ts`
+- [X] T044 [US5] Create `initWildBattle()` action in `src/stores/battle.ts` - spawn wild Pokemon, scale to team avg - 2
+- [X] T045 [US5] Integrate `WildBattleButton.vue` in `src/views/HomeView.vue` - visible alongside story progression
+- [X] T046 [US5] Modify wild battle victory handler - NO move learning trigger, immediate heal + lobby redirect
+- [X] T047 [US5] Verify no capture/Pokeball UI appears in wild battles (opponentType === 'wild' check)
 
 **Checkpoint**: Wild encounters work as combat-only practice with proper scaling
 
@@ -160,11 +160,11 @@
 
 ### Implementation for User Story 6
 
-- [ ] T049 [US6] Add LocalStorage write on every state change via watch() in `src/stores/progress.ts`
+- [X] T049 [US6] Add LocalStorage write on every state change via watch() in `src/stores/progress.ts`
 - [ ] T050 [US6] Add loadProgress() call in `src/main.ts` or App.vue mounted hook
-- [ ] T051 [US6] Add corrupted data handling in loadProgress() - clear and redirect to '/team-builder' if parse fails
-- [ ] T052 [US6] Create "Reset Progress" button in HomeView.vue (optional, calls resetProgress())
-- [ ] T053 [US6] Verify starter check - redirect to '/team-builder' if no team in LocalStorage before battle start
+- [X] T051 [US6] Add corrupted data handling in loadProgress() - clear and redirect to '/team-builder' if parse fails
+- [X] T052 [US6] Create "Reset Progress" button in HomeView.vue (optional, calls resetProgress())
+- [X] T053 [US6] Verify starter check - redirect to '/team-builder' if no team in LocalStorage before battle start
 
 **Checkpoint**: Progress survives refresh, handles corruption gracefully
 
@@ -174,11 +174,11 @@
 
 **Purpose**: Final cleanup and validation
 
-- [ ] T054 [P] Remove any remaining Item-related UI elements across all battle components
-- [ ] T055 [P] Ensure all Pokemon sprites use transparent PNG format (verify spriteUrlBuilder.ts)
-- [ ] T056 [P] Ensure all trainer sprites use transparent PNG format (verify NPC data)
+- [X] T054 [P] Remove any remaining Item-related UI elements across all battle components
+- [X] T055 [P] Ensure all Pokemon sprites use transparent PNG format (verify spriteUrlBuilder.ts)
+- [X] T056 [P] Ensure all trainer sprites use transparent PNG format (verify NPC data)
 - [ ] T057 Disable input during turn resolution animations (prevent rapid-click issues)
-- [ ] T058 Run `npm run type-check` - ensure zero TypeScript errors
+- [X] T058 Run `npm run type-check` - ensure zero TypeScript errors
 - [ ] T059 Run `npm run lint` - ensure zero linting errors
 - [ ] T060 Run `npm run test` - ensure all tests pass
 - [ ] T061 Manual test: Complete full progression Jose → Manuel → Rafael → Sofía → Valeria
