@@ -116,7 +116,7 @@ const onlinePlayers: Player[] = [
 .lobby-bg {
   position: fixed;
   inset: 0;
-  background-image: url('/lobbies/principal.png');
+  background-image: url('/lobbies/bg4.png');
   background-size: cover;
   background-position: center;
   z-index: -2;
