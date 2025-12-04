@@ -4,6 +4,7 @@ import BattleView from '@/views/BattleView.vue'
 import TeamBuilderView from '@/views/TeamBuilderView.vue'
 import StarterSelectionView from '@/views/StarterSelectionView.vue'
 import GymSelection from '@/views/GymSelection.vue'
+import PCview from '@/views/PCview.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,6 +34,11 @@ const router = createRouter({
       name: 'gyms',
       component: GymSelection,
     },
+    {
+      path: '/pc',
+      name: 'pc',
+      component: PCview,
+    }
   ],
 })
 
