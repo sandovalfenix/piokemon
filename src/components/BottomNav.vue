@@ -20,11 +20,11 @@ import { RouterLink } from 'vue-router'
 .bottom-nav {
   position: fixed;
   bottom: 0;
-  left: 50%;
+  left: 40%;
   transform: translateX(-50%);
-  width: min(912px, 89.3vw);
+  width: min(700px, 70vw);
   height: auto;
-  min-height: calc(var(--bottom-nav-height, 96px) * 0.95);
+  min-height: calc(var(--bottom-nav-height, 96px) * 0.85);
   display: flex;
   flex-direction: column;
   justify-content: center;

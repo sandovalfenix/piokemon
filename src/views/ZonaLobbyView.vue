@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
+
 // Tipos de TypeScript para los datos del Lobby (simulados)
 interface NPC {
   name: string
@@ -74,6 +76,11 @@ const onlinePlayers: Player[] = [
           </div>
         </aside>
       </div>
+
+      <RouterLink to="/batallas" class="battles-panel">
+        <h3>Batallas Activas</h3>
+        <img :src="`/batalla.png`" alt="Batalla" class="batalla-image" />
+      </RouterLink>
     </div>
   </div>
 </template>
@@ -220,6 +227,50 @@ const onlinePlayers: Player[] = [
 }
 .status-dot.busy {
   background-color: #f59e0b;
+}
+
+/* ---------------------------------------------------- */
+/* Panel de Batallas Activas */
+/* ---------------------------------------------------- */
+.battles-panel {
+  position: fixed;
+  bottom: 0.5rem;
+  right: 8.9%;
+  width: 250px;
+  height: calc(var(--bottom-nav-height, 96px) * 1.3);
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 3px solid #3b82f6;
+  border-radius: 12px;
+  padding: 1rem;
+  color: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 99;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.battles-panel:hover {
+  border-color: #60a5fa;
+  background-color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}
+
+.battles-panel h3 {
+  color: #ffd700;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.batalla-image {
+  width: 110px;
+  height: 85px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 .status-dot.offline {
   background-color: #9ca3af;
