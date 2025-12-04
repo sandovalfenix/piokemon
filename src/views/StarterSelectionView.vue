@@ -109,13 +109,24 @@ async function confirmSelection() {
       position: 0,
     }
 
-    // Clear existing team and add starter
-    teamStore.clearTeam()
-    teamStore.addPokemon(teamMember)
-    teamStore.saveTeam()
+    // ⭐ NEW: Load existing team (if any)
+    teamStore.loadTeam()
+
+    if (teamStore.roster.length > 0) {
+      // ⭐ NEW: Replace existing starter
+      teamStore.roster[0] = teamMember
+      console.log('[StarterSelection] Starter replaced.')
+    } else {
+      // Clear existing team and add starter
+      teamStore.clearTeam()
+      teamStore.addPokemon(teamMember)
+    }
 
     // Feature 006: Set hasStarter flag
     teamStore.setHasStarter(true)
+
+    // Save updated team ⭐ Keeps new starter in localStorage
+    teamStore.saveTeam()
 
     // Navigate to home or team builder
     router.push({ name: 'home' })
@@ -140,19 +151,6 @@ function skipIntro() {
  */
 onMounted(async () => {
   teamStore.loadTeam()
-
-  // Feature 006: If player already has starter, redirect to home with message
-  if (teamStore.hasStarter) {
-    console.log('[StarterSelection] Player already has starter, redirecting...')
-    router.replace({ name: 'home' })
-    return
-  }
-
-  // If user already has a team, redirect to home
-  if (roster.value.length > 0) {
-    router.push({ name: 'home' })
-    return
-  }
 
   // Show intro for 3 seconds then load starters
   setTimeout(() => {

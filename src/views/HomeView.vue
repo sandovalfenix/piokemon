@@ -136,6 +136,16 @@ function handleWildBattleClick() {
       >
         Encuentro Salvaje
       </Button>
+
+      <!-- 🔥 NUEVO BOTÓN -->
+      <Button
+        class="battle-btn wild-btn"
+        size="lg"
+        variant="outline"
+        @click="router.push('/starter-selection')"
+      >
+        Cambiar Pokémon
+      </Button>
     </section>
 
     <!-- No Starter Modal -->
