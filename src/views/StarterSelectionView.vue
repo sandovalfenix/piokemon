@@ -21,7 +21,6 @@ import Squirtle from '@/assets/images/pokemon/squirtle.png'
 import Pikachu from '@/assets/images/pokemon/pikachu.png'
 import ProfesorOak from '@/assets/images/ProfesorOak.png'
 
-
 const router = useRouter()
 const teamStore = useTeamStore()
 const { roster } = storeToRefs(teamStore)
@@ -140,7 +139,7 @@ function skipIntro() {
  */
 onMounted(async () => {
   teamStore.loadTeam()
-
+/*
   // Feature 006: If player already has starter, redirect to home with message
   if (teamStore.hasStarter) {
     router.replace({ name: 'home' })
@@ -151,7 +150,7 @@ onMounted(async () => {
   if (roster.value.length > 0) {
     router.push({ name: 'home' })
     return
-  }
+  } */
 
   // Show intro for 3 seconds then load starters
   setTimeout(() => {
@@ -171,7 +170,7 @@ onMounted(async () => {
       <div class="absolute top-20 left-10 w-16 h-16 opacity-10 animate-float">
         <img :src="Bulbasaur" class="w-full h-full" />
       </div>
-      <div class="absolute top-40 right-14  w-24 h-24 opacity-10 animate-float-delayed">
+      <div class="absolute top-40 right-14 w-24 h-24 opacity-10 animate-float-delayed">
         <img :src="Charmander" class="w-full h-full" />
       </div>
       <div class="absolute bottom-32 left-10 w-20 h-20 opacity-10 animate-float">
@@ -212,7 +211,7 @@ onMounted(async () => {
             <div
               class="w-32 h-32 mx-auto bg-linear-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center shadow-2xl"
             >
-              <img class="" :src="ProfesorOak"/>
+              <img class="" :src="ProfesorOak" />
             </div>
           </div>
 
