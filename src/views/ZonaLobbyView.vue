@@ -42,7 +42,7 @@ const onlinePlayers: Player[] = [
     <div class="lobby-view-wrapper">
       <div class="lobby-bg" aria-hidden="true"></div>
       <header class="zone-header">
-        <h2 class="zone-title">Zone Lobby: {{ zoneName }}</h2>
+        <h2 class="zone-title">{{ zoneName }}</h2>
       </header>
 
       <div class="lobby-grid">
