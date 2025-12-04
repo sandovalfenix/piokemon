@@ -49,7 +49,7 @@ export const usePCBoxStore = defineStore('pcBox', () => {
         // Validate parsed data has required fields
         if (Array.isArray(parsed)) {
           pokemonList.value = parsed.filter(
-            (p) => p && p.instanceId && p.pokemon && p.captureLevel && p.capturedAt && p.ballType
+            (p) => p && p.instanceId && p.pokemon
           )
           console.log(`[PCBoxStore] Loaded ${pokemonList.value.length} Pokémon from localStorage`)
         }
@@ -146,15 +146,6 @@ export const usePCBoxStore = defineStore('pcBox', () => {
   }
 
   /**
-   * Get all Pokémon sorted by capture date (newest first)
-   */
-  function getSortedByDate(): CapturedPokemon[] {
-    return [...pokemonList.value].sort(
-      (a, b) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime()
-    )
-  }
-
-  /**
    * Get all Pokémon sorted by name (alphabetically)
    */
   function getSortedByName(): CapturedPokemon[] {
@@ -182,7 +173,6 @@ export const usePCBoxStore = defineStore('pcBox', () => {
     removePokemon,
     getPokemon,
     clearBox,
-    getSortedByDate,
     getSortedByName,
   }
 })

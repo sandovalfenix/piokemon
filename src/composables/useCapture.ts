@@ -81,6 +81,7 @@ export function useCapture(): UseCaptureReturn {
       ...DEFAULT_CAPTURE_STATE,
       phase: 'selecting-ball',
     }
+    console.log('[useCapture] Ball selector opened')
   }
 
   /**
@@ -92,6 +93,7 @@ export function useCapture(): UseCaptureReturn {
       phase: 'idle',
       selectedBall: null,
     }
+    console.log('[useCapture] Ball selector closed')
   }
 
   /**
@@ -153,6 +155,10 @@ export function useCapture(): UseCaptureReturn {
       savedTo,
     }
 
+    console.log(
+      `[useCapture] Capture ${result.success ? 'SUCCESS' : 'FAILED'}: ${pokemon.pokemon.name}, shakes: ${result.shakes}, saved to: ${savedTo}`
+    )
+
     return {
       success: result.success,
       shakes: result.shakes,
@@ -170,31 +176,29 @@ export function useCapture(): UseCaptureReturn {
     const teamStore = useTeamStore()
     const pcBoxStore = usePCBoxStore()
 
-    // Create CapturedPokemon record for PC Box storage
+    // Create CapturedPokemon record
     const capturedPokemon: CapturedPokemon = {
       instanceId: generateInstanceId(),
       pokemon: pokemon.pokemon,
-      captureLevel: pokemon.level,
-      capturedAt: new Date().toISOString(),
-      ballType,
+
     }
 
-    // Check team capacity - save to team if < 6
+    // Check team capacity
     if (teamStore.roster.length < 6) {
-      // Convert to TeamMember format
+      // Add to team
       const teamMember = convertToTeamMember(pokemon, teamStore.roster.length)
-
       const result = teamStore.addPokemon(teamMember)
 
       if (result.valid) {
-        // Save to localStorage (pokemon-team-v1)
         teamStore.saveTeam()
+        console.log(`[useCapture] ${pokemon.pokemon.name} added to team at position ${teamMember.position}`)
         return 'team'
       }
     }
 
-    // Team full or add failed - add to PC Box
+    // Team full - add to PC Box
     pcBoxStore.addPokemon(capturedPokemon)
+    console.log(`[useCapture] ${pokemon.pokemon.name} sent to PC Box (team full)`)
     return 'pcbox'
   }
 
@@ -203,6 +207,7 @@ export function useCapture(): UseCaptureReturn {
    */
   function resetCapture(): void {
     captureState.value = { ...DEFAULT_CAPTURE_STATE }
+    console.log('[useCapture] Capture state reset')
   }
 
   // ============================================================================
@@ -210,57 +215,21 @@ export function useCapture(): UseCaptureReturn {
   // ============================================================================
 
   /**
-   * Default move for captured Pokémon without moves
-   */
-  const DEFAULT_MOVE = {
-    id: 33, // Tackle
-    name: 'Tackle',
-    type: 'Normal' as const,
-    power: 40,
-    accuracy: 100,
-    category: 'Physical' as const,
-    pp: 35,
-  }
-
-  /**
    * Convert WildBattlePokemon to TeamMember format
-   * Ensures the Pokemon has proper structure for team storage
    */
   function convertToTeamMember(pokemon: WildBattlePokemon, position: number) {
-    // Get moves from the wild pokemon, or use default if empty
-    const pokemonMoves = pokemon.pokemon.moves ?? []
-
-    // Create selectedMoves array - use existing moves or default to Tackle
-    let selectedMoves = pokemonMoves.slice(0, 4).map((m) => ({
-      id: typeof m.id === 'number' ? m.id : 0,
-      name: m.name || 'Tackle',
-      type: 'Normal' as const,
-      power: 40 as number | null,
-      accuracy: 100,
-      category: 'Physical' as const,
-      pp: 35,
-    }))
-
-    // Ensure at least one move (required by team validation)
-    if (selectedMoves.length === 0) {
-      selectedMoves = [DEFAULT_MOVE]
-    }
-
-    // Create proper Pokemon structure for TeamMember
-    const teamPokemon: TeamBuilderPokemon = {
-      id: pokemon.pokemon.id,
-      name: pokemon.pokemon.name,
-      types: pokemon.pokemon.types,
-      stats: pokemon.pokemon.stats,
-      sprite: pokemon.pokemon.sprite,
-      moves: pokemonMoves.length > 0
-        ? pokemonMoves.map(m => ({ id: typeof m.id === 'number' ? m.id : 0, name: m.name }))
-        : [{ id: 33, name: 'Tackle' }],
-    }
-
+    // Create TeamMember with default moves
     return {
-      pokemon: teamPokemon,
-      selectedMoves,
+      pokemon: pokemon.pokemon as TeamBuilderPokemon,
+      selectedMoves: pokemon.pokemon.moves.slice(0, 4).map((m) => ({
+        id: typeof m.id === 'number' ? m.id : 0,
+        name: m.name,
+        type: 'Normal' as const,
+        power: null,
+        accuracy: 100,
+        category: 'Physical' as const,
+        pp: 35,
+      })),
       level: pokemon.level,
       currentHp: pokemon.maxHp, // Healed on capture
       maxHp: pokemon.maxHp,

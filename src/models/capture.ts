@@ -33,14 +33,6 @@ export interface CapturedPokemon {
   /** PokéAPI Pokémon data */
   pokemon: Pokemon
 
-  /** Level at time of capture */
-  captureLevel: number
-
-  /** ISO 8601 timestamp of capture */
-  capturedAt: string
-
-  /** Ball type used for capture */
-  ballType: BallType
 }
 
 /**
