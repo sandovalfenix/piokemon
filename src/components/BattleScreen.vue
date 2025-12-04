@@ -401,6 +401,20 @@ async function handleBallSeleccionada(ballData: { type: string; label: string; c
   if (!wildPokemonData.value && isWildBattle.value) {
     const npc = battleStore.npc
 
+    // Extract numeric Pokemon ID from battle format ("pokemon-{id}-{timestamp}" or just numeric string)
+    let pokemonId = 0
+    if (typeof npc.id === 'string') {
+      if (npc.id.startsWith('pokemon-')) {
+        // Format: "pokemon-41-1764876799059" -> extract "41"
+        const parts = npc.id.split('-')
+        pokemonId = parts[1] ? parseInt(parts[1]) : 0
+      } else {
+        pokemonId = parseInt(npc.id) || 0
+      }
+    } else {
+      pokemonId = Number(npc.id) || 0
+    }
+
     // Convert NPC moves to MoveReference format for TeamBuilder
     const npcMoves = npc.moves?.map(m => ({
       id: typeof m.id === 'number' ? m.id : parseInt(String(m.id)) || 33,
@@ -409,7 +423,7 @@ async function handleBallSeleccionada(ballData: { type: string; label: string; c
 
     wildPokemonData.value = {
       pokemon: {
-        id: parseInt(npc.id) || 0,
+        id: pokemonId,
         name: npc.name,
         types: npc.types as PokemonType[],
         stats: {
@@ -420,7 +434,7 @@ async function handleBallSeleccionada(ballData: { type: string; label: string; c
           spDefense: npc.stats.spDef,
           speed: npc.stats.speed,
         },
-        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${npc.id}.png`,
+        sprite: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`,
         moves: npcMoves,
       },
       level: npc.level,

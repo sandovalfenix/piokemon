@@ -143,10 +143,10 @@ function handleFlee() {
               v-if="spriteUrl"
               :src="spriteUrl"
               :alt="pokemonData?.name ?? 'Pokemon'"
-              class="w-full h-full object-contain drop-shadow-lg animate-bounce"
+              class="w-full h-full object-contain drop-shadow-lg"
             />
             <div v-else class="w-full h-full flex items-center justify-center bg-muted rounded-lg">
-              <span class="text-6xl">❓</span>
+              <i class="pi pi-question text-6xl text-muted-foreground"></i>
             </div>
           </div>
         </div>

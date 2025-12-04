@@ -193,7 +193,7 @@ const cerrarModal = (): void => {
 
         <Button
           @click="cerrarModal"
-          class="flex-1"
+          class="flex-1 text-white"
           variant="destructive"
         >
           Cerrar

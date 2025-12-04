@@ -75,7 +75,7 @@ function getBallImage(type: string): string {
               v-for="ball in inventory"
               :key="ball.type"
               @click="selectBall(ball.type)"
-              :class="['min-w-[140px] flex-shrink-0 rounded-lg p-3 flex flex-col items-center gap-2 border transition-all duration-300', selected === ball.type ? 'border-primary shadow-lg' : 'border-border', ball.count === 0 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer']"
+              :class="['min-w-[140px] shrink-0 rounded-lg p-3 flex flex-col items-center gap-2 border transition-all duration-300', selected === ball.type ? 'border-primary shadow-lg' : 'border-border', ball.count === 0 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer']"
             >
               <img :src="getBallImage(ball.type)" :alt="ball.label" class="w-20 h-20 object-contain" />
               <div class="text-xl font-bold text-foreground text-center">{{ ball.label }}</div>

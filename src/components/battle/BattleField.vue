@@ -176,8 +176,8 @@ const getHpColor = (percent: number) => {
 }
 
 .enemy-sprite {
-  width: 150px;
-  height: 150px;
+  width: auto;
+  height: 148px;
   top: 26%;
   right: 20%;
   animation-delay: 0s;
