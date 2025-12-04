@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import mapArt from '../assets/map-world.png';
+import mapArt from '../assets/map.jpg';
 import playerImage from '../assets/player.png';
 import { useKeyboardMovement } from '../composables/useKeyboardMovement';
 import { useMapStore } from '../stores/mapStore';
@@ -166,8 +166,11 @@ const handleEnterZone = (zoneId: number) => {
 
   // Mapeo de zonas a rutas
   const zoneRoutes: Record<number, string> = {
-    4: '/zona/gimnasio-cristo-rey', // Cristo de Caña -> Gimnasio
-    5: '/zona/parque-de-la-cana',   // Parque de la Caña -> Parque de la Caña
+    1: '/zona/plazoleta-jairo-varela',
+    2: '/zona/zoologico-de-cali',
+    3: '/zona/la-ermita',
+    4: '/zona/gimnasio-cristo-rey',
+    5: '/zona/parque-de-la-cana',
   };
 
   const route = zoneRoutes[zoneId];

@@ -260,7 +260,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import gymMapImage from '../assets/gym-cristo-rey.png'
+import gymMapImage from '../assets/cristorey.png'
 import playerImage from '../assets/player.png'
 import PlayerCharacter from '../components/PlayerCharacter.vue'
 import { useKeyboardMovement } from '../composables/useKeyboardMovement'
@@ -612,7 +612,6 @@ const goBack = () => {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   pointer-events: none;
 }
 

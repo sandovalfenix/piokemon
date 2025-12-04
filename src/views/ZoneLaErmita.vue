@@ -3,30 +3,30 @@
     <div class="gym-header">
       <button class="back-btn" @click="goBack">← Volver al Mapa</button>
       <div class="gym-info">
-        <h1>Parque de la Caña</h1>
-        <p>Exploración y misiones</p>
+        <h1>La Ermita</h1>
+        <p>Reto final</p>
       </div>
       <div class="stats-bar">
         <span class="stat-item">Pasos: {{ stepCount }}</span>
-        <span class="stat-item">Pokémon: {{ pokemonCaptured }}/3</span>
-        <span class="stat-item">Objetos: {{ itemsFound }}/3</span>
+        <span class="stat-item">Pokémon: {{ pokemonCaptured }}/2</span>
+        <span class="stat-item">Objetos: {{ itemsFound }}/2</span>
       </div>
     </div>
 
     <div class="gym-map-container">
       <div ref="mapCanvas" class="map-canvas">
-        <img ref="mapImg" :src="zoneImage" alt="Parque de la Caña" class="map-image" />
+        <img ref="mapImg" :src="zoneImage" alt="La Ermita" class="map-image" />
 
         <PlayerCharacter :x="playerPosition.x" :y="playerPosition.y" :is-moving="isMoving" :image-src="playerImage" label="Jugador" />
 
         <div class="npc trainer" :style="trainer1Style" v-if="!trainersDefeated.trainer1">
-          <div class="npc-sprite"><img :src="playerImage" alt="Explorador Ana" class="npc-image small" /></div>
-          <div class="npc-label trainer">Explorador Ana</div>
+          <div class="npc-sprite"><img :src="playerImage" alt="Monaguillo Pedro" class="npc-image small" /></div>
+          <div class="npc-label trainer">Monaguillo Pedro</div>
         </div>
 
         <div class="npc trainer" :style="trainer2Style" v-if="!trainersDefeated.trainer2">
-          <div class="npc-sprite"><img :src="playerImage" alt="Guardaparque Luis" class="npc-image small" /></div>
-          <div class="npc-label trainer">Guardaparque Luis</div>
+          <div class="npc-sprite"><img :src="playerImage" alt="Turista Sara" class="npc-image small" /></div>
+          <div class="npc-label trainer">Turista Sara</div>
         </div>
       </div>
     </div>
@@ -45,7 +45,7 @@
         <div class="modal-header pokemon"><h2>Pokémon Salvaje</h2></div>
         <div class="modal-content">
           <div class="encounter-info"><div class="encounter-name">{{ currentEncounter.data.name }}</div><div class="encounter-level">Nivel {{ currentEncounter.data.level }}</div></div>
-          <p class="encounter-text">Un {{ currentEncounter.data.name }} apareció entre los árboles del parque.</p>
+          <p class="encounter-text">Un {{ currentEncounter.data.name }} merodea cerca de la torre.</p>
         </div>
         <div class="modal-actions"><button class="btn-primary" @click="fightPokemon">Pelear</button><button class="btn-secondary" @click="fleePokemon">Huir</button></div>
       </div>
@@ -54,7 +54,7 @@
     <div v-if="showPokemonResult" class="modal-overlay">
       <div class="modal result-modal">
         <div class="modal-header success"><h2>Victoria</h2></div>
-        <div class="modal-content"><p class="result-text">Has derrotado al Pokémon salvaje.</p><p class="reward-text">+50 EXP obtenida</p></div>
+        <div class="modal-content"><p class="result-text">Has derrotado al Pokémon salvaje.</p><p class="reward-text">+70 EXP obtenida</p></div>
         <div class="modal-actions"><button class="btn-primary" @click="closePokemonResult">Continuar</button></div>
       </div>
     </div>
@@ -82,77 +82,48 @@
     <div v-if="showTrainerResult" class="modal-overlay">
       <div class="modal result-modal">
         <div class="modal-header success"><h2>Victoria</h2></div>
-        <div class="modal-content"><p class="result-text">Has derrotado al entrenador {{ lastDefeatedTrainer }}.</p><p class="reward-text">+100 EXP y $500 obtenidos</p></div>
+        <div class="modal-content"><p class="result-text">Has derrotado al entrenador {{ lastDefeatedTrainer }}.</p><p class="reward-text">+120 EXP y $800 obtenidos</p></div>
         <div class="modal-actions"><button class="btn-primary" @click="closeTrainerResult">Continuar</button></div>
-      </div>
-    </div>
-
-    <div v-if="showUnlockedZoneModal && unlockedZone" class="modal-overlay">
-      <div class="modal unlocked-modal">
-        <div class="modal-header unlocked"><h2>Nueva Zona Desbloqueada</h2></div>
-        <div class="modal-content">
-          <div class="unlocked-icon"><span class="unlock-symbol">★</span></div>
-          <p class="unlocked-text">Al entrar a esta zona, has desbloqueado una nueva área para explorar.</p>
-          <div class="unlocked-zone-info"><div class="zone-name">{{ unlockedZone.name }}</div><div class="zone-description">{{ unlockedZone.description }}</div></div>
-          <p class="unlocked-note">Disponible en el mapa mundial.</p>
-        </div>
-        <div class="modal-actions"><button class="btn-primary" @click="closeUnlockedModal">Entendido</button></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import zoneImage from '../assets/parquecana.png'
+import zoneImage from '../assets/ermita.png'
 import playerImage from '../assets/player.png'
 import PlayerCharacter from '../components/PlayerCharacter.vue'
 import { useKeyboardMovement } from '../composables/useKeyboardMovement'
-import { useMapStore } from '../stores/mapStore'
-import type { Zone } from '../types/zone'
 
 const router = useRouter()
-const mapStore = useMapStore()
-
-const CURRENT_ZONE_ID = 5
-
-const showUnlockedZoneModal = ref(false)
-const unlockedZone = ref<Zone | null>(null)
-
-onMounted(() => {
-  const unlocked = mapStore.unlockNextZone(CURRENT_ZONE_ID)
-  if (unlocked) {
-    unlockedZone.value = unlocked
-    setTimeout(() => { showUnlockedZone.value = true }, 500)
-  }
-})
-
-const showUnlockedZone = ref(false)
-const closeUnlockedModal = () => { showUnlockedZone.value = false }
 
 const wildPokemon = [
-  { id: 1, name: 'Oddish', level: 16, found: false },
-  { id: 2, name: 'Lotad', level: 18, found: false },
-  { id: 3, name: 'Buizel', level: 20, found: false },
+  { id: 1, name: 'Gastly', level: 22, found: false },
+  { id: 2, name: 'Ralts', level: 21, found: false },
 ]
-
-const trainers = {
-  trainer1: { name: 'Ana', dialogue: 'Sigue la ruta del río y aprende.', pokemon: 'Lotad', pokemonLevel: 18, position: { x: 30, y: 58 } },
-  trainer2: { name: 'Luis', dialogue: 'Cuida la flora del parque.', pokemon: 'Oddish', pokemonLevel: 20, position: { x: 65, y: 40 } },
-}
 
 const items = [
-  { id: 1, name: 'Cuerda Huida', description: 'Escapa de cuevas y zonas cerradas.', found: false },
-  { id: 2, name: 'Super Ball', description: 'Mayor probabilidad de captura.', found: false },
-  { id: 3, name: 'Poción', description: 'Restaura 20 PS.', found: false },
+  { id: 1, name: 'Revive', description: 'Revive a un Pokémon con la mitad de PS.', found: false },
+  { id: 2, name: 'Éter', description: 'Restaura PP de un movimiento.', found: false },
 ]
 
-const stepCount = ref(0)
+const trainersDefeated = ref({ trainer1: false, trainer2: false })
+const trainers = {
+  trainer1: { name: 'Pedro', dialogue: 'Prudencia y fe para el reto final.', pokemon: 'Shuppet', pokemonLevel: 23, position: { x: 40, y: 55 } },
+  trainer2: { name: 'Sara', dialogue: 'La vista desde aquí es increíble.', pokemon: 'Pidgeotto', pokemonLevel: 24, position: { x: 70, y: 35 } },
+}
+
+const trainer1Style = computed(() => ({ left: `${trainers.trainer1.position.x}%`, top: `${trainers.trainer1.position.y}%` }))
+const trainer2Style = computed(() => ({ left: `${trainers.trainer2.position.x}%`, top: `${trainers.trainer2.position.y}%` }))
+
 type Encounter =
   | { type: 'pokemon'; data: { id: number; name: string; level: number; found: boolean } }
   | { type: 'item'; data: { id: number; name: string; description: string; found: boolean } }
   | { type: 'trainer'; data: { id?: string; name: string; dialogue: string; pokemon: string; pokemonLevel: number } }
+
+const stepCount = ref(0)
 const currentEncounter = ref<Encounter | null>(null)
 const showPokemonResult = ref(false)
 const showTrainerResult = ref(false)
@@ -161,10 +132,6 @@ const pokemonCaptured = ref(0)
 const itemsFound = ref(0)
 const pokemonDefeated = ref<number[]>([])
 const itemsCollected = ref<number[]>([])
-const trainersDefeated = ref({ trainer1: false, trainer2: false })
-
-const trainer1Style = computed(() => ({ left: `${trainers.trainer1.position.x}%`, top: `${trainers.trainer1.position.y}%` }))
-const trainer2Style = computed(() => ({ left: `${trainers.trainer2.position.x}%`, top: `${trainers.trainer2.position.y}%` }))
 
 const { position: playerPosition, isMoving, move } = useKeyboardMovement({
   initialPosition: { x: 50, y: 85 },
@@ -189,14 +156,14 @@ const checkTrainerProximity = () => {
 const checkRandomEncounter = () => {
   if (stepCount.value % 6 !== 0) return
   const chance = Math.random()
-  if (chance < 0.2 && pokemonDefeated.value.length < 3) {
+  if (chance < 0.25 && pokemonDefeated.value.length < 2) {
     const available = wildPokemon.filter(p => !pokemonDefeated.value.includes(p.id))
-    if (available.length > 0) { const pokemon = available[Math.floor(Math.random() * available.length)]!; currentEncounter.value = { type: 'pokemon', data: pokemon } }
+    if (available.length > 0) currentEncounter.value = { type: 'pokemon', data: available[Math.floor(Math.random() * available.length)]! }
     return
   }
-  if (chance >= 0.2 && chance < 0.35 && itemsCollected.value.length < 3) {
+  if (chance >= 0.25 && chance < 0.35 && itemsCollected.value.length < 2) {
     const available = items.filter(i => !itemsCollected.value.includes(i.id))
-    if (available.length > 0) { const item = available[Math.floor(Math.random() * available.length)]!; currentEncounter.value = { type: 'item', data: item } }
+    if (available.length > 0) currentEncounter.value = { type: 'item', data: available[Math.floor(Math.random() * available.length)]! }
   }
 }
 
@@ -212,7 +179,7 @@ const goBack = () => { router.push('/mapa') }
 </script>
 
 <style scoped>
-.gym-zone{width:100%;min-height:100vh;background:linear-gradient(135deg,#0e4d4c 0%,#1b8a72 50%,#0e4d4c 100%);position:relative;overflow:hidden}
+.gym-zone{width:100%;min-height:100vh;background:linear-gradient(135deg,#212121 0%,#424242 50%,#212121 100%);position:relative;overflow:hidden}
 .gym-header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:linear-gradient(to bottom,rgba(0,0,0,0.85),rgba(0,0,0,0.5),transparent);z-index:100}
 .back-btn{padding:8px 16px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;border-radius:20px;cursor:pointer;font-weight:500}
 .gym-info{text-align:center;color:white}
@@ -220,7 +187,7 @@ const goBack = () => { router.push('/mapa') }
 .stat-item{padding:6px 12px;background:rgba(0,0,0,0.6);border-radius:15px;color:white;font-size:.75rem;font-weight:500}
 .gym-map-container{width:100%;height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 20px 20px}
 .map-canvas{position:relative;width:min(600px,90vw);aspect-ratio:2/3;border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.map-image{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.map-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .npc{position:absolute;transform:translate(-50%,-50%);z-index:40;display:flex;flex-direction:column;align-items:center}
 .npc-image{width:80px;height:100px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
 .npc-label{margin-top:4px;padding:3px 10px;color:white;font-size:.7rem;font-weight:600;border-radius:10px;text-align:center}
@@ -248,11 +215,4 @@ const goBack = () => { router.push('/mapa') }
 .btn-primary,.btn-secondary{flex:1;padding:12px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer}
 .btn-primary{background:linear-gradient(135deg,#43a047,#2e7d32);color:white}
 .btn-secondary{background:linear-gradient(135deg,#757575,#424242);color:white}
-.unlocked-modal .modal-header.unlocked{background:linear-gradient(135deg,#7b1fa2,#4a148c)}
-.unlocked-icon{margin-bottom:16px}
-.unlock-symbol{font-size:3rem;color:#7b1fa2}
-.unlocked-zone-info{padding:16px;background:linear-gradient(135deg,#f3e5f5,#e1bee7);border-radius:10px;margin-bottom:12px}
-.zone-name{font-size:1.2rem;font-weight:bold;color:#4a148c;margin-bottom:8px}
-.zone-description{font-size:.9rem;color:#666;line-height:1.4}
-.unlocked-note{font-size:.8rem;color:#888;font-style:italic}
 </style>
