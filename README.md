@@ -1,5 +1,6 @@
 # Piokemon - Vue 3 + Vite + Tailwind CSS + shadcn-vue
 
+HOLA
 Proyecto Vue 3 configurado con Vite, Tailwind CSS v4 y shadcn-vue según las especificaciones del módulo.
 
 ## Stack Tecnológico
