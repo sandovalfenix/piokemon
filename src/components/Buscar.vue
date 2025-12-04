@@ -108,14 +108,22 @@ const iniciarAnimacion = (): void => {
 };
 
 const decidirResultadoDeBusqueda = (): void => {
-  // Check if encounter was successfully generated
-  if (encounterStore.isEncounterActive && encounterStore.currentPokemon) {
-    foundPokemon.value = encounterStore.currentPokemon as EncounteredPokemon
-    emit('pokemon-encontrado', foundPokemon.value)
-  } else if (encounterStore.fetchError) {
-    foundPokemon.value = null
-    emit('pokemon-no-encontrado')
+  // Intentar generar un encuentro en POKEMON_DATA según la región.
+  // generateEncounter ahora retorna true|false según si encontró pokémons.
+  const encontrado = encounterStore.generateEncounter(props.region)
+
+  if (encontrado) {
+    foundPokemon.value = encounterStore.wildPokemon as EncounteredPokemon
+    if (foundPokemon.value) {
+      console.log('✅ Pokémon encontrado (store):', foundPokemon.value)
+      emit('pokemon-encontrado', foundPokemon.value)
+    } else {
+      console.log('❌ Error inesperado: se indicó encuentro pero no hay Pokémon en el store')
+      emit('pokemon-no-encontrado')
+    }
   } else {
+    // No se encontraron pokémons en POKEMON_DATA para la región solicitada
+    console.log('❌ No se encontraron pokémons en POKEMON_DATA para la región:', props.region)
     foundPokemon.value = null
     emit('pokemon-no-encontrado')
   }
