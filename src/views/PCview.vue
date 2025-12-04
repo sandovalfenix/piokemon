@@ -70,54 +70,64 @@ function saveChanges() {
 </script>
 
 <template>
-  <div class="w-full min-h-screen p-6 flex flex-col gap-6">
+  <div class="w-full min-h-screen p-6 flex flex-col gap-6 bg-gradient-to-b from-slate-100 to-slate-200">
 
-    <h1 class="text-3xl font-bold text-center mb-4">Pokémon Storage PC</h1>
+    <h1 class="text-4xl font-extrabold text-center mb-6 tracking-wide text-slate-800 drop-shadow">
+      Pokémon Storage PC
+    </h1>
 
-    <div class="grid grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
       <!-- TEAM -->
-      <div class="border p-4 rounded-xl bg-white shadow">
-        <h2 class="font-bold text-xl mb-3">Your Team (Max 6)</h2>
+      <div class="border p-5 rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200">
+        <h2 class="font-bold text-2xl mb-4 text-slate-900 flex items-center gap-2">
+          <span class="text-blue-500">⬤</span> Your Team (Max 6)
+        </h2>
 
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-4">
           <div
             v-for="(member, index) in teamList"
             :key="index"
             @click="moveToPC(index)"
-            class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition hover:bg-red-100"
+            class="flex items-center gap-4 p-4 border rounded-xl cursor-pointer 
+                   bg-slate-50 hover:bg-red-50 transition-transform hover:scale-[1.02]
+                   shadow-sm hover:shadow-md"
           >
-            <img :src="member.pokemon.sprite" class="w-12 h-12" />
+            <img :src="member.pokemon.sprite" class="w-14 h-14 drop-shadow-md" />
             <div>
-              <p class="font-semibold">{{ member.pokemon.name }}</p>
-              <p class="text-sm">Lv. {{ member.level }}</p>
+              <p class="font-semibold text-lg text-slate-900">{{ member.pokemon.name }}</p>
+              <p class="text-sm text-slate-500">Lv. {{ member.level }}</p>
             </div>
           </div>
 
-          <p v-if="teamList.length === 0" class="text-gray-400 text-center mt-4">
+          <p v-if="teamList.length === 0" class="text-gray-400 text-center mt-4 italic">
             (Team Empty)
           </p>
         </div>
       </div>
 
       <!-- PC BOX -->
-      <div class="border p-4 rounded-xl bg-white shadow">
-        <h2 class="font-bold text-xl mb-3">PC Box</h2>
+      <div class="border p-5 rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-200">
+        <h2 class="font-bold text-2xl mb-4 text-slate-900 flex items-center gap-2">
+          <span class="text-green-500">⬤</span> PC Box
+        </h2>
 
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-3 md:grid-cols-4 gap-4">
 
           <div
             v-for="poke in pcList"
             :key="poke.instanceId"
             @click="moveFromPC(poke.instanceId)"
-            class="p-3 border rounded-lg cursor-pointer flex flex-col items-center transition hover:bg-green-100"
+            class="p-4 border rounded-xl cursor-pointer flex flex-col items-center 
+                   bg-slate-50 hover:bg-green-50 transition-transform hover:scale-[1.03]
+                   shadow-sm hover:shadow-md"
           >
-            <img :src="poke.pokemon.sprite" class="w-12 h-12" />
-            <p class="text-sm font-semibold mt-1">{{ poke.pokemon.name }}</p>
+            <img :src="poke.pokemon.sprite" class="w-14 h-14 drop-shadow-md" />
+            <p class="text-sm font-semibold mt-2 text-slate-900">{{ poke.pokemon.name }}</p>
             <p class="text-xs text-gray-500">Lv. {{ poke.captureLevel }}</p>
           </div>
 
-          <p v-if="pcList.length === 0" class="text-gray-400 text-center col-span-4 mt-4">
+          <p v-if="pcList.length === 0" class="text-gray-400 text-center col-span-4 mt-4 italic">
             (PC Box Empty)
           </p>
         </div>
@@ -125,8 +135,8 @@ function saveChanges() {
 
     </div>
 
-    <div class="w-full flex justify-center mt-6">
-      <Button class="px-8 py-3 text-lg" @click="saveChanges">
+    <div class="w-full flex justify-center mt-8">
+      <Button class="px-10 py-4 text-lg font-bold shadow-md hover:shadow-xl transition-all rounded-xl bg-yellow-400 hover:bg-yellow-500 text-black" @click="saveChanges">
         Save Changes
       </Button>
     </div>
@@ -135,18 +145,21 @@ function saveChanges() {
          TEAM FULL DIALOG (shadcn)
     ====================================================== -->
     <Dialog v-model:open="showTeamFull">
-      <DialogContent class="max-w-sm">
+      <DialogContent class="max-w-sm rounded-2xl shadow-xl">
         <DialogHeader>
-          <DialogTitle>Team is Full</DialogTitle>
+          <DialogTitle class="text-xl font-bold text-red-600">Team is Full</DialogTitle>
         </DialogHeader>
 
-        <p class="text-gray-600">
+        <p class="text-gray-700">
           You already have 6 Pokémon in your team.
           Remove one before adding another.
         </p>
 
-        <DialogFooter>
-          <Button @click="showTeamFull = false">Okay</Button>
+        <DialogFooter class="mt-4">
+          <Button class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg" 
+                  @click="showTeamFull = false">
+            Okay
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

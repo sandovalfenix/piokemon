@@ -189,7 +189,7 @@ function handleFlee() {
       <CardFooter class="border-t border-border flex gap-3 pt-4">
         <!-- Battle Button -->
         <Button
-          class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold text-lg py-6"
+          class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-6"
           @click="handleBattle"
         >
           ¡Batalla!
@@ -198,7 +198,7 @@ function handleFlee() {
         <!-- Flee Button -->
         <Button
           variant="outline"
-          class="flex-1 font-bold text-lg py-6"
+          class="flex-1 font-bold text-lg py-6 bg-red-600 text-white hover:bg-red-700 hover:text-white"
           @click="handleFlee"
         >
           Huir

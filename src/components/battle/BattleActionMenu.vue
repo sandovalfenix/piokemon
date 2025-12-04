@@ -48,7 +48,7 @@ const props = withDefaults(defineProps<Props>(), {
             <span class="action-text">POKÉBALLS</span>
           </button>
           <button class="action-btn" @click="$emit('pokemon')">
-            <span class="action-text">POKéMON</span>
+            <span class="action-text">POKÉMON</span>
           </button>
           <button class="action-btn" @click="$emit('run')">
             <span class="action-text">RUN</span>
@@ -111,7 +111,7 @@ const props = withDefaults(defineProps<Props>(), {
   font-weight: bold;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1), -4px -4px 8px rgba(255, 255, 255, 0.9);
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.25), -4px -4px 8px rgba(255, 255, 255, 0.8);
   border-radius: 0.75rem;
   padding: 1rem;
   cursor: pointer;
@@ -160,6 +160,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 .back-arrow {
   font-size: 11px;
+  
 }
 
 /* New Layout Styles */

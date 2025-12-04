@@ -9,7 +9,7 @@
  * - "Battle" button (auto-selects next opponent in progression)
  * - "Wild Encounter" button
  * - Progress display (badges earned)
- * - Reset Progress button (T052)
+ * 
  *
  * Flow Guard: Checks hasStarter flag before allowing battle
  */
@@ -50,8 +50,6 @@ const showCapturar = ref(false)
 // Found Pokémon data
 const foundPokemon = ref<EncounteredPokemon | null>(null)
 
-// Reset progress confirmation modal (T052)
-const showResetModal = ref(false)
 
 // Badge images mapping (ordered by gym progression)
 import badgeJose from '@/assets/images/badges/Valle_Vivo-JOSE.png'
@@ -155,6 +153,10 @@ function handleWildBattleClick() {
   showWildEncounter.value = true
 }
 
+function handleChangeTeamClick() {
+  router.push('/pc')
+}
+
 /**
  * Handle closing wild encounter modal
  */
@@ -224,30 +226,6 @@ function handleContinueSearching() {
   showWildEncounter.value = true
 }
 
-/**
- * T052: Handle reset progress button click
- * Shows confirmation modal before resetting
- */
-function handleResetClick() {
-  showResetModal.value = true
-}
-
-/**
- * T052: Confirm and execute progress reset
- */
-function confirmReset() {
-  progressStore.resetProgress()
-  teamStore.setHasStarter(false)
-  showResetModal.value = false
-  console.log('[HomeView] Progress reset completed')
-}
-
-/**
- * T052: Cancel reset
- */
-function cancelReset() {
-  showResetModal.value = false
-}
 </script>
 
 <template>
@@ -294,17 +272,14 @@ function cancelReset() {
       >
         Encuentro Salvaje
       </Button>
-
-      <!-- T052: Reset Progress Button -->
       <Button
-        v-if="teamStore.hasStarter"
-        class="reset-btn"
-        size="sm"
-        variant="ghost"
-        @click="handleResetClick"
+        class="battle-btn wild-btn"
+        size="lg"
+        variant="outline"
+        @click="handleChangeTeamClick"
       >
-        <i class="pi pi-refresh"></i> Reiniciar Progreso
-      </Button>
+        Cambia tu equipo
+      </Button>      
     </section>
 
     <!-- Wild Encounter Modal (Buscar Animation) -->
@@ -342,26 +317,6 @@ function cancelReset() {
       </DialogContent>
     </Dialog>
 
-    <!-- T052: Reset Progress Confirmation Modal -->
-    <Dialog v-model:open="showResetModal">
-      <DialogContent class="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>¿Reiniciar progreso?</DialogTitle>
-          <DialogDescription>
-            Esta acción borrará todo tu progreso: medallas, entrenadores derrotados y tu Pokémon inicial.
-            Tendrás que elegir un nuevo Pokémon inicial.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter class="flex gap-2">
-          <Button variant="outline" @click="cancelReset">
-            Cancelar
-          </Button>
-          <Button variant="destructive" @click="confirmReset">
-            Sí, Reiniciar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   </main>
 </template>
 
@@ -482,14 +437,4 @@ function cancelReset() {
   background: #e8f5e9;
 }
 
-/* T052: Reset button */
-.reset-btn {
-  margin-top: 1rem;
-  color: #666;
-  font-size: 0.875rem;
-}
-
-.reset-btn:hover {
-  color: #dc2626;
-}
 </style>

@@ -8,7 +8,7 @@
         :disabled="disabled"
         :class="[
           'px-4 py-3 text-gray-800 rounded-xl transition-all duration-150',
-          'bg-gray-100 shadow-[4px_4px_8px_rgba(0,0,0,0.1),-4px_-4px_8px_rgba(255,255,255,0.9)]',
+          'bg-gray-100 shadow-[4px_4px_6px_rgba(0,0,0,0.25),-4px_-4px_6px_rgba(255,255,255,0.8)]',
           'hover:shadow-[2px_2px_4px_rgba(0,0,0,0.1),-2px_-2px_4px_rgba(255,255,255,0.9)]',
           'hover:translate-x-[1px] hover:translate-y-[1px]',
           'active:shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1)]',
@@ -25,7 +25,7 @@
             <span class="font-semibold">{{ move.name }}</span>
             <span class="text-xs px-1.5 py-0.5 rounded bg-slate-600 text-white">{{ move.type }}</span>
           </div>
-          <div class="text-xs text-gray-300">
+          <div class="text-xs font-semibold">
             <span>Power: {{ move.power }}</span>
             <span class="ml-2">Acc: {{ move.accuracy }}%</span>
           </div>
