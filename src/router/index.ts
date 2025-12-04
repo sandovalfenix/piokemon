@@ -34,6 +34,31 @@ const router = createRouter({
       component: () => import('../views/ZonaLobbyView.vue'),
     },
     {
+      path: '/zoologico',
+      name: 'zoologico',
+      component: () => import('../views/lobbies/ZoologicoView.vue'),
+    },
+    {
+      path: '/colinas',
+      name: 'colinas',
+      component: () => import('../views/lobbies/ColinasView.vue'),
+    },
+    {
+      path: '/cristo-rey',
+      name: 'cristo-rey',
+      component: () => import('../views/lobbies/CristoReyView.vue'),
+    },
+    {
+      path: '/ermita',
+      name: 'ermita',
+      component: () => import('../views/lobbies/LaErmitaView.vue'),
+    },
+    {
+      path: '/cana',
+      name: 'cana',
+      component: () => import('../views/lobbies/ParqueCanaView.vue'),
+    },
+    {
       path: '/adventure',
       name: 'adventure',
       // route level code-splitting

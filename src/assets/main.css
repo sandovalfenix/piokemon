@@ -4,6 +4,7 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
+  padding-bottom: calc(var(--bottom-nav-height) + 2rem);
   font-weight: normal;
 }
 
