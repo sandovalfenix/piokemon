@@ -11,3 +11,6 @@ export const useExampleStore = defineStore('example', () => {
   return { count, increment }
 })
 
+
+
+

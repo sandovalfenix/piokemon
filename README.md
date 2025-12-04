@@ -124,3 +124,6 @@ npx shadcn-vue@latest add [nombre-del-block]
 - [Documentación de shadcn-vue](https://www.shadcn-vue.com/)
 - [Documentación de Pinia](https://pinia.vuejs.org/)
 
+
+
+
