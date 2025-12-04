@@ -1,19 +1,67 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import NpcListPanel from '@/components/lobby/NpcListPanel.vue'
 import PlayersOnlinePanel from '@/components/lobby/PlayersOnlinePanel.vue'
 import ZoneActionsPanel from '@/components/lobby/ZoneActionsPanel.vue'
 import AppSidebar from '@/components/AppSidebar.vue'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 
+// Añadido: identificador de la zona (útil para suscripciones/ws/peticiones)
+const zoneId = ref('zone-porcelana')
 const zoneName = ref('Ciudad Porcelana')
 
-// Handlers placeholders...
-const onNpcInteraction = (id: string) => console.log('NPC:', id)
-const onExploreZone = () => console.log('Explore')
-const onHealTeam = () => console.log('Heal')
-const onChallengePlayer = (id: string) => console.log('Challenge:', id)
-const onTradeRequest = (id: string) => console.log('Trade:', id)
+// Añadido: intentar obtener el router (si el proyecto lo usa)
+let router: ReturnType<typeof useRouter> | null = null
+try {
+	router = useRouter()
+} catch {
+	router = null
+}
+
+// Handlers adaptados para emitir eventos y/o navegación
+const onNpcInteraction = (id: string) => {
+	// Emitir evento que otros módulos pueden escuchar
+	window.dispatchEvent(new CustomEvent('npc-interact', { detail: { zoneId: zoneId.value, npcId: id } }))
+}
+
+const onExploreZone = () => {
+	// Evento público para iniciar exploración
+	window.dispatchEvent(new CustomEvent('start-exploration', { detail: { zoneId: zoneId.value } }))
+
+	// Preferir usar vue-router si está disponible, si no usar hash
+	if (router && typeof router.push === 'function') {
+		// intenta navegar a una ruta conocida 'map' (ajusta el nombre si tu router usa otro)
+		try {
+			router.push({ name: 'Map', params: { zoneId: zoneId.value } }).catch(() => {
+				// si falla, fallback a hash
+				window.location.hash = '#map'
+			})
+			return
+		} catch {
+			// noop y fallback abajo
+		}
+	}
+
+	// Fallback: navegación simple al mapa (ajusta si usas otro mecanismo)
+	try {
+		window.location.hash = '#map'
+	} catch (e) {
+		// noop
+	}
+}
+
+const onHealTeam = () => {
+	window.dispatchEvent(new CustomEvent('heal-team', { detail: { zoneId: zoneId.value } }))
+}
+
+const onChallengePlayer = (id: string) => {
+	window.dispatchEvent(new CustomEvent('challenge-player', { detail: { zoneId: zoneId.value, playerId: id } }))
+}
+
+const onTradeRequest = (id: string) => {
+	window.dispatchEvent(new CustomEvent('trade-request', { detail: { zoneId: zoneId.value, playerId: id } }))
+}
 </script>
 
 <template>
@@ -49,7 +97,8 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
           <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0 items-center">
             
             <aside class="md:col-span-3 lg:col-span-3 h-[80%]">
-              <NpcListPanel @interact="onNpcInteraction" />
+              <!-- Pasamos el valor explícito de zoneId al panel para claridad -->
+              <NpcListPanel :zone-id="zoneId" @interact="onNpcInteraction" />
             </aside>
 
             <section class="md:col-span-6 lg:col-span-6 h-full flex items-center justify-center">
@@ -57,13 +106,14 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
             </section>
 
             <aside class="md:col-span-3 lg:col-span-3 h-[80%]">
-              <PlayersOnlinePanel @challenge="onChallengePlayer" @trade="onTradeRequest" />
+              <!-- Pasamos el valor explícito de zoneId al panel de jugadores en línea -->
+              <PlayersOnlinePanel :zone-id="zoneId" @challenge="onChallengePlayer" @trade="onTradeRequest" />
             </aside>
           </main>
 
           <footer class="flex-none flex justify-center pb-4 z-20">
             <div class="w-full max-w-4xl">
-              <ZoneActionsPanel @explore="onExploreZone" @heal="onHealTeam" />
+              <ZoneActionsPanel :zone-id="zoneId" @explore="onExploreZone" @heal="onHealTeam" />
             </div>
           </footer>
         </div>
