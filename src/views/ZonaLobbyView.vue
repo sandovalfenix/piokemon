@@ -8,13 +8,6 @@ interface NPC {
   image: string // URL o path al asset de la imagen del NPC
 }
 
-interface Player {
-  id: number
-  name: string
-  avatar: string // URL o path al avatar del jugador
-  status: 'online' | 'busy' | 'offline'
-}
-
 const zoneName = 'Lobby Principal: El Corazón de Cali'
 
 // Datos simulados (tendrán que ser reales a través de APIs en el futuro)
@@ -22,12 +15,6 @@ const npcs: NPC[] = [
   { name: 'Enfermera Joy', role: 'Curación', image: 'yoi.png' },
   { name: 'Profesor Oak', role: 'Investigación', image: 'prof-oak.png' },
   // ... Añade más NPCs
-]
-
-const onlinePlayers: Player[] = [
-  { id: 1, name: 'NorbertoC', avatar: 'avatar1.png', status: 'online' },
-  { id: 2, name: 'MayenaX', avatar: 'avatar2.png', status: 'busy' },
-  // ... Añade más jugadores
 ]
 
 // Asumiendo que las rutas para las acciones son:
@@ -62,19 +49,6 @@ const onlinePlayers: Player[] = [
         <main class="center-area">
           <div class="center-content"></div>
         </main>
-
-        <aside class="panel right-panel">
-          <div class="online-players">
-            <h3>Jugadores Online</h3>
-            <div class="player-list">
-              <div v-for="player in onlinePlayers" :key="player.id" class="player-item">
-                <img :src="player.avatar" :alt="player.name" class="player-avatar" />
-                <span class="player-name">{{ player.name }}</span>
-                <div :class="['status-dot', player.status]"></div>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
       <RouterLink to="/batallas" class="battles-panel">
@@ -147,10 +121,10 @@ const onlinePlayers: Player[] = [
 /* ---------------------------------------------------- */
 .lobby-grid {
   display: grid;
-  grid-template-columns: 250px 1fr 250px;
+  grid-template-columns: 250px 1fr;
   gap: 1rem;
   padding: 1rem;
-  height: calc(95vh - 150px);
+  height: calc(95vh - 230px);
 }
 
 /* ---------------------------------------------------- */
@@ -169,6 +143,12 @@ const onlinePlayers: Player[] = [
   color: #ffd700;
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   padding-bottom: 5px;
+}
+
+/* Mover el panel de NPCs 20% hacia el centro (hacia la derecha) */
+.npcs-panel {
+  transform: translate(20%, -10%);
+  transition: transform 0.25s ease;
 }
 
 .npc-item,
