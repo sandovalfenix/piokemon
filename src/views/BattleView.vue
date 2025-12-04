@@ -93,7 +93,10 @@ async function initializeBattle() {
     // 1. Read battle target from sessionStorage
     const targetJson = sessionStorage.getItem('battleTarget')
     if (!targetJson) {
-      error.value = 'No se encontró el objetivo de batalla.'
+      // No battle target found - likely a page reload
+      // Redirect to home instead of showing error
+      console.warn('[BattleView] No battle target found, redirecting to home')
+      router.replace('/')
       return
     }
 
@@ -105,7 +108,9 @@ async function initializeBattle() {
     teamStore.loadTeam()
 
     if (teamStore.roster.length === 0) {
-      error.value = 'No tienes un equipo. Selecciona tu starter primero.'
+      // No team - redirect to team builder
+      console.warn('[BattleView] No team found, redirecting to home')
+      router.replace('/')
       return
     }
 
@@ -342,11 +347,11 @@ watch(battleWinner, (winner) => {
       class="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white"
     >
       <div class="text-center">
-        <h2 class="text-3xl mb-4">❌ Error</h2>
+        <h2 class="text-3xl mb-4">Error</h2>
         <p class="text-red-400 mb-6">{{ error }}</p>
         <div class="flex gap-4 justify-center">
           <Button @click="retryBattle">Reintentar</Button>
-          <Button variant="outline" @click="goToLobby">Volver al Lobby</Button>
+          <Button variant="outline" class="" @click="goToLobby">Volver al Lobby</Button>
         </div>
       </div>
     </div>
@@ -361,7 +366,7 @@ watch(battleWinner, (winner) => {
     <!-- Victory Modal -->
     <Dialog v-model:open="showVictoryModal">
       <DialogContent
-        class="sm:max-w-md bg-gradient-to-b from-green-950/95 to-slate-900/95 backdrop-blur-lg border-green-800/50"
+        class="sm:max-w-md bg-linear-to-b from-green-950/95 to-slate-900/95 backdrop-blur-lg border-green-800/50"
       >
         <DialogHeader>
           <DialogTitle class="text-2xl font-bold text-green-400 text-center">

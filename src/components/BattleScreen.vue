@@ -39,6 +39,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import BattleTeamSelector from './battle/BattleTeamSelector.vue'
 import PokemonTeamSwitcher from './battle/PokemonTeamSwitcher.vue'
+import PokemonSwitchModal from './battle/PokemonSwitchModal.vue'
 import TrainerWaitingScreen from './TrainerWaitingScreen.vue'
 import BagScreen from './battle/BagScreen.vue'
 import BattleField from './battle/BattleField.vue'
@@ -166,6 +167,10 @@ const isAttacking = ref(false)
 const isBattleReady = ref(false) // Track if battle is fully initialized
 const battleError = ref<string | null>(null) // T008: Track battle initialization errors
 
+// Pokemon switch modal state
+const showSwitchModal = ref(false)
+const isForcedSwitch = ref(false) // True when Pokemon fainted
+
 // Trainer waiting screen state
 const waitingTrainer = ref<import('@/data/trainersData').TrainerData | null>(null)
 
@@ -250,7 +255,9 @@ const handleBag = () => {
 }
 
 const handlePokemon = () => {
-  currentView.value = 'pokemon'
+  // Open modal for voluntary switch
+  isForcedSwitch.value = false
+  showSwitchModal.value = true
 }
 
 const handleRun = () => {
@@ -308,7 +315,19 @@ const handleSwitchPokemon = async (pokemonIndex: number) => {
   battleStore.log.push(`¡Vuelve, ${oldPokemonName}!`)
   battleStore.log.push(`¡Adelante, ${newPokemon.name}!`)
 
+  // Close modal and return to main view
+  showSwitchModal.value = false
+  isForcedSwitch.value = false
   currentView.value = 'main'
+}
+
+/**
+ * Handle closing the switch modal (voluntary switch only)
+ */
+const handleCloseSwitchModal = () => {
+  if (!isForcedSwitch.value) {
+    showSwitchModal.value = false
+  }
 }
 
 const handleUseItem = (item: Item) => {
@@ -426,9 +445,10 @@ watch(() => battleStore.log, () => {
   if (lastMessage?.includes('se debilitó') && lastMessage.includes(battleStore.player.name)) {
     // El Pokémon del jugador se debilitó
     if (battleStore.playerTeamRemaining > 0 && battleStore.winner === null) {
-      // Mostrar selector de Pokémon automáticamente con imágenes
+      // Mostrar modal de cambio de Pokémon (forzado)
       setTimeout(() => {
-        currentView.value = 'player-team-switch'
+        isForcedSwitch.value = true
+        showSwitchModal.value = true
         battleStore.log.push('¡Elige tu próximo Pokémon!')
       }, 1000)
     }
@@ -438,19 +458,23 @@ watch(() => battleStore.log, () => {
   if (lastMessage?.includes('se debilitó') && lastMessage.includes(battleStore.npc.name)) {
     // El Pokémon del enemigo se debilitó
     if (battleStore.npcTeamRemaining > 0 && battleStore.winner === null) {
-      // Mostrar equipo del enemigo con imágenes
+      // La IA elige automáticamente el siguiente Pokémon vivo
       setTimeout(() => {
-        // Use current battle opponent info for trainer display
-        const trainerData: import('@/data/trainersData').TrainerData = {
-          id: String(battleStore.opponentId ?? 'trainer'),
-          name: battleStore.opponentName ?? 'Entrenador',
-          description: '¡Eligiendo su próximo Pokémon!',
-          imageUrl: '/images/trainers/default.png',
+        const trainerName = battleStore.opponentName ?? 'El rival'
+
+        // Encontrar el siguiente Pokémon vivo en el equipo del NPC
+        const nextAliveIndex = battleStore.npcTeam.findIndex(
+          (p, idx) => idx !== battleStore.currentNpcIndex && p.currentHp > 0
+        )
+
+        const nextPokemon = nextAliveIndex !== -1 ? battleStore.npcTeam[nextAliveIndex] : undefined
+        if (nextPokemon) {
+          battleStore.currentNpcIndex = nextAliveIndex
+          battleStore.npc = nextPokemon
+          battleStore.log.push(`¡${trainerName} envió a ${nextPokemon.name}!`)
         }
-        waitingTrainer.value = trainerData
-        waitingForTrainerSwitch.value = true
-        currentView.value = 'enemy-team-switch'
-        battleStore.log.push(`¡${trainerData.name} elige su próximo Pokémon!`)
+
+        currentView.value = 'main'
       }, 1000)
     }
   }
@@ -557,6 +581,16 @@ watch(() => battleStore.log, () => {
         />
       </div>
     </div>
+
+    <!-- Pokemon Switch Modal -->
+    <PokemonSwitchModal
+      :open="showSwitchModal"
+      :team="battleStore.playerTeam"
+      :current-pokemon-id="battleStore.player.id"
+      :forced-switch="isForcedSwitch"
+      @select="handleSwitchPokemon"
+      @close="handleCloseSwitchModal"
+    />
   </div>
 </template>
 

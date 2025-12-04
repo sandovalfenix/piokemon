@@ -33,7 +33,7 @@ defineEmits<Emits>()
           'pokemon-card-btn',
           { 'active': pokemon.id === currentPokemonId && !isEnemyTeam },
           { 'fainted': pokemon.currentHp === 0 },
-          { 'disabled': pokemon.id === currentPokemonId && isEnemyTeam }
+          { 'disabled': pokemon.id === currentPokemonId && !isEnemyTeam }
         ]"
         @click="$emit('select', index)"
       >
@@ -69,7 +69,7 @@ defineEmits<Emits>()
             </div>
 
             <div v-if="pokemon.currentHp === 0" class="fainted-badge">
-              ⚠️ DEBILITADO
+              DEBILITADO
             </div>
           </div>
         </div>

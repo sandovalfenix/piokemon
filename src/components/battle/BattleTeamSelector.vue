@@ -30,7 +30,7 @@ const showTrainer = computed(() => true)
           <p class="trainer-title">Tu equipo Pokémon</p>
         </div>
         <div class="trainer-sprite">
-          <span class="trainer-avatar">AVATAR TRAINER HEREEEE PEDIRLE A JUANJOSE</span>
+          <span class="trainer-avatar">AVATAR TRAINER PEDIRLE A JUANJOSE</span>
         </div>
       </div>
     </div>
@@ -78,7 +78,7 @@ const showTrainer = computed(() => true)
     </div>
 
     <button class="back-button" @click="$emit('back')">
-      <span class="back-arrow">←</span> ATRÁS
+      <i class="pi pi-angle-left"></i>
     </button>
   </div>
 </template>
