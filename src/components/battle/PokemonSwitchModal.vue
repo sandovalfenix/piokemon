@@ -228,7 +228,7 @@ function getTypeBadgeColor(type: string): string {
       <div v-if="!forcedSwitch" class="flex justify-end pt-2 border-t border-slate-700/50">
         <Button
           variant="outline"
-          class="border-slate-600 text-slate-300 hover:bg-slate-800"
+          class="border-slate-600 text-black-300 hover:bg-slate-800 hover:text-white"
           @click="handleClose"
         >
           Cancelar

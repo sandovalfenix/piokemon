@@ -1,6 +1,6 @@
 <template>
   <div
-    class="p-3 bg-white/20 backdrop-blur-lg rounded-2xl border border-white/30 shadow-xl min-h-32 max-h-48 overflow-y-auto"
+    class="p-3 bg-white/20 backdrop-blur-lg rounded-2xl border border-black/30 shadow-xl min-h-32 max-h-48 overflow-y-auto"
     role="log"
     aria-live="polite"
     aria-atomic="false"

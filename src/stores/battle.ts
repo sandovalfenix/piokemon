@@ -419,9 +419,16 @@ export const useBattleStore = defineStore('battle', {
     },
 
     async switchNpcPokemon() {
-      // Find next alive NPC Pokémon after current index
+      // Guard: Ensure current NPC is actually fainted before switching
+      if (this.npc.currentHp > 0) {
+        console.warn('[BattleStore] switchNpcPokemon called but current NPC is not fainted')
+        return
+      }
+
+      // Find next alive NPC Pokémon (search entire team, not just after current index)
+      // This handles edge cases where Pokemon at lower indices might still be alive
       const nextIndex = this.npcTeam.findIndex(
-        (p, idx) => idx > this.currentNpcIndex && p.currentHp > 0
+        (p, idx) => idx !== this.currentNpcIndex && p.currentHp > 0
       )
 
       if (nextIndex !== -1) {
@@ -582,10 +589,19 @@ export const useBattleStore = defineStore('battle', {
           defender.currentHp = Math.max(0, defender.currentHp - damage)
 
           // IMPORTANT: Also update the store state directly to ensure reactivity
+          // AND sync to team arrays to prevent HP desync bugs
           if (attackerLabel === 'player') {
             this.npc.currentHp = defender.currentHp
+            // Sync to npcTeam array to ensure switchNpcPokemon sees correct HP
+            if (this.npcTeam[this.currentNpcIndex]) {
+              this.npcTeam[this.currentNpcIndex].currentHp = defender.currentHp
+            }
           } else {
             this.player.currentHp = defender.currentHp
+            // Sync to playerTeam array to ensure switchPlayerPokemon sees correct HP
+            if (this.playerTeam[this.currentPlayerIndex]) {
+              this.playerTeam[this.currentPlayerIndex].currentHp = defender.currentHp
+            }
           }
 
           console.log('[BattleStore] After damage:', {
