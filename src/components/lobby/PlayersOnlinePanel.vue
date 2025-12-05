@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, withDefaults } from 'vue'
 import { IconArrowsLeftRight, IconUsers, IconCircleFilled } from '@tabler/icons-vue'
 // UI components
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -22,11 +22,22 @@ export interface Player {
   status: 'idle' | 'battle' | 'trade'
   isSelf: boolean
 }
+
+const props = withDefaults(defineProps<{
+  hideTitle?: boolean
+}>(), {
+  hideTitle: false
+})
+
 const emit = defineEmits<{
   (e: 'challenge', targetId: string): void
   (e: 'trade', targetId: string): void
 }>()
 const players = ref<Player[]>([])
+
+defineExpose({
+  count: computed(() => players.value.length)
+})
 const initFirebaseListener = () => {
   players.value = [
     { uid: 'u1', username: 'AshKetchum', status: 'idle', isSelf: false },
@@ -54,7 +65,7 @@ const getStatusClass = (status: string) => {
   <Card
     class="@container/playerlist h-full flex flex-col overflow-hidden bg-black/15 backdrop-blur-xs"
   >
-    <CardHeader class="!px-3 !pb-3">
+    <CardHeader v-if="!hideTitle" class="!px-3 !pb-3">
       <CardTitle
         class="text-lg font-black tracking-wide uppercase flex items-center gap-2 text-white"
       >

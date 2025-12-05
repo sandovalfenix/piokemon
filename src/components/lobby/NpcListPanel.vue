@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, withDefaults } from 'vue'
 import { IconUser } from '@tabler/icons-vue'
 // UI components
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -22,8 +22,19 @@ export interface Npc {
   avatarUrl?: string
   isInteractive: boolean
 }
+
+const props = withDefaults(defineProps<{
+  hideTitle?: boolean
+}>(), {
+  hideTitle: false
+})
+
 const emit = defineEmits<{ (e: 'interact', npcId: string): void }>()
 const npcList = ref<Npc[]>([])
+
+defineExpose({
+  count: computed(() => npcList.value.length)
+})
 const loadNpcs = async () => {
   npcList.value = [
     { id: 'npc_joy_01', name: 'Nurse Joy', role: 'Healer', isInteractive: true },
@@ -40,7 +51,7 @@ onMounted(() => {
 
 <template>
   <Card class="h-full flex flex-col overflow-hidden bg-black/15 backdrop-blur-xs">
-    <CardHeader class="!px-3 !pb-3">
+    <CardHeader v-if="!hideTitle" class="!px-3 !pb-3">
       <CardTitle
         class="text-lg font-black tracking-wide uppercase flex items-center gap-2 text-white"
       >
@@ -53,7 +64,7 @@ onMounted(() => {
       </CardAction>
     </CardHeader>
 
-    <CardContent class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar">
+    <CardContent :class="hideTitle ? 'flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar' : 'flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar'">
       <div
         v-for="npc in npcList"
         :key="npc.id"

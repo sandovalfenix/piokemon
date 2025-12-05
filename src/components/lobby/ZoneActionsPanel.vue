@@ -12,6 +12,12 @@ import {
   CardAction,
 } from '@/components/ui/card'
 
+const props = withDefaults(defineProps<{
+  hideTitle?: boolean
+}>(), {
+  hideTitle: false
+})
+
 const emit = defineEmits<{ (e: 'explore'): void; (e: 'heal'): void }>()
 </script>
 
@@ -19,7 +25,7 @@ const emit = defineEmits<{ (e: 'explore'): void; (e: 'heal'): void }>()
   <Card
     class="flex flex-col items-center justify-between gap-4 h-full bg-black/15 backdrop-blur-xs"
   >
-    <CardHeader class="w-full !px-3 !pb-3">
+    <CardHeader v-if="!hideTitle" class="w-full !px-3 !pb-3">
       <CardTitle
         class="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2"
       >

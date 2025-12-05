@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NpcListPanel from '@/components/lobby/NpcListPanel.vue'
 import PlayersOnlinePanel from '@/components/lobby/PlayersOnlinePanel.vue'
@@ -7,8 +7,20 @@ import ZoneActionsPanel from '@/components/lobby/ZoneActionsPanel.vue'
 import { SidebarInset } from '@/components/ui/sidebar'
 import SiteHeader from '@/components/SiteHeader.vue'
 import { Button } from '@/components/ui/button'
-import { IconArrowLeft } from '@tabler/icons-vue'
+import { Badge } from '@/components/ui/badge'
+import { CardTitle } from '@/components/ui/card'
+import { IconArrowLeft, IconUser, IconUsers, IconBolt } from '@tabler/icons-vue'
 import zonalobbyBg from '@/assets/img/zonalobby.png'
+
+// Importar imágenes de fondo dinámicas de zones-lobby
+import zooCaliLobbyBg from '@/assets/img/zones-lobby/zoo_cali.png'
+
+// Importar imágenes de locations como fallback
+import laErmitaImg from '@/assets/img/locations/la_ermita.png'
+import nicheImg from '@/assets/img/locations/niche.png'
+import parqueCanaImg from '@/assets/img/locations/parque_cana.png'
+import cristoReyImg from '@/assets/img/locations/cristo_rey.png'
+import zooCaliImg from '@/assets/img/locations/zoo_cali.png'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,12 +29,70 @@ const goBackToMap = () => {
   router.push('/mapa')
 }
 
+// Función helper para capitalizar cada palabra, excepto conectores
+const capitalizeWords = (text: string): string => {
+  // Lista de conectores que no deben capitalizarse (excepto si son la primera palabra)
+  const connectors = ['de', 'la', 'del', 'y', 'e', 'o', 'u', 'a', 'en', 'por', 'para', 'con', 'sin']
+
+  return text
+    .split(' ')
+    .map((word, index) => {
+      const lowerWord = word.toLowerCase()
+      // Si es la primera palabra o no es un conector, capitalizar
+      if (index === 0 || !connectors.includes(lowerWord)) {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      }
+      // Si es un conector y no es la primera palabra, mantener en minúscula
+      return lowerWord
+    })
+    .join(' ')
+}
+
 // Obtener el nombre de la zona desde los parámetros de la ruta
 const zoneName = computed(() => {
   const param = route.params.zoneName as string
   // Decodificar y formatear el nombre de la zona (reemplazar guiones/encodings por espacios)
-  return decodeURIComponent(param).replace(/-/g, ' ')
+  const decoded = decodeURIComponent(param).replace(/-/g, ' ')
+  // Aplicar capitalize a cada palabra
+  return capitalizeWords(decoded)
 })
+
+// Obtener el slug de la zona (sin decodificar)
+const zoneSlug = computed(() => {
+  return (route.params.zoneName as string).toLowerCase()
+})
+
+// Mapeo de zonas a imágenes de fondo dinámicas
+// Prioridad: zones-lobby > locations > default
+const zoneBackgroundImage = computed(() => {
+  const zoneSlugLower = zoneSlug.value
+
+  // Mapeo de slugs a imágenes de zones-lobby (si existen)
+  const lobbyImages: Record<string, string> = {
+    'zoo-de-cali': zooCaliLobbyBg,
+    // Agregar más imágenes de zones-lobby aquí cuando estén disponibles
+  }
+
+  // Mapeo de slugs a imágenes de locations (fallback)
+  const locationImages: Record<string, string> = {
+    'plazoleta-jairo-varela': nicheImg,
+    'zoo-de-cali': zooCaliImg,
+    'la-ermita': laErmitaImg,
+    'cristo-rey': cristoReyImg,
+    'parque-de-la-cana': parqueCanaImg,
+  }
+
+  // Retornar imagen de zones-lobby si existe, sino location, sino default
+  return lobbyImages[zoneSlugLower] || locationImages[zoneSlugLower] || zonalobbyBg
+})
+
+// Refs para acceder a los conteos de los componentes hijos
+const npcListPanelRef = ref<InstanceType<typeof NpcListPanel> | null>(null)
+const playersOnlinePanelRef = ref<InstanceType<typeof PlayersOnlinePanel> | null>(null)
+
+// Computed para obtener los conteos
+const npcCount = computed(() => npcListPanelRef.value?.count ?? 0)
+const playerCount = computed(() => playersOnlinePanelRef.value?.count ?? 0)
 
 // Handlers placeholders...
 const onNpcInteraction = (id: string) => console.log('NPC:', id)
@@ -38,7 +108,7 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
       <div
         class="relative flex-1 w-full overflow-hidden font-sans"
         :style="{
-          backgroundImage: `url(${zonalobbyBg})`,
+          backgroundImage: `url(${zoneBackgroundImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -58,16 +128,25 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
             </Button>
           </div>
           <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0 items-center">
-            <aside class="md:col-span-3 lg:col-span-3 h-[80%]">
-              <NpcListPanel @interact="onNpcInteraction" />
+            <aside class="md:col-span-3 lg:col-span-3 h-[80%] flex flex-col gap-3">
+              <div class="flex items-center justify-between px-1">
+                <CardTitle
+                  class="text-xl font-bold tracking-normal flex items-center gap-3 text-white drop-shadow-lg"
+                  style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);"
+                >
+                  <IconUser class="size-6" />
+                  <span>NPCs</span>
+                </CardTitle>
+                <Badge class="px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm border border-white/30">{{ npcCount }}</Badge>
+              </div>
+              <NpcListPanel ref="npcListPanelRef" hide-title @interact="onNpcInteraction" />
             </aside>
 
             <section class="md:col-span-6 lg:col-span-6 h-full flex items-center justify-center w-full">
               <h2
-                class="tech-glow-title text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-[0.15em] text-white rounded-xl px-6 py-3 text-center mx-auto"
+                class="tech-glow-title text-4xl md:text-5xl lg:text-6xl font-bold tracking-normal text-white rounded-xl px-8 py-4 text-center mx-auto"
                 style="
-                  -webkit-text-stroke: 2px rgba(255, 255, 255, 0.1);
-                  letter-spacing: 0.15em;
+                  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 255, 255, 0.3);
                   margin-top: -5rem;
                 "
               >
@@ -75,14 +154,31 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
               </h2>
             </section>
 
-            <aside class="md:col-span-3 lg:col-span-3 h-[80%]">
-              <PlayersOnlinePanel @challenge="onChallengePlayer" @trade="onTradeRequest" />
+            <aside class="md:col-span-3 lg:col-span-3 h-[80%] flex flex-col gap-3">
+              <div class="flex items-center justify-between px-1">
+                <CardTitle
+                  class="text-xl font-bold tracking-normal flex items-center gap-3 text-white drop-shadow-lg"
+                  style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);"
+                >
+                  <IconUsers class="size-6" />
+                  <span>Online</span>
+                </CardTitle>
+                <Badge class="px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm border border-white/30">{{ playerCount }}</Badge>
+              </div>
+              <PlayersOnlinePanel ref="playersOnlinePanelRef" hide-title @challenge="onChallengePlayer" @trade="onTradeRequest" />
             </aside>
           </main>
 
-          <footer class="flex-none flex justify-center pb-4 z-20">
+          <footer class="flex-none flex flex-col items-center justify-center pb-4 z-20 gap-3">
+            <CardTitle
+              class="text-xl font-bold tracking-normal text-white flex items-center gap-3 drop-shadow-lg"
+              style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);"
+            >
+              <IconBolt class="size-6" />
+              <span>Acciones de Zona</span>
+            </CardTitle>
             <div class="w-full max-w-4xl">
-              <ZoneActionsPanel @explore="onExploreZone" @heal="onHealTeam" />
+              <ZoneActionsPanel hide-title @explore="onExploreZone" @heal="onHealTeam" />
             </div>
           </footer>
         </div>
@@ -120,28 +216,27 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
   0% {
     opacity: 0;
     transform: translateY(20px);
-    filter: blur(10px);
+    filter: blur(5px);
     text-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.5),
-      0 0 0px rgba(0, 255, 255, 0);
+      3px 3px 6px rgba(0, 0, 0, 0.9),
+      0 0 0px rgba(255, 255, 255, 0);
   }
   50% {
-    opacity: 0.7;
-    filter: blur(3px);
+    opacity: 0.8;
+    filter: blur(2px);
     text-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.5),
-      0 0 20px rgba(0, 255, 255, 0.4),
-      0 0 40px rgba(0, 255, 255, 0.2);
+      3px 3px 6px rgba(0, 0, 0, 0.9),
+      0 0 12px rgba(0, 0, 0, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.2);
   }
   100% {
     opacity: 1;
     transform: translateY(0);
     filter: blur(0);
     text-shadow:
-      0 2px 8px rgba(0, 0, 0, 0.5),
-      0 0 20px rgba(255, 255, 255, 0.3),
-      0 0 40px rgba(0, 255, 255, 0.4),
-      0 0 60px rgba(0, 255, 255, 0.2);
+      3px 3px 6px rgba(0, 0, 0, 0.9),
+      0 0 12px rgba(0, 0, 0, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.3);
   }
 }
 
