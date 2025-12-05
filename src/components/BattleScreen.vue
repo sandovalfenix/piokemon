@@ -293,8 +293,19 @@ const handleRun = () => {
   const canRun = Math.random() > 0.5
   if (canRun) {
     battleStore.log.push('¡Has huido con éxito de la batalla!')
+    // Limpiar estado de batalla
+    battleStore.endBattle()
+
+    // Obtener la zona guardada y redirigir
+    const lastZone = sessionStorage.getItem('lastZone')
+    sessionStorage.removeItem('lastZone')
+
     setTimeout(() => {
-      alert('¡Escapaste de la batalla!')
+      if (lastZone) {
+        router.push(`/zona/${lastZone}`)
+      } else {
+        router.push('/mapa')
+      }
     }, 800)
   } else {
     battleStore.log.push('¡No puedes escapar!')
@@ -848,13 +859,15 @@ watch(() => battleStore.log, () => {
   height: 480px;
   display: flex;
   flex-direction: column;
-  background: oklch(var(--color-card));
-  border: 4px solid oklch(var(--color-border));
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   overflow: hidden;
   box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .control-area-wrapper {
@@ -888,9 +901,11 @@ watch(() => battleStore.log, () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: oklch(var(--color-card));
-  border: 4px solid oklch(var(--color-border));
-  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
 }
 
 .error-content {
