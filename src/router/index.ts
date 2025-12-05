@@ -1,8 +1,10 @@
-// src/router/index.ts
-
-import { createRouter, createWebHistory } from 'vue-router';
-import WorldMapViewPage from '../views/WorldMapViewPage.vue';
-import ZoneLobbyView from '../views/ZoneLobbyView.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
+import BattleView from '@/views/BattleView.vue'
+import TeamBuilderView from '@/views/TeamBuilderView.vue'
+import StarterSelectionView from '@/views/StarterSelectionView.vue'
+import GymSelection from '@/views/GymSelection.vue'
+import PCview from '@/views/PCview.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,19 +12,36 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      redirect: '/mapa',
+      component: HomeView,
     },
     {
-      path: '/mapa',
-      name: 'world-map',
-      component: WorldMapViewPage,
+      path: '/battle',
+      name: 'battle',
+      component: BattleView,
     },
     {
-      path: '/zone-lobby/:zoneName',
-      name: 'zone-lobby',
-      component: ZoneLobbyView,
+      path: '/team-builder',
+      name: 'team-builder',
+      component: TeamBuilderView,
     },
+    {
+      path: '/starter-selection',
+      name: 'starter-selection',
+      component: StarterSelectionView,
+    },
+    {
+      path: '/gyms',
+      name: 'gyms',
+      component: GymSelection,
+    },
+    {
+      path: '/pc',
+      name: 'pc',
+      component: PCview,
+    }
   ],
-});
+})
 
-export default router;
+export default router
+
+
