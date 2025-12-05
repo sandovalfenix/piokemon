@@ -62,9 +62,9 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
               <NpcListPanel @interact="onNpcInteraction" />
             </aside>
 
-            <section class="md:col-span-6 lg:col-span-6 h-full flex items-center justify-center">
+            <section class="md:col-span-6 lg:col-span-6 h-full flex items-center justify-center w-full">
               <h2
-                class="tech-glow-title text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-[0.15em] text-white rounded-xl px-6 py-3"
+                class="tech-glow-title text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-[0.15em] text-white rounded-xl px-6 py-3 text-center mx-auto"
                 style="
                   -webkit-text-stroke: 2px rgba(255, 255, 255, 0.1);
                   letter-spacing: 0.15em;

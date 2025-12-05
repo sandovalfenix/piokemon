@@ -2,6 +2,7 @@
 
 import { createRouter, createWebHistory } from 'vue-router';
 import WorldMapViewPage from '../views/WorldMapViewPage.vue';
+import ZoneLobbyView from '../views/ZoneLobbyView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +20,7 @@ const router = createRouter({
     {
       path: '/zone-lobby/:zoneName',
       name: 'zone-lobby',
-      component: import('../views/ZoneLobbyView.vue'),
+      component: ZoneLobbyView,
     },
   ],
 });
