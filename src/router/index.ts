@@ -17,9 +17,10 @@ const router = createRouter({
       component: DashboardView,
     },
     {
-      path: '/zone-lobby',
+      path: '/zone-lobby/:zoneName',
       name: 'zone-lobby',
       component: ZoneLobbyView,
+      props: true,
     },
   ],
 })
