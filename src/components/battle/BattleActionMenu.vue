@@ -139,24 +139,26 @@ const props = withDefaults(defineProps<Props>(), {
   background: oklch(var(--color-muted));
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 8px;
   z-index: 50;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .fight-overlay-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   height: 100%;
+  overflow: hidden;
 }
 
 .fight-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
   border-bottom: 2px solid oklch(var(--color-border));
+  flex-shrink: 0;
 }
 
 .fight-title {
@@ -168,10 +170,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 .cancel-button {
   background: oklch(var(--color-destructive) / 0.1);
-  border: 2px solid oklch(var(--color-destructive));
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 0.75rem;
+  border: 1px solid oklch(var(--color-destructive));
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.65rem;
   font-weight: bold;
   color: oklch(var(--color-destructive));
   cursor: pointer;
