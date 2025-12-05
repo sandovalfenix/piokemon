@@ -189,6 +189,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 .back-arrow {
   font-size: 11px;
+}
 
 .cancel-icon {
   font-size: 0.875rem;

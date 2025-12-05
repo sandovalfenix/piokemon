@@ -43,6 +43,9 @@ const showNoStarterModal = ref(false)
 // Wild encounter modal state (Buscar animation)
 const showWildEncounter = ref(false)
 
+// Found Pokémon data from wild encounter
+const foundPokemon = ref<EncounteredPokemon | null>(null)
+
 
 // Badge images mapping (ordered by gym progression)
 import badgeJose from '@/assets/images/badges/Valle_Vivo-JOSE.png'

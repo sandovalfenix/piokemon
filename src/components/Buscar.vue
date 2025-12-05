@@ -108,9 +108,9 @@ const iniciarAnimacion = (): void => {
 };
 
 const decidirResultadoDeBusqueda = (): void => {
-  // Intentar generar un encuentro en POKEMON_DATA según la región.
-  // generateEncounter ahora retorna true|false según si encontró pokémons.
-  const encontrado = encounterStore.generateEncounter(props.region)
+  // Check if encounter was successful by checking the store's wildPokemon
+  // generateEncounter was already awaited in iniciarBusqueda
+  const encontrado = encounterStore.wildPokemon !== null
 
   if (encontrado) {
     foundPokemon.value = encounterStore.wildPokemon as EncounteredPokemon
