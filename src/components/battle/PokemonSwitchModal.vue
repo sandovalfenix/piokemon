@@ -33,10 +33,19 @@ interface Props {
 interface Emits {
   (e: 'select', index: number): void
   (e: 'close'): void
+  /** Emitted when player has no available Pokemon - signals defeat */
+  (e: 'defeat'): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+/**
+ * Handle return to lobby when defeated (no available Pokemon)
+ */
+function handleDefeat() {
+  emit('defeat')
+}
 
 // Computed for available Pokemon (alive and not current)
 const availablePokemon = computed(() =>
@@ -136,9 +145,23 @@ function getTypeBadgeColor(type: string): string {
       <!-- No available Pokemon warning -->
       <div
         v-if="!hasAvailablePokemon"
-        class="py-8 text-center text-red-400"
+        class="py-8 text-center"
       >
-        <p class="text-lg font-semibold">¡No tienes Pokémon disponibles!</p>
+        <div class="mb-4">
+          <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-red-900/50 flex items-center justify-center border-2 border-red-600/50">
+            <span class="text-4xl">💔</span>
+          </div>
+          <p class="text-lg font-semibold text-red-400">¡No tienes Pokémon disponibles!</p>
+          <p class="text-sm text-slate-400 mt-2">Todos tus Pokémon han sido derrotados.</p>
+        </div>
+        <Button
+          variant="destructive"
+          size="lg"
+          class="w-full sm:w-auto px-8 bg-red-600 hover:bg-red-700 text-white"
+          @click="handleDefeat"
+        >
+          Volver al Lobby
+        </Button>
       </div>
 
       <!-- Pokemon Grid -->

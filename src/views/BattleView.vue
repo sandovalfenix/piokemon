@@ -21,7 +21,6 @@ import { gymLeaders } from '@/data/gymLeaders'
 import { selectWildPokemon } from '@/data/wildPokemonPool'
 import { hydrateTeam } from '@/services/pokeapi/pokemonHydrationService'
 import { transformTeamMemberToBattlePokemon } from '@/services/teamBuilder'
-import type { PokemonType } from '@/models/teamBuilder'
 import type { EncounteredPokemon } from '@/stores/useEncounterStore'
 import {
   Dialog,
@@ -124,6 +123,20 @@ async function initializeBattle() {
       router.replace('/')
       return
     }
+
+    // Auto-repair corrupted move data (fixes moves showing as 'Normal' type)
+    const hadCorruptedData = await teamStore.repairMoveData()
+    if (hadCorruptedData) {
+      console.log('[BattleView] Repaired corrupted move data in team')
+      // Reload team to get fresh repaired data
+      teamStore.loadTeam()
+    }
+
+    // Log move data to verify types are present
+    console.log('[BattleView] Player team moves:', teamStore.roster.map(m => ({
+      pokemon: m.pokemon.name,
+      moves: m.selectedMoves.map(mv => ({ id: mv.id, name: mv.name, type: mv.type }))
+    })))
 
     playerTeam.value = teamStore.roster.map(transformTeamMemberToBattlePokemon)
 
@@ -325,6 +338,8 @@ function closeDefeatAndRedirect() {
   // Heal team on defeat too
   teamStore.healTeam()
   showDefeatModal.value = false
+  // Reset battle state to prevent stale data
+  battleStore.endBattle()
   router.replace('/')
 }
 

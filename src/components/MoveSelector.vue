@@ -43,13 +43,25 @@ import type { Move } from '@/domain/battle/engine/entities'
 
 const props = defineProps<{
   disabled?: boolean
+  /** Optional moves array - if provided, uses this instead of store */
+  moves?: Move[]
+  /** Battle style rendering mode */
+  isBattleStyle?: boolean
+}>()
+
+const emit = defineEmits<{
+  /** Emitted when a move is selected - pass move ID */
+  (e: 'select-move', moveId: string): void
+  /** Emitted when back/cancel is pressed */
+  (e: 'back'): void
 }>()
 
 const battleStore = useBattleStore()
 
 // Filter out status moves - only Physical/Special allowed per Feature 006 spec
+// Use props.moves if provided, otherwise fall back to store
 const moves = computed(() => {
-  const allMoves = battleStore.playerPokemon?.moves ?? []
+  const allMoves = props.moves ?? battleStore.playerPokemon?.moves ?? []
   return filterUsableMoves(allMoves)
 })
 
@@ -69,7 +81,8 @@ const input = useInput(
 
 const selectMove = (move: Move) => {
   if (!props.disabled) {
-    battleStore.selectPlayerMove(move.id)
+    // Emit select-move event for parent component to handle
+    emit('select-move', move.id)
   }
 }
 

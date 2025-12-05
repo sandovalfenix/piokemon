@@ -27,7 +27,8 @@ import { generateInstanceId } from '@/models/capture'
 import { attemptCapture as captureEngineAttempt } from '@/stores/captureEngine'
 import { useTeamStore } from '@/stores/team'
 import { usePCBoxStore } from '@/stores/pcBox'
-import type { Pokemon as TeamBuilderPokemon } from '@/models/teamBuilder'
+import { fetchMovesBatch } from '@/services/teamBuilder/moveService'
+import type { Pokemon as TeamBuilderPokemon, Move } from '@/models/teamBuilder'
 
 // ============================================================================
 // Types
@@ -42,7 +43,7 @@ export interface UseCaptureReturn {
   openBallSelector: () => void
   closeBallSelector: () => void
   attemptCapture: (ballType: BallType, pokemon: WildBattlePokemon) => Promise<CaptureResult>
-  saveCapturedPokemon: (pokemon: WildBattlePokemon, ballType: BallType) => 'team' | 'pcbox'
+  saveCapturedPokemon: (pokemon: WildBattlePokemon, ballType: BallType) => Promise<'team' | 'pcbox'>
   resetCapture: () => void
 }
 
@@ -141,10 +142,10 @@ export function useCapture(): UseCaptureReturn {
     // Animate shakes (500ms per shake)
     await delay(result.shakes * 500 + 300)
 
-    // Determine save location if successful
+    // Determine save location if successful (now async to fetch full move data)
     let savedTo: 'team' | 'pcbox' | null = null
     if (result.success) {
-      savedTo = saveCapturedPokemon(pokemon, ballType)
+      savedTo = await saveCapturedPokemon(pokemon, ballType)
     }
 
     // Update to result phase
@@ -168,11 +169,12 @@ export function useCapture(): UseCaptureReturn {
 
   /**
    * Save captured Pokémon to team or PC Box
+   * Fetches full move data from PokeAPI to persist proper type info
    * @param pokemon - Wild Pokémon that was captured
    * @param ballType - Ball type used for capture
    * @returns Where the Pokémon was saved
    */
-  function saveCapturedPokemon(pokemon: WildBattlePokemon, ballType: BallType): 'team' | 'pcbox' {
+  async function saveCapturedPokemon(pokemon: WildBattlePokemon, ballType: BallType): Promise<'team' | 'pcbox'> {
     const teamStore = useTeamStore()
     const pcBoxStore = usePCBoxStore()
 
@@ -183,10 +185,16 @@ export function useCapture(): UseCaptureReturn {
 
     }
 
+    // Fetch full move data from PokeAPI to get proper types
+    const moveIds = pokemon.pokemon.moves.slice(0, 4).map((m) =>
+      typeof m.id === 'number' ? m.id : parseInt(String(m.id)) || 33
+    )
+    const fullMoves = await fetchMovesBatch(moveIds)
+
     // Check team capacity
     if (teamStore.roster.length < 6) {
       // Add to team
-      const teamMember = convertToTeamMember(pokemon, teamStore.roster.length)
+      const teamMember = await convertToTeamMember(pokemon, teamStore.roster.length, fullMoves)
       const result = teamStore.addPokemon(teamMember)
 
       if (result.valid) {
@@ -216,20 +224,26 @@ export function useCapture(): UseCaptureReturn {
 
   /**
    * Convert WildBattlePokemon to TeamMember format
+   * Uses full move data fetched from PokeAPI for proper type persistence
    */
-  function convertToTeamMember(pokemon: WildBattlePokemon, position: number) {
-    // Create TeamMember with default moves
+  async function convertToTeamMember(pokemon: WildBattlePokemon, position: number, fullMoves: Move[]) {
+    // Use fetched moves if available, otherwise create fallback Tackle
+    const selectedMoves: Move[] = fullMoves.length > 0
+      ? fullMoves.slice(0, 4)
+      : [{
+          id: 33, // Tackle
+          name: 'Tackle',
+          type: 'Normal',
+          power: 40,
+          accuracy: 100,
+          category: 'Physical',
+          pp: 35,
+        }]
+
+    // Create TeamMember with properly typed moves
     return {
       pokemon: pokemon.pokemon as TeamBuilderPokemon,
-      selectedMoves: pokemon.pokemon.moves.slice(0, 4).map((m) => ({
-        id: typeof m.id === 'number' ? m.id : 0,
-        name: m.name,
-        type: 'Normal' as const,
-        power: null,
-        accuracy: 100,
-        category: 'Physical' as const,
-        pp: 35,
-      })),
+      selectedMoves,
       level: pokemon.level,
       currentHp: pokemon.maxHp, // Healed on capture
       maxHp: pokemon.maxHp,

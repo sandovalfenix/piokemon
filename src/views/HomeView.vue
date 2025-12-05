@@ -27,7 +27,7 @@ import {
 import { useTeamStore } from '@/stores/team'
 import { useProgressStore } from '@/stores/progress'
 import { useEncounterStore, type EncounteredPokemon } from '@/stores/useEncounterStore'
-import { getRandomUndefeatedNpc } from '@/data/thematicNpcs'
+import { getRandomUndefeatedNpcFromGym, getNpcsByGym, areGymNpcsDefeated } from '@/data/thematicNpcs'
 import { gymLeaders } from '@/data/gymLeaders'
 import Buscar from '@/components/Buscar.vue'
 import Capturar from '@/components/Capturar.vue'
@@ -72,6 +72,36 @@ const badgesEarned = computed(() => progressStore.earnedBadges.length)
 // Computed: Can battle/explore (team must not be empty)
 const canBattle = computed(() => !teamStore.isTeamEmpty && teamStore.hasStarter)
 
+// Computed: Progress bar state (0% -> 50% NPC -> 100% Gym)
+const currentGymProgress = computed(() => {
+  const currentGym = progressStore.currentGym
+  const gymNpcs = getNpcsByGym(currentGym)
+  const defeatedNpcsCount = gymNpcs.filter(npc =>
+    progressStore.defeatedTrainers.includes(npc.id)
+  ).length
+  const totalNpcs = gymNpcs.length
+
+  // NPCs account for 0-50%, Gym Leader accounts for 50-100%
+  const npcProgress = totalNpcs > 0 ? (defeatedNpcsCount / totalNpcs) * 50 : 0
+  const isGymDefeated = progressStore.isGymLeaderDefeated(currentGym)
+
+  return {
+    percentage: isGymDefeated ? 100 : npcProgress,
+    phase: isGymDefeated ? 'gym-complete' : (npcProgress >= 50 ? 'gym-ready' : 'npc-phase'),
+    defeatedNpcs: defeatedNpcsCount,
+    totalNpcs,
+    canChallengeGym: areGymNpcsDefeated(currentGym, progressStore.defeatedTrainers),
+  }
+})
+
+// Computed: Progress bar label
+const progressLabel = computed(() => {
+  if (progressStore.isGameComplete) return '¡Campeón!'
+  const { defeatedNpcs, totalNpcs, canChallengeGym } = currentGymProgress.value
+  if (canChallengeGym) return `¡Desafía al Líder de Gimnasio!`
+  return `NPCs: ${defeatedNpcs}/${totalNpcs}`
+})
+
 /**
  * Lobby Guard: Auto-redirect to starter selection if no team
  * Prevents "back button" exploits
@@ -115,7 +145,8 @@ function goToStarterSelection() {
 
 /**
  * Handle "Battle" button click
- * Auto-selects next opponent in linear progression
+ * Strict progression: 1 Random Thematic NPC -> 1 Gym Leader loop
+ * Players must defeat all NPCs from current gym before challenging gym leader
  */
 function handleBattleClick() {
   // Flow Guard: Check for starter
@@ -131,12 +162,13 @@ function handleBattleClick() {
     return
   }
 
-  // Determine next opponent
-  const canChallengeGym = progressStore.canChallengeGymLeader(progressStore.currentGym)
+  // Determine next opponent using strict gym progression
+  const currentGym = progressStore.currentGym
+  const canChallengeGym = progressStore.canChallengeGymLeader(currentGym)
 
   if (canChallengeGym) {
-    // Challenge Gym Leader
-    const gymLeader = gymLeaders.find(g => g.id === progressStore.currentGym)
+    // All gym NPCs defeated - challenge Gym Leader
+    const gymLeader = gymLeaders.find(g => g.id === currentGym)
     if (gymLeader) {
       sessionStorage.setItem('battleTarget', JSON.stringify({
         type: 'gym-leader',
@@ -145,8 +177,8 @@ function handleBattleClick() {
       router.push('/battle')
     }
   } else {
-    // Challenge random undefeated NPC from current gym's pool
-    const npc = getRandomUndefeatedNpc(progressStore.defeatedTrainers)
+    // Challenge random undefeated NPC from CURRENT GYM only (strict progression)
+    const npc = getRandomUndefeatedNpcFromGym(currentGym, progressStore.defeatedTrainers)
     if (npc) {
       sessionStorage.setItem('battleTarget', JSON.stringify({
         type: 'npc',
@@ -247,57 +279,113 @@ function handleContinueSearching() {
 </script>
 
 <template>
-  <main class="lobby-container">
+  <main class="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center">
     <!-- Welcome Section -->
-    <section class="welcome-section">
-      <h1 class="title">Pokémon MMO</h1>
-      <p class="subtitle">¡Bienvenido, entrenador!</p>
+    <section class="mb-8">
+      <h1 class="text-5xl font-bold mb-2 bg-linear-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
+        Pokémon MMO
+      </h1>
+      <p class="text-xl text-gray-500 dark:text-gray-400">¡Bienvenido, entrenador!</p>
     </section>
 
-    <!-- Progress Display (T026) -->
-    <section v-if="teamStore.hasStarter" class="progress-section">
-      <div class="badges-display">
-        <img
-          v-for="(badge, idx) in badgeImages"
-          :key="idx"
-          :src="badge.src"
-          :alt="badge.name"
-          class="badge-icon"
-          :class="{ 'badge-earned': idx < badgesEarned, 'badge-unearned': idx >= badgesEarned }"
-        />
+    <!-- Progress Display -->
+    <section v-if="teamStore.hasStarter" class="mb-8 w-full max-w-md">
+      <!-- Gym Progress Card -->
+      <div class="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-slate-700">
+        <!-- Gym Header -->
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            Gimnasio {{ progressStore.currentGym }}: {{ currentGymInfo.name }}
+          </span>
+          <span class="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+            {{ Math.round(currentGymProgress.percentage) }}%
+          </span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="relative mb-2">
+          <div class="w-full h-3 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
+            <div
+              class="h-full rounded-full transition-all duration-500 ease-out"
+              :class="{
+                'bg-linear-to-r from-green-400 to-green-500': currentGymProgress.percentage < 50,
+                'bg-linear-to-r from-amber-400 to-orange-500': currentGymProgress.percentage >= 50 && currentGymProgress.percentage < 100,
+                'bg-linear-to-r from-indigo-500 to-purple-600': currentGymProgress.percentage >= 100
+              }"
+              :style="{ width: `${currentGymProgress.percentage}%` }"
+            />
+          </div>
+          <!-- Progress Markers -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
+            <div class="w-0.5 h-3 bg-gray-400 dark:bg-slate-500" />
+            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1">NPC</span>
+          </div>
+          <div class="absolute top-0 right-0 flex flex-col items-center">
+            <div class="w-0.5 h-3 bg-gray-400 dark:bg-slate-500" />
+            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1">GYM</span>
+          </div>
+        </div>
+
+        <!-- Progress Label -->
+        <p class="text-xs text-center font-medium mt-4"
+           :class="{
+             'text-green-600 dark:text-green-400': !currentGymProgress.canChallengeGym,
+             'text-amber-600 dark:text-amber-400 animate-pulse': currentGymProgress.canChallengeGym
+           }">
+          {{ progressLabel }}
+        </p>
+
+        <!-- Divider -->
+        <div class="border-t border-gray-200 dark:border-slate-600 my-4" />
+
+        <!-- Badges Display -->
+        <div class="flex justify-center gap-3 mb-3">
+          <img
+            v-for="(badge, idx) in badgeImages"
+            :key="idx"
+            :src="badge.src"
+            :alt="badge.name"
+            class="w-10 h-10 object-contain transition-all duration-200 hover:scale-125"
+            :class="{
+              'opacity-100 drop-shadow-md': idx < badgesEarned,
+              'opacity-30 grayscale': idx >= badgesEarned
+            }"
+          />
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          {{ progressStore.isGameComplete ? '¡Eres el Campeón! 🏆' : `Medallas: ${badgesEarned}/5` }}
+        </p>
       </div>
-      <p class="progress-text">
-        {{ progressStore.isGameComplete ? '¡Eres el Campeón!' : `Próximo: ${currentGymInfo.name}` }}
-      </p>
     </section>
 
     <!-- Battle Buttons -->
-    <section class="battle-section">
+    <section class="flex flex-col gap-4 w-full max-w-xs">
       <Button
-        class="battle-btn story-btn"
+        class="w-full text-lg py-6 rounded-xl font-semibold bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
         size="lg"
         :disabled="progressStore.isGameComplete || !canBattle"
         @click="handleBattleClick"
       >
-        {{ progressStore.isGameComplete ? 'Campeón' : 'Batalla' }}
+        {{ progressStore.isGameComplete ? '🏆 Campeón' : '⚔️ Batalla' }}
       </Button>
 
       <Button
-        class="battle-btn wild-btn"
+        class="w-full text-lg py-6 rounded-xl font-semibold bg-white hover:bg-green-50 text-green-700 border-2 border-green-500 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
         size="lg"
         variant="outline"
         :disabled="!canBattle"
         @click="handleWildBattleClick"
       >
-        Encuentro Salvaje
+        🌿 Encuentro Salvaje
       </Button>
+
       <Button
-        class="battle-btn wild-btn"
+        class="w-full text-lg py-6 rounded-xl font-semibold bg-white hover:bg-blue-50 text-blue-700 border-2 border-blue-500 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
         size="lg"
         variant="outline"
         @click="handleChangeTeamClick"
       >
-        Cambia tu equipo
+        📦 Cambia tu equipo
       </Button>
     </section>
 
@@ -338,122 +426,3 @@ function handleContinueSearching() {
 
   </main>
 </template>
-
-<style scoped>
-.lobby-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  padding: 2rem;
-  text-align: center;
-}
-
-.welcome-section {
-  margin-bottom: 2rem;
-}
-
-.title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.subtitle {
-  font-size: 1.25rem;
-  color: #666;
-}
-
-/* Progress Section (T026) */
-.progress-section {
-  margin-bottom: 2rem;
-  padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  backdrop-filter: blur(4px);
-}
-
-.badges-display {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 0.5rem;
-}
-
-.badge-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  transition: transform 0.2s, opacity 0.2s;
-}
-
-.badge-earned {
-  opacity: 1;
-  filter: none;
-}
-
-.badge-unearned {
-  opacity: 0.3;
-  filter: grayscale(100%);
-}
-
-.badge-icon:hover {
-  transform: scale(1.2);
-}
-
-.progress-text {
-  font-size: 0.9rem;
-  color: #888;
-  margin: 0;
-}
-
-.battle-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-  max-width: 300px;
-}
-
-.battle-btn {
-  width: 100%;
-  font-size: 1.25rem;
-  padding: 1.5rem 2rem;
-  border-radius: 12px;
-  font-weight: 600;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.battle-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.story-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-}
-
-.story-btn:disabled {
-  background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
-  color: #333;
-  opacity: 1;
-}
-
-.wild-btn {
-  background: white;
-  color: #2e7d32;
-  border: 2px solid #4caf50;
-}
-
-.wild-btn:hover {
-  background: #e8f5e9;
-}
-
-</style>

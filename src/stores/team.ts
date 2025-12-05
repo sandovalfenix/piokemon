@@ -239,6 +239,58 @@ export const useTeamStore = defineStore('team', () => {
     console.log('[TeamStore] Team healed to full HP')
   }
 
+  /**
+   * Repair corrupted move data by re-fetching from PokeAPI
+   * Fixes issue where moves don't have 'type' property (all show as Normal)
+   */
+  async function repairMoveData(): Promise<boolean> {
+    const { fetchMovesBatch } = await import('@/services/teamBuilder/moveService')
+
+    let hasCorruptedData = false
+
+    for (const member of roster.value) {
+      // Check if any move is missing type
+      const needsRepair = member.selectedMoves.some((m) => !m.type)
+
+      console.log(`[TeamStore] Checking ${member.pokemon.name} moves:`,
+        member.selectedMoves.map(m => ({ id: m.id, name: m.name, type: m.type }))
+      )
+
+      if (needsRepair) {
+        hasCorruptedData = true
+        console.log(`[TeamStore] Repairing move data for ${member.pokemon.name}`)
+
+        // Re-fetch all moves for this Pokemon - handle both number and string IDs
+        const moveIds = member.selectedMoves.map((m) => {
+          const id = typeof m.id === 'number' ? m.id : Number(m.id)
+          console.log(`[TeamStore] Move ID: ${m.id} -> parsed as: ${id}`)
+          return isNaN(id) ? 33 : id // Fallback to Tackle (33) if parsing fails
+        })
+
+        console.log(`[TeamStore] Fetching move IDs:`, moveIds)
+
+        try {
+          const freshMoves = await fetchMovesBatch(moveIds)
+          console.log(`[TeamStore] Fetched fresh moves:`, freshMoves.map(m => ({ id: m.id, name: m.name, type: m.type })))
+
+          if (freshMoves.length > 0) {
+            member.selectedMoves = freshMoves
+            console.log(`[TeamStore] Repaired ${freshMoves.length} moves for ${member.pokemon.name}`)
+          }
+        } catch (err) {
+          console.error(`[TeamStore] Failed to repair moves for ${member.pokemon.name}:`, err)
+        }
+      }
+    }
+
+    if (hasCorruptedData) {
+      saveTeam()
+      console.log('[TeamStore] Saved repaired team data')
+    }
+
+    return hasCorruptedData
+  }
+
   return {
     // State
     roster,
@@ -264,5 +316,6 @@ export const useTeamStore = defineStore('team', () => {
     selectPokemon,
     setHasStarter,
     healTeam,
+    repairMoveData,
   }
 })
