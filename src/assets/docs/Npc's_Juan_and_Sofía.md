@@ -37,3 +37,6 @@ La gracia y velocidad de Ribombee, junto con su tipo Bicho/Hada, complementan la
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/NPCs/Juan_sofia.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/NPCs/Juan_y_Sofía_SIN_FONDO.png)

@@ -35,3 +35,6 @@ Su primer compañero fue un Pidgey que encontró en las colinas cercanas al río
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/NPCs/Icon_Entrenador_Novato.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/NPCs/Entrenador_Novato_SIN_FONDO.png)

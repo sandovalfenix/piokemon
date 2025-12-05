@@ -67,3 +67,6 @@ Te pertenece la medalla Olleada Viva.
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/Lideres/Icon_manuel.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/Lideres/Lider_Manuel-Parque_de_la_Caña_SIN_FONDO.png)

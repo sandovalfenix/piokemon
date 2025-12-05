@@ -72,3 +72,6 @@ Cuando los encuentras, él te revela un secreto sobre el mapa general del juego 
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/NPCs/Icon_Profesor_Salcedo.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/NPCs/Profesor_Salcedo_SIN_FONDO.png)

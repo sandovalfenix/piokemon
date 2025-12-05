@@ -66,3 +66,6 @@ Acepta la Medalla Cielo Sagrado.
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/Lideres/Icon_Sofia.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/Lideres/Lider_Sofia-La_Ermita_SIN_FONDO.png)

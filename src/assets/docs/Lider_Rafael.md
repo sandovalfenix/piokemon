@@ -59,3 +59,6 @@ Pulso Armónico (ataque tipo Sonido que puede confundir al rival).
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/Lideres/Icon_Rafael.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/Lideres/Lider_Rafael-Plazoleta_Jairo_Varela_SIN_FONDO.png)

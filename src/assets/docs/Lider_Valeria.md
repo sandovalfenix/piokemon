@@ -65,3 +65,6 @@ Recordá siempre: un verdadero entrenador protege antes de atacar.”
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/Lideres/Icon_Valentina.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/Lideres/Lider_Valeria-Zoológico_de_Cali_SIN_FONDO.png)

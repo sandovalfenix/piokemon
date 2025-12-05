@@ -81,3 +81,6 @@ Lucampay lo acompaña a todas partes y protege el barrio.
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/NPCs/Icon_Don_ernesto.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/NPCs/Don_Ernesto_SIN_FONDO.png)

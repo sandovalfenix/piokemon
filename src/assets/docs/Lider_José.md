@@ -53,3 +53,6 @@ Ahora, veamos si también puedes resistir su fuerza.”
 
 **#Icono para la zona lobby**
 ![Icon](src/assets/images/Lideres/Icon_jose.png)
+
+**#Avatar sin fondo**
+![Sin fondo](src/assets/images/Lideres/Lider_José-Cristo_Rey_SIN_FONDO.png)
