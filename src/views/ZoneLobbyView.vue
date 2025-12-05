@@ -14,6 +14,8 @@ import zonalobbyBg from '@/assets/img/zonalobby.png'
 
 // Importar imágenes de fondo dinámicas de zones-lobby
 import zooCaliLobbyBg from '@/assets/img/zones-lobby/zoo_cali.png'
+import laErmitaLobbyBg from '@/assets/img/zones-lobby/la-ermita.png'
+import cristoReyLobbyBg from '@/assets/img/zones-lobby/cristo_rey.png'
 
 // Importar imágenes de locations como fallback
 import laErmitaImg from '@/assets/img/locations/la_ermita.png'
@@ -70,7 +72,8 @@ const zoneBackgroundImage = computed(() => {
   // Mapeo de slugs a imágenes de zones-lobby (si existen)
   const lobbyImages: Record<string, string> = {
     'zoo-de-cali': zooCaliLobbyBg,
-    // Agregar más imágenes de zones-lobby aquí cuando estén disponibles
+    'la-ermita': laErmitaLobbyBg,
+    'cristo-rey': cristoReyLobbyBg,
   }
 
   // Mapeo de slugs a imágenes de locations (fallback)
@@ -103,87 +106,115 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
 </script>
 
 <template>
-    <SidebarInset class="flex flex-col overflow-hidden !bg-transparent">
-      <SiteHeader title="Zona Lobby" />
-      <div
-        class="relative flex-1 w-full overflow-hidden font-sans"
-        :style="{
-          backgroundImage: `url(${zoneBackgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          color: 'var(--color-foreground)',
-        }"
-      >
-        <div class="relative z-10 flex h-full flex-col p-4 md:p-6 gap-4 justify-between">
-          <div class="absolute top-4 left-4 z-20">
-            <Button
-              @click="goBackToMap"
-              variant="outline"
-              size="lg"
-              class="bg-black/30 backdrop-blur-sm border-white/20 text-white hover:bg-black/50 hover:text-white font-bold"
-            >
-              <IconArrowLeft class="size-4" />
-              Volver al Mapa
-            </Button>
-          </div>
-          <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0 items-center">
-            <aside class="md:col-span-3 lg:col-span-3 h-[80%] flex flex-col gap-3">
-              <div class="flex items-center justify-between px-1">
-                <CardTitle
-                  class="text-xl font-bold tracking-normal flex items-center gap-3 text-white drop-shadow-lg"
-                  style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);"
-                >
-                  <IconUser class="size-6" />
-                  <span>NPCs</span>
-                </CardTitle>
-                <Badge class="px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm border border-white/30">{{ npcCount }}</Badge>
-              </div>
-              <NpcListPanel ref="npcListPanelRef" hide-title @interact="onNpcInteraction" />
-            </aside>
-
-            <section class="md:col-span-6 lg:col-span-6 h-full flex items-center justify-center w-full">
-              <h2
-                class="tech-glow-title text-4xl md:text-5xl lg:text-6xl font-bold tracking-normal text-white rounded-xl px-8 py-4 text-center mx-auto"
+  <SidebarInset class="flex flex-col overflow-hidden !bg-transparent">
+    <SiteHeader title="Zona Lobby" />
+    <div
+      class="relative flex-1 w-full overflow-hidden font-sans"
+      :style="{
+        backgroundImage: `url(${zoneBackgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        color: 'var(--color-foreground)',
+      }"
+    >
+      <div class="relative z-10 flex h-full flex-col p-4 md:p-6 gap-4 justify-between">
+        <div class="absolute top-4 left-4 z-20">
+          <Button
+            @click="goBackToMap"
+            variant="outline"
+            size="lg"
+            class="bg-black/30 backdrop-blur-sm border-white/20 text-white hover:bg-black/50 hover:text-white font-bold"
+          >
+            <IconArrowLeft class="size-4" />
+            Volver al Mapa
+          </Button>
+        </div>
+        <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0 items-center">
+          <aside class="md:col-span-3 lg:col-span-3 h-[80%] flex flex-col gap-3">
+            <div class="flex items-center justify-between px-1">
+              <CardTitle
+                class="text-xl font-bold tracking-normal flex items-center gap-3 text-white drop-shadow-lg"
                 style="
-                  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 255, 255, 0.3);
-                  margin-top: -5rem;
+                  text-shadow:
+                    2px 2px 4px rgba(0, 0, 0, 0.8),
+                    0 0 8px rgba(0, 0, 0, 0.5);
                 "
               >
-                {{ zoneName }}
-              </h2>
-            </section>
-
-            <aside class="md:col-span-3 lg:col-span-3 h-[80%] flex flex-col gap-3">
-              <div class="flex items-center justify-between px-1">
-                <CardTitle
-                  class="text-xl font-bold tracking-normal flex items-center gap-3 text-white drop-shadow-lg"
-                  style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);"
-                >
-                  <IconUsers class="size-6" />
-                  <span>Online</span>
-                </CardTitle>
-                <Badge class="px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm border border-white/30">{{ playerCount }}</Badge>
-              </div>
-              <PlayersOnlinePanel ref="playersOnlinePanelRef" hide-title @challenge="onChallengePlayer" @trade="onTradeRequest" />
-            </aside>
-          </main>
-
-          <footer class="flex-none flex flex-col items-center justify-center pb-4 z-20 gap-3">
-            <CardTitle
-              class="text-xl font-bold tracking-normal text-white flex items-center gap-3 drop-shadow-lg"
-              style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.5);"
-            >
-              <IconBolt class="size-6" />
-              <span>Acciones de Zona</span>
-            </CardTitle>
-            <div class="w-full max-w-4xl">
-              <ZoneActionsPanel hide-title @explore="onExploreZone" @heal="onHealTeam" />
+                <IconUser class="size-6" />
+                <span>NPCs</span>
+              </CardTitle>
+              <Badge
+                class="px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm border border-white/30"
+                >{{ npcCount }}</Badge
+              >
             </div>
-          </footer>
-        </div>
+            <NpcListPanel ref="npcListPanelRef" hide-title @interact="onNpcInteraction" />
+          </aside>
+
+          <section
+            class="md:col-span-6 lg:col-span-6 h-full flex items-center justify-center w-full"
+          >
+            <h2
+              class="tech-glow-title text-4xl md:text-5xl lg:text-6xl font-bold tracking-normal text-white rounded-xl px-8 py-4 text-center mx-auto"
+              style="
+                text-shadow:
+                  3px 3px 6px rgba(0, 0, 0, 0.9),
+                  0 0 12px rgba(0, 0, 0, 0.7),
+                  0 0 20px rgba(255, 255, 255, 0.3);
+                margin-top: -5rem;
+              "
+            >
+              {{ zoneName }}
+            </h2>
+          </section>
+
+          <aside class="md:col-span-3 lg:col-span-3 h-[80%] flex flex-col gap-3">
+            <div class="flex items-center justify-between px-1">
+              <CardTitle
+                class="text-xl font-bold tracking-normal flex items-center gap-3 text-white drop-shadow-lg"
+                style="
+                  text-shadow:
+                    2px 2px 4px rgba(0, 0, 0, 0.8),
+                    0 0 8px rgba(0, 0, 0, 0.5);
+                "
+              >
+                <IconUsers class="size-6" />
+                <span>Online</span>
+              </CardTitle>
+              <Badge
+                class="px-3 py-1 rounded-full text-sm font-bold bg-white/20 backdrop-blur-sm border border-white/30"
+                >{{ playerCount }}</Badge
+              >
+            </div>
+            <PlayersOnlinePanel
+              ref="playersOnlinePanelRef"
+              hide-title
+              @challenge="onChallengePlayer"
+              @trade="onTradeRequest"
+            />
+          </aside>
+        </main>
+
+        <footer class="flex-none flex flex-col items-center justify-center pb-4 z-20 gap-3">
+          <CardTitle
+            class="text-xl font-bold tracking-normal text-white flex items-center gap-3 drop-shadow-lg"
+            style="
+              text-shadow:
+                2px 2px 4px rgba(0, 0, 0, 0.8),
+                0 0 8px rgba(0, 0, 0, 0.5);
+            "
+          >
+            <IconBolt class="size-6" />
+            <span>Acciones de Zona</span>
+          </CardTitle>
+          <div class="w-full max-w-4xl">
+            <ZoneActionsPanel hide-title @explore="onExploreZone" @heal="onHealTeam" />
+          </div>
+        </footer>
       </div>
-    </SidebarInset>
+    </div>
+  </SidebarInset>
 </template>
 
 <style scoped>
