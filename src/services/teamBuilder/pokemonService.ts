@@ -245,7 +245,13 @@ export function transformTeamMemberToBattlePokemon(
 
   // Filter out status moves - only Physical and Special are allowed in battle
   // Per Feature 006 spec: status moves are excluded from battle
+  // Defensive: handle moves with missing category (legacy data or PC transfers)
   const damagingMoves = selectedMoves.filter((move) => {
+    // Skip moves with undefined/null category - treat as physical by default
+    if (!move.category) {
+      console.warn(`[pokemonService] Move "${move.name}" has no category, defaulting to physical`)
+      return true
+    }
     const category = move.category.toLowerCase()
     return category === 'physical' || category === 'special'
   })
@@ -255,10 +261,10 @@ export function transformTeamMemberToBattlePokemon(
     (move) => ({
       id: move.id.toString(),
       name: move.name,
-      type: move.type as import('@/domain/battle/engine/entities').Type,
+      type: (move.type ?? 'Normal') as import('@/domain/battle/engine/entities').Type,
       power: move.power ?? 40, // Fallback power if null
       accuracy: move.accuracy ?? 100,
-      category: move.category.toLowerCase() as 'physical' | 'special',
+      category: (move.category?.toLowerCase() ?? 'physical') as 'physical' | 'special',
     })
   )
 

@@ -65,7 +65,7 @@ function handleClose() {
         <Button
           variant="destructive"
           size="lg"
-          class="w-full sm:w-auto px-8 bg-red-600 hover:bg-red-700"
+          class="w-full sm:w-auto px-8 bg-red-600 hover:bg-red-700 text-white"
           @click="handleClose"
         >
           Volver al Lobby

@@ -646,26 +646,12 @@ watch(() => battleStore.log, () => {
     }
   }
 
-  // Detectar si el enemigo necesita cambiar Pokémon
-  if (lastMessage?.includes('se debilitó') && lastMessage.includes(battleStore.npc.name)) {
-    // El Pokémon del enemigo se debilitó
+  // NPC switch is now handled by battle.ts switchNpcPokemon()
+  // No duplicate logic needed here - just ensure view returns to main
+  if (lastMessage?.includes('se debilitó') && !lastMessage.includes(battleStore.player.name)) {
+    // El Pokémon del enemigo se debilitó - store handles the switch
     if (battleStore.npcTeamRemaining > 0 && battleStore.winner === null) {
-      // La IA elige automáticamente el siguiente Pokémon vivo
       setTimeout(() => {
-        const trainerName = battleStore.opponentName ?? 'El rival'
-
-        // Encontrar el siguiente Pokémon vivo en el equipo del NPC
-        const nextAliveIndex = battleStore.npcTeam.findIndex(
-          (p, idx) => idx !== battleStore.currentNpcIndex && p.currentHp > 0
-        )
-
-        const nextPokemon = nextAliveIndex !== -1 ? battleStore.npcTeam[nextAliveIndex] : undefined
-        if (nextPokemon) {
-          battleStore.currentNpcIndex = nextAliveIndex
-          battleStore.npc = nextPokemon
-          battleStore.log.push(`¡${trainerName} envió a ${nextPokemon.name}!`)
-        }
-
         currentView.value = 'main'
       }, 1000)
     }

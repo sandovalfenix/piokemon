@@ -59,10 +59,6 @@ function getBallImage(type: string): string {
     <Card class="w-full max-w-3xl mx-auto border border-border shadow-xl bg-gradient-to-br from-pink-100 via-indigo-100 to-blue-100">
       <CardHeader class="border-b border-border flex items-center justify-between">
         <CardTitle class="text-2xl font-bold text-foreground">Mochila de Pokéballs</CardTitle>
-        <button
-        @click="cerrar"
-          class="text-sm px-3 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
-        > Cerrar </button>
       </CardHeader>
 
       <CardContent class="p-4">
@@ -90,7 +86,6 @@ function getBallImage(type: string): string {
         <div v-if="selectedBall" class="mt-6 text-center text-sm text-foreground">
           <p><strong>Seleccionada:</strong> {{ selectedBall.label }}</p>
           <p><strong>Cantidad:</strong> {{ selectedBall.count }}</p>
-          <p><strong>Tipo:</strong> {{ selectedBall.type }}</p>
         </div>
       </CardContent>
 
