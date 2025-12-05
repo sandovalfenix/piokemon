@@ -57,19 +57,18 @@ const props = withDefaults(defineProps<Props>(), {
       </div>
     </template>
 
-    <!-- MoveSelector as Full Overlay (covers log panel) -->
+    <!-- MoveSelector as Full Overlay (covers battle logs) -->
     <template v-else-if="props.currentView === 'fight'">
       <div class="fight-overlay">
-        <div class="overlay-header">
-          <span class="overlay-title">SELECT A MOVE</span>
-          <button class="cancel-btn" @click="$emit('back')">
-            <span class="cancel-icon">✕</span>
-            <span>CANCEL</span>
-          </button>
-        </div>
-
-        <!-- MoveSelector takes full space -->
-        <div class="move-grid-container">
+        <!-- Full-width MoveSelector with Cancel button -->
+        <div class="fight-overlay-content">
+          <div class="fight-header">
+            <span class="fight-title">Select a Move</span>
+            <button class="cancel-button" @click="$emit('back')">
+              <span class="cancel-icon">✕</span>
+              <span class="cancel-text">CANCEL</span>
+            </button>
+          </div>
           <MoveSelector
             :moves="props.playerMoves"
             :is-battle-style="true"
@@ -133,30 +132,70 @@ const props = withDefaults(defineProps<Props>(), {
   letter-spacing: 0.05em;
 }
 
-.back-button {
-  background: oklch(var(--color-card));
-  border: 2px solid oklch(var(--color-border));
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 9px;
+/* Fight Overlay Styles - Full screen coverage */
+.fight-overlay {
+  position: absolute;
+  inset: 0;
+  background: oklch(var(--color-muted));
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  z-index: 50;
+  overflow: visible;
+}
+
+.fight-overlay-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.fight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 2px solid oklch(var(--color-border));
+}
+
+.fight-title {
+  font-size: 0.875rem;
   font-weight: bold;
   color: oklch(var(--color-foreground));
+  letter-spacing: 0.05em;
+}
+
+.cancel-button {
+  background: oklch(var(--color-destructive) / 0.1);
+  border: 2px solid oklch(var(--color-destructive));
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: oklch(var(--color-destructive));
   cursor: pointer;
-  align-self: flex-start;
   font-family: inherit;
   display: flex;
   align-items: center;
-  gap: 5px;
-  transition: all 0.1s ease;
+  gap: 6px;
+  transition: all 0.15s ease;
 }
 
-.back-button:hover {
-  background: oklch(var(--color-accent));
+.cancel-button:hover {
+  background: oklch(var(--color-destructive));
+  color: white;
 }
 
 .back-arrow {
   font-size: 11px;
 
+.cancel-icon {
+  font-size: 0.875rem;
+}
+
+.cancel-text {
+  letter-spacing: 0.05em;
 }
 
 /* New Layout Styles */
@@ -184,80 +223,8 @@ const props = withDefaults(defineProps<Props>(), {
   min-width: 0;
 }
 
-/* Fight Overlay - Full screen overlay for move selection */
-.fight-overlay {
-  position: absolute;
-  inset: 0;
-  background: oklch(var(--color-background) / 0.98);
-  display: flex;
-  flex-direction: column;
-  z-index: 50;
-  padding: 12px;
-  gap: 12px;
-}
-
-.overlay-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 2px solid oklch(var(--color-border));
-}
-
-.overlay-title {
-  font-size: 0.875rem;
-  font-weight: bold;
-  letter-spacing: 0.05em;
-  color: oklch(var(--color-foreground));
-}
-
-.cancel-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #ef4444;
-  color: white;
-  font-weight: bold;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 150ms;
-  border: none;
-}
-
-.cancel-btn:hover {
-  background: #dc2626;
-  transform: scale(1.02);
-}
-
-.cancel-btn:active {
-  transform: scale(0.98);
-}
-
-.cancel-icon {
-  font-size: 1rem;
-}
-
-.move-grid-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.fight-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  height: 100%;
-  padding: 8px;
-}
-
 @media (max-width: 800px) {
-  .main-layout,
-  .fight-layout {
+  .main-layout {
     grid-template-columns: 1fr;
     gap: 8px;
   }

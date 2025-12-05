@@ -2,7 +2,7 @@
 
 **#Líder Rafael – Guardián del Ritmo del Valle**
 
-![Lider Rafael](src/assets/images/Lideres/Lider_Rafael-Plazoleta_Jairo_Varela.png)
+![Lider Rafael](../Images/leaders/RafaelLeader.png)
 <!-- IMG -->
 
 **## HISTORIA COMPLETA**
@@ -37,8 +37,8 @@ Felinos rítmicos que atacan con movimientos sincronizados.
 
 **Medalla:**
 Ritmo Pacífico 📯
-![Medalla Ritmo Pacífico CON FONDO](src/assets/images/Medallas/Medalla_del_Ritmo_Pacífico.png)
-![Medalla Ritmo Pacífico SIN FONDO](src/assets/images/Medallas/bottomless/Medalla_del_Ritmo_Pacífico.png)
+![Medalla Ritmo Pacífico](../Images/Badges/Medalla_del_Ritmo_Pacifico-RAFAEL.png)
+<!-- Medalla sin fondo no disponible -->
 
 **MT:**
 Pulso Armónico (ataque tipo Sonido que puede confundir al rival).

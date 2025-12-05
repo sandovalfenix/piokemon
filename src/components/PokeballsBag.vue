@@ -56,7 +56,7 @@ function getBallImage(type: string): string {
 
 <template>
   <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <Card class="w-full max-w-3xl mx-auto border border-border shadow-xl bg-gradient-to-br from-pink-100 via-indigo-100 to-blue-100">
+    <Card class="w-full max-w-3xl mx-auto border border-border shadow-xl bg-linear-to-br from-pink-100 via-indigo-100 to-blue-100">
       <CardHeader class="border-b border-border flex items-center justify-between">
         <CardTitle class="text-2xl font-bold text-foreground">Mochila de Pokéballs</CardTitle>
       </CardHeader>

@@ -2,7 +2,7 @@
 
 **#Líder Sofía – La Guardiana del Viento de Cali**
 
-![Lider Sofía](src/assets/images/Lideres/Lider_Sofia-La_Ermita.png)
+![Lider Sofía](../Images/leaders/LiderSofiaa.png)
 <!-- IMG -->
 
 **## HISTORIA COMPLETA**
@@ -39,8 +39,8 @@ Si logras ordenar estos símbolos, las alturas te abrirán su camino.”
 **RECOMPENSA**
 
 **Medalla:**⚡ Medalla Cielo Sagrado
-![Medalla Cielo Sagrado con fondo](src/assets/images/Medallas/El_Cielo_Sagrado.jpg)
-![Medalla Cielo Sagrado sin fondo](src/assets/images/Medallas/bottomless/El_Cielo_Sagrado-Photoroom.png)
+![Medalla Cielo Sagrado](../Images/Badges/El_Cielo_Sagrado-SOFIA.png)
+<!-- Medalla sin fondo no disponible -->
 
 **MT:**Chispa Aérea (ataque especial Eléctrico con 30% de paralizar)
 

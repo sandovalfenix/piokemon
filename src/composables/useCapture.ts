@@ -142,7 +142,7 @@ export function useCapture(): UseCaptureReturn {
     // Animate shakes (500ms per shake)
     await delay(result.shakes * 500 + 300)
 
-    // Determine save location if successful
+    // Determine save location if successful (now async to fetch full move data)
     let savedTo: 'team' | 'pcbox' | null = null
     if (result.success) {
       savedTo = await saveCapturedPokemon(pokemon, ballType)
@@ -169,7 +169,7 @@ export function useCapture(): UseCaptureReturn {
 
   /**
    * Save captured Pokémon to team or PC Box
-   * Fetches full move data from PokeAPI for proper type/power/category display
+   * Fetches full move data from PokeAPI to persist proper type info
    * @param pokemon - Wild Pokémon that was captured
    * @param ballType - Ball type used for capture
    * @returns Where the Pokémon was saved
@@ -185,10 +185,16 @@ export function useCapture(): UseCaptureReturn {
 
     }
 
+    // Fetch full move data from PokeAPI to get proper types
+    const moveIds = pokemon.pokemon.moves.slice(0, 4).map((m) =>
+      typeof m.id === 'number' ? m.id : parseInt(String(m.id)) || 33
+    )
+    const fullMoves = await fetchMovesBatch(moveIds)
+
     // Check team capacity
     if (teamStore.roster.length < 6) {
-      // Add to team with full move data
-      const teamMember = await convertToTeamMember(pokemon, teamStore.roster.length)
+      // Add to team
+      const teamMember = await convertToTeamMember(pokemon, teamStore.roster.length, fullMoves)
       const result = teamStore.addPokemon(teamMember)
 
       if (result.valid) {
@@ -218,41 +224,23 @@ export function useCapture(): UseCaptureReturn {
 
   /**
    * Convert WildBattlePokemon to TeamMember format
-   * Fetches full Move data from PokeAPI to ensure correct type/power/category
+   * Uses full move data fetched from PokeAPI for proper type persistence
    */
-  async function convertToTeamMember(pokemon: WildBattlePokemon, position: number) {
-    // Extract move IDs from the pokemon's moves (first 4)
-    const moveIds = pokemon.pokemon.moves.slice(0, 4).map((m) =>
-      typeof m.id === 'number' ? m.id : 0
-    ).filter(id => id > 0)
+  async function convertToTeamMember(pokemon: WildBattlePokemon, position: number, fullMoves: Move[]) {
+    // Use fetched moves if available, otherwise create fallback Tackle
+    const selectedMoves: Move[] = fullMoves.length > 0
+      ? fullMoves.slice(0, 4)
+      : [{
+          id: 33, // Tackle
+          name: 'Tackle',
+          type: 'Normal',
+          power: 40,
+          accuracy: 100,
+          category: 'Physical',
+          pp: 35,
+        }]
 
-    // Fetch full move data from PokeAPI
-    let selectedMoves: Move[] = []
-
-    if (moveIds.length > 0) {
-      try {
-        const fetchedMoves = await fetchMovesBatch(moveIds)
-        selectedMoves = fetchedMoves.filter((m): m is Move => m !== null)
-        console.log(`[useCapture] Fetched ${selectedMoves.length} full moves for ${pokemon.pokemon.name}`)
-      } catch (error) {
-        console.warn('[useCapture] Failed to fetch moves, using fallback:', error)
-      }
-    }
-
-    // Fallback: if no moves fetched, add Tackle with full data
-    if (selectedMoves.length === 0) {
-      selectedMoves = [{
-        id: 33,
-        name: 'Tackle',
-        type: 'Normal',
-        power: 40,
-        accuracy: 100,
-        category: 'Physical',
-        pp: 35,
-      }]
-    }
-
-    // Create TeamMember with full move data
+    // Create TeamMember with properly typed moves
     return {
       pokemon: pokemon.pokemon as TeamBuilderPokemon,
       selectedMoves,

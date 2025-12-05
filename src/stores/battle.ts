@@ -634,14 +634,16 @@ export const useBattleStore = defineStore('battle', {
           if (attackerLabel === 'player') {
             this.npc.currentHp = defender.currentHp
             // Sync to npcTeam array to ensure switchNpcPokemon sees correct HP
-            if (this.npcTeam[this.currentNpcIndex]) {
-              this.npcTeam[this.currentNpcIndex].currentHp = defender.currentHp
+            const npcPokemon = this.npcTeam[this.currentNpcIndex]
+            if (npcPokemon) {
+              npcPokemon.currentHp = defender.currentHp
             }
           } else {
             this.player.currentHp = defender.currentHp
             // Sync to playerTeam array to ensure switchPlayerPokemon sees correct HP
-            if (this.playerTeam[this.currentPlayerIndex]) {
-              this.playerTeam[this.currentPlayerIndex].currentHp = defender.currentHp
+            const playerPokemon = this.playerTeam[this.currentPlayerIndex]
+            if (playerPokemon) {
+              playerPokemon.currentHp = defender.currentHp
             }
           }
 

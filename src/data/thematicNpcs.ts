@@ -317,3 +317,18 @@ export function getRandomUndefeatedNpc(defeatedIds: string[]): ThematicNpc | und
   const randomIndex = Math.floor(Math.random() * undefeated.length)
   return undefeated[randomIndex]
 }
+
+/**
+ * Get a random undefeated NPC from the current gym only
+ * Enforces strict progression: players can only battle NPCs from their current gym
+ * @param currentGym - Current gym ID (1-5)
+ * @param defeatedIds - Array of defeated NPC IDs
+ * @returns Random undefeated NPC from current gym, or undefined if all defeated
+ */
+export function getRandomUndefeatedNpcFromGym(currentGym: number, defeatedIds: string[]): ThematicNpc | undefined {
+  const gymNpcs = getNpcsByGym(currentGym)
+  const undefeated = gymNpcs.filter((npc) => !defeatedIds.includes(npc.id))
+  if (undefeated.length === 0) return undefined
+  const randomIndex = Math.floor(Math.random() * undefeated.length)
+  return undefeated[randomIndex]
+}

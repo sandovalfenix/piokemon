@@ -2,7 +2,7 @@
 
 **#Presentación de Personajes:** ¡Bailarines de Salsa!
 
-![Juan y Sofía](src/assets/images/NPCs/Juan_y_Sofía.png)
+![Juan y Sofía](../Images/trainers/boyfriends-trainer.png)
 <!-- IMG -->
 
 **Nombre de los Entrenadores: **
@@ -32,5 +32,4 @@ La gracia y velocidad de Ribombee, junto con su tipo Bicho/Hada, complementan la
 
 
 **#Medalla:**
-![Medalla Go Salsa CON FONDO](src/assets/images/Medallas/Salsa_Go.png)
-![Medalla Go Salsa SIN FONDO](src/assets/images/Medallas/bottomless/Salsa_Go.png)
+<!-- Medalla Salsa Go no disponible en la carpeta actual -->

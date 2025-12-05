@@ -2,7 +2,7 @@
 
 **# Profesor Salcedo “El Sabio de la Terminal”**
 
-![Profesor_Salcedo](src/assets/images/NPCs/Profesor_Salcedo.png)
+![Profesor Salcedo](../Images/trainers/grandpa-trainer.png)
 <!-- IMG -->
 
 **Historia corta del NPC:**

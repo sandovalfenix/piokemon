@@ -257,15 +257,22 @@ export function transformTeamMemberToBattlePokemon(
   })
 
   // Map team builder Move → battle Move
+  // Debug: Log move types to identify why they might be undefined
   const battleMoves: import('@/domain/battle/engine/entities').Move[] = damagingMoves.map(
-    (move) => ({
-      id: move.id.toString(),
-      name: move.name,
-      type: (move.type ?? 'Normal') as import('@/domain/battle/engine/entities').Type,
-      power: move.power ?? 40, // Fallback power if null
-      accuracy: move.accuracy ?? 100,
-      category: (move.category?.toLowerCase() ?? 'physical') as 'physical' | 'special',
-    })
+    (move) => {
+      // Warn if move type is missing - indicates corrupted localStorage data
+      if (!move.type) {
+        console.warn(`[pokemonService] Move "${move.name}" (id: ${move.id}) has no type property! This indicates corrupted/old localStorage data. Defaulting to Normal.`)
+      }
+      return {
+        id: move.id.toString(),
+        name: move.name,
+        type: (move.type ?? 'Normal') as import('@/domain/battle/engine/entities').Type,
+        power: move.power ?? 40, // Fallback power if null
+        accuracy: move.accuracy ?? 100,
+        category: (move.category?.toLowerCase() ?? 'physical') as 'physical' | 'special',
+      }
+    }
   )
 
   // Fallback: if no damaging moves, add Tackle

@@ -318,6 +318,10 @@ const handleSwitchPokemon = async (pokemonIndex: number) => {
   // Use the store action to confirm switch so the battle flow resumes correctly
   battleStore.confirmPlayerSwitch(pokemonIndex)
 
+  // CRITICAL: Reset phase to 'select' to prevent auto-attack bug
+  // This ensures the new Pokemon doesn't inherit the previous turn's attack state
+  battleStore.phase = 'select'
+
   // Close modal and return to main view
   showSwitchModal.value = false
   isForcedSwitch.value = false
@@ -331,6 +335,27 @@ const handleCloseSwitchModal = () => {
   if (!isForcedSwitch.value) {
     showSwitchModal.value = false
   }
+}
+
+/**
+ * Handle defeat from switch modal (no available Pokemon)
+ * Closes modal, heals team, and redirects to lobby
+ */
+const handleDefeatFromModal = () => {
+  // Close the modal
+  showSwitchModal.value = false
+  isForcedSwitch.value = false
+
+  // Set winner to NPC so battle ends properly
+  battleStore.winner = 'npc'
+  battleStore.phase = 'ended'
+
+  // Heal team and reset battle state
+  teamStore.healTeam()
+  battleStore.endBattle()
+
+  // Navigate to lobby
+  router.push('/')
 }
 
 /*
@@ -771,6 +796,7 @@ watch(() => battleStore.log, () => {
       :forced-switch="isForcedSwitch"
       @select="handleSwitchPokemon"
       @close="handleCloseSwitchModal"
+      @defeat="handleDefeatFromModal"
     />
 
     <!-- Feature 007: Capture Shake Animation -->

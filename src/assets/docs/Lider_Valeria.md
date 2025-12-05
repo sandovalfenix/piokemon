@@ -2,7 +2,7 @@
 
 **#Líder Valería - La Guardiana del Valle Vivo**
 
-![Lider Valeria](src/assets/images/Lideres/Lider_Valeria-Zoológico_de_Cali.png)
+![Lider Valeria](../Images/leaders/Lider_Valeria_-_Zoologico_de_Cali.png)
 <!-- IMG -->
 
 **## HISTORIA COMPLETA**
@@ -41,8 +41,8 @@ Jagualux – Planta / Tierra (su Piokemon insignia)
 **##RECOMPENSA**
 
 **Medalla:** 🌿 Medalla Selva Pacífica
-![Medalla Selva Pacífica CON FONDO](src/assets/images/Medallas/Medalla_Selva_Pacífica.png)
-![Medalla Selva Pacífica SIN FONDO](src/assets/images/Medallas/bottomless/Medalla_Selva_Pacífica.png)
+![Medalla Selva Pacífica](../Images/Badges/SelvaPacifica-VALERIA.png)
+<!-- Medalla sin fondo no disponible -->
 **MT:** Colmillo Salvaje (ataque físico tipo Planta con 30% de bajar la defensa del rival)
 **Beneficios:**
 ✔ Piokémon de hasta nivel 35 te obedecen

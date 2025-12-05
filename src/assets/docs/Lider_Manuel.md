@@ -2,7 +2,7 @@
 
 **#Manuel – El Guardián del Agua y la Diversión**
 
-![Lider Manuel](src/assets/images/Lideres/Lider_Manuel-Parque_de_la_Caña.png)
+![Lider Manuel](../Images/leaders/Lider_Manuel_-_Parque_de_la_Cana-leader.png)
 <!-- IMG -->
 
 **## HISTORIA COMPLETA**
@@ -41,8 +41,8 @@ Aguashu (Agua/Planta) – Piokemon insígnia
 
 **Medalla:** 🌊Medalla Oleada Viva
 Simboliza el flujo limpio del agua y la responsabilidad en el juego.
-![Medalla Oleada Viva CON FONDO](src/assets/images/Medallas/Medalla_Oleada_Viva.png)
-![Medalla Oleada Viva SIN FONDO](src/assets/images/Medallas/bottomless/Medalla_Oleada_Viva.png)
+![Medalla Oleada Viva](../Images/Badges/Medalla_Oleada_Viva-MANUEL.png)
+<!-- Medalla sin fondo no disponible -->
 
 **MT:** Oleada Burbujeante
 (Ataque especial tipo Agua con posibilidad del 20% de bajar la velocidad del rival. Inspirado en el chorro purificador de las piscinas del parque.)
