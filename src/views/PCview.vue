@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 
 import { useTeamStore } from "@/stores/team"
 import { usePCBoxStore } from "@/stores/pcBox"
+import { fetchMovesBatch } from "@/services/teamBuilder/moveService"
+import type { Move } from "@/models/teamBuilder"
 import router from "@/router"
 
 const teamStore = useTeamStore()
@@ -27,9 +29,15 @@ const showTeamFull = ref(false)
 const showMinTeam = ref(false)
 
 /* ===========================================================
-   MOVER PC → TEAM (CORREGIDO + DIALOG)
+   Loading state for move fetching
 =========================================================== */
-function moveFromPC(instanceId: string) {
+const isMovingPokemon = ref(false)
+
+/* ===========================================================
+   MOVER PC → TEAM (CORREGIDO + DIALOG)
+   Now fetches full Move data from PokeAPI for correct type display
+=========================================================== */
+async function moveFromPC(instanceId: string) {
   if (teamStore.isTeamFull) {
     showTeamFull.value = true
     return
@@ -38,45 +46,58 @@ function moveFromPC(instanceId: string) {
   const poke = pcBoxStore.removePokemon(instanceId)
   if (!poke) return
 
-  // Get level from old data (if exists) or use default level 10
-  const pokemonLevel = (poke as any).captureLevel ?? 10
+  isMovingPokemon.value = true
 
-  // Convert MoveReference[] to Move[] with default battle values
-  // Pokemon.moves is MoveReference (id+name), but TeamMember.selectedMoves needs full Move data
-  const selectedMoves = (poke.pokemon.moves ?? []).slice(0, 4).map((moveRef) => ({
-    id: moveRef.id,
-    name: moveRef.name,
-    type: 'Normal' as const,  // Default type (actual type would require API fetch)
-    power: 40,                 // Default power
-    accuracy: 100,             // Default accuracy
-    category: 'Physical' as const,  // Default category - REQUIRED by battle engine
-    pp: 35,                    // Default PP
-  }))
+  try {
+    // Get level from old data (if exists) or use default level 10
+    const pokemonLevel = (poke as any).captureLevel ?? 10
 
-  // Fallback: if no moves, add Tackle
-  if (selectedMoves.length === 0) {
-    selectedMoves.push({
-      id: 33,
-      name: 'Tackle',
-      type: 'Normal' as const,
-      power: 40,
-      accuracy: 100,
-      category: 'Physical' as const,
-      pp: 35,
+    // Extract move IDs from MoveReference array
+    const moveRefs = (poke.pokemon.moves ?? []).slice(0, 4)
+    const moveIds = moveRefs
+      .map((m) => (typeof m.id === 'number' ? m.id : 0))
+      .filter((id) => id > 0)
+
+    // Fetch full Move data from PokeAPI (type, power, category, etc.)
+    let selectedMoves: Move[] = []
+
+    if (moveIds.length > 0) {
+      try {
+        const fetchedMoves = await fetchMovesBatch(moveIds)
+        selectedMoves = fetchedMoves.filter((m): m is Move => m !== null)
+        console.log(`[PCview] Fetched ${selectedMoves.length} full moves for ${poke.pokemon.name}`)
+      } catch (error) {
+        console.warn('[PCview] Failed to fetch moves, using fallback:', error)
+      }
+    }
+
+    // Fallback: if no moves fetched, add Tackle with full data
+    if (selectedMoves.length === 0) {
+      selectedMoves = [{
+        id: 33,
+        name: 'Tackle',
+        type: 'Normal',
+        power: 40,
+        accuracy: 100,
+        category: 'Physical',
+        pp: 35,
+      }]
+    }
+
+    teamStore.addPokemon({
+      pokemon: poke.pokemon,
+      selectedMoves,
+      level: pokemonLevel,
+      currentHp: pokemonLevel * 5 + 10,
+      maxHp: pokemonLevel * 5 + 10,
+      position: teamStore.roster.length
     })
+
+    // Persistence Sync: Immediately save team after mutation to prevent Battle Module desyncs
+    teamStore.saveTeam()
+  } finally {
+    isMovingPokemon.value = false
   }
-
-  teamStore.addPokemon({
-    pokemon: poke.pokemon,
-    selectedMoves,
-    level: pokemonLevel,
-    currentHp: pokemonLevel * 5 + 10,
-    maxHp: pokemonLevel * 5 + 10,
-    position: teamStore.roster.length
-  })
-
-  // Persistence Sync: Immediately save team after mutation to prevent Battle Module desyncs
-  teamStore.saveTeam()
 }
 
 /* ===========================================================
