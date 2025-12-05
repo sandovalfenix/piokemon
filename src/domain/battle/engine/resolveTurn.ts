@@ -118,9 +118,15 @@ export function resolveTurn(
     }
   }
 
-  // Check win/lose
-  if (state.player.currentHp <= 0) state.winner = 'npc'
-  if (state.npc.currentHp <= 0) state.winner = 'player'
+  // Check win/lose: only declare a winner when the whole team is defeated
+  const playerAlive = state.playerTeam.some(p => p.currentHp > 0)
+  const npcAlive = state.npcTeam.some(p => p.currentHp > 0)
+
+  if (!playerAlive) {
+    state.winner = 'npc'
+  } else if (!npcAlive) {
+    state.winner = 'player'
+  }
 
   state.turn++
   state.phase = state.winner ? 'ended' : 'select'
