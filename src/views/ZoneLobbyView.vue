@@ -4,13 +4,15 @@ import { useRoute, useRouter } from 'vue-router'
 import NpcListPanel from '@/components/lobby/NpcListPanel.vue'
 import PlayersOnlinePanel from '@/components/lobby/PlayersOnlinePanel.vue'
 import ZoneActionsPanel from '@/components/lobby/ZoneActionsPanel.vue'
-import { SidebarInset } from '@/components/ui/sidebar'
-import SiteHeader from '@/components/SiteHeader.vue'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CardTitle } from '@/components/ui/card'
 import { IconArrowLeft, IconUser, IconUsers, IconBolt } from '@tabler/icons-vue'
 import zonalobbyBg from '@/assets/img/zonalobby.png'
+
+// Componente de búsqueda de Pokémon salvajes
+import Buscar from '@/components/Buscar.vue'
+import type { EncounteredPokemon } from '@/stores/useEncounterStore'
 
 // Importar imágenes de fondo dinámicas de zones-lobby
 import zooCaliLobbyBg from '@/assets/img/zones-lobby/zoo_cali.png'
@@ -76,6 +78,7 @@ const zoneBackgroundImage = computed(() => {
     'cristo-rey': cristoReyLobbyBg,
     'la-ermita': laErmitaLobbyBg,
     'plazoleta-jairo-varela': nicheLobbyBg,
+    'parque-de-la-cana': parqueCanaImg, // usa la imagen de locations como lobby
   }
 
   // Mapeo de slugs a imágenes de locations (fallback)
@@ -99,17 +102,67 @@ const playersOnlinePanelRef = ref<InstanceType<typeof PlayersOnlinePanel> | null
 const npcCount = computed(() => npcListPanelRef.value?.count ?? 0)
 const playerCount = computed(() => playersOnlinePanelRef.value?.count ?? 0)
 
+// Estado para el modal de búsqueda de Pokémon salvajes
+const showWildEncounter = ref(false)
+
 // Handlers placeholders...
 const onNpcInteraction = (id: string) => console.log('NPC:', id)
-const onExploreZone = () => console.log('Explore')
-const onHealTeam = () => console.log('Heal')
+
+/**
+ * Abrir el modal de búsqueda de Pokémon salvajes
+ */
+const onExploreZone = () => {
+  console.log('[ZoneLobbyView] Opening wild encounter search...')
+  showWildEncounter.value = true
+}
+
+/**
+ * Cerrar el modal de búsqueda
+ */
+const handleCloseWildEncounter = () => {
+  showWildEncounter.value = false
+}
+
+/**
+ * Feature 007: Handle Pokemon found from Buscar
+ * Navigate directly to BattleView with wild Pokémon data
+ */
+const handlePokemonFound = (pokemon: EncounteredPokemon) => {
+  // Store wild encounter data for BattleView
+  sessionStorage.setItem('battleTarget', JSON.stringify({
+    type: 'wild',
+    id: `wild-${pokemon.id}`,
+    pokemonData: pokemon,
+  }))
+
+  // Guardar la zona actual para poder volver después de huir
+  sessionStorage.setItem('lastZone', zoneSlug.value)
+
+  showWildEncounter.value = false
+
+  // Navigate to battle immediately
+  router.push('/battle')
+  console.log('[ZoneLobbyView] Pokémon found:', pokemon.name, '- Starting wild battle immediately')
+}
+
+/**
+ * Feature 007: Handle Pokemon not found
+ */
+const handlePokemonNotFound = () => {
+  console.log('[ZoneLobbyView] No Pokémon found')
+  // Buscar component stays open for retry or close
+}
+
+const onHealTeam = () => {
+  console.log('[ZoneLobbyView] Heal team / View team')
+  router.push('/pc')
+}
 const onChallengePlayer = (id: string) => console.log('Challenge:', id)
 const onTradeRequest = (id: string) => console.log('Trade:', id)
 </script>
 
 <template>
-  <SidebarInset class="flex flex-col overflow-hidden !bg-transparent">
-    <SiteHeader title="Zona Lobby" />
+  <div class="flex flex-col h-screen w-full overflow-hidden">
     <div
       class="relative flex-1 w-full overflow-hidden font-sans"
       :style="{
@@ -216,7 +269,16 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
         </footer>
       </div>
     </div>
-  </SidebarInset>
+
+    <!-- Modal de búsqueda de Pokémon salvajes -->
+    <Buscar
+      v-if="showWildEncounter"
+      :region="zoneName"
+      @cerrar="handleCloseWildEncounter"
+      @pokemon-encontrado="handlePokemonFound"
+      @pokemon-no-encontrado="handlePokemonNotFound"
+    />
+  </div>
 </template>
 
 <style scoped>

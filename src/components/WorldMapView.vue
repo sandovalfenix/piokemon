@@ -46,8 +46,8 @@ const handleZoneClick = (zone: Zone) => {
     .normalize('NFD') // Normalizar caracteres Unicode
     .replace(/[\u0300-\u036f]/g, '') // Eliminar diacríticos (acentos)
 
-  // Usar la ruta correcta que coincide con ZoneLobbyView
-  const route = `/zone-lobby/${zoneSlug}`
+  // Usar la ruta correcta que coincide con el router
+  const route = `/zona/${zoneSlug}`
   router.push(route)
 }
 </script>

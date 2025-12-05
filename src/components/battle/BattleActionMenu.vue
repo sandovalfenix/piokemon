@@ -85,8 +85,10 @@ const props = withDefaults(defineProps<Props>(), {
 <style scoped>
 .control-area {
   height: 100%;
-  background: oklch(var(--color-muted));
-  border-top: 3px solid oklch(var(--color-border));
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -101,12 +103,14 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .action-btn {
-  background: #f3f4f6;
-  color: #1f2937;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  color: white;
   font-weight: bold;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.25), -4px -4px 8px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem;
   padding: 1rem;
   cursor: pointer;
@@ -117,7 +121,8 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .action-btn:hover {
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1), -2px -2px 4px rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
   transform: translate(1px, 1px);
 }
 
@@ -136,7 +141,9 @@ const props = withDefaults(defineProps<Props>(), {
 .fight-overlay {
   position: absolute;
   inset: 0;
-  background: oklch(var(--color-muted));
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   padding: 8px;
@@ -157,25 +164,25 @@ const props = withDefaults(defineProps<Props>(), {
   justify-content: space-between;
   align-items: center;
   padding-bottom: 4px;
-  border-bottom: 2px solid oklch(var(--color-border));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
 
 .fight-title {
   font-size: 0.875rem;
   font-weight: bold;
-  color: oklch(var(--color-foreground));
+  color: white;
   letter-spacing: 0.05em;
 }
 
 .cancel-button {
-  background: oklch(var(--color-destructive) / 0.1);
-  border: 1px solid oklch(var(--color-destructive));
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
   border-radius: 6px;
   padding: 4px 10px;
   font-size: 0.65rem;
   font-weight: bold;
-  color: oklch(var(--color-destructive));
+  color: #ef4444;
   cursor: pointer;
   font-family: inherit;
   display: flex;
@@ -185,7 +192,7 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .cancel-button:hover {
-  background: oklch(var(--color-destructive));
+  background: #ef4444;
   color: white;
 }
 

@@ -5,6 +5,8 @@ import TeamBuilderView from '@/views/TeamBuilderView.vue'
 import StarterSelectionView from '@/views/StarterSelectionView.vue'
 import GymSelection from '@/views/GymSelection.vue'
 import PCview from '@/views/PCview.vue'
+import WorldMapViewPage from '@/views/WorldMapViewPage.vue'
+import ZoneLobbyView from '@/views/ZoneLobbyView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +40,16 @@ const router = createRouter({
       path: '/pc',
       name: 'pc',
       component: PCview,
+    },
+    {
+      path: '/mapa',
+      name: 'mapa',
+      component: WorldMapViewPage,
+    },
+    {
+      path: '/zona/:zoneName',
+      name: 'zona-lobby',
+      component: ZoneLobbyView,
     }
   ],
 })

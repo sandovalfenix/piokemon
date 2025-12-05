@@ -6,19 +6,11 @@
  * Animated search screen for wild Pokémon encounters.
  * Uses PokéAPI-integrated encounter store for real Pokémon data.
  */
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
 import { useEncounterStore, type EncounteredPokemon } from '@/stores/useEncounterStore'
-import type { GeneratedPokemon } from '@/stores/pokemonGenerator'
-
-interface SpriteConfig {
-  totalFrames: number;
-  frameWidth: number;
-  frameHeight: number;
-  velocidadAnimacion: number;
-}
 
 const props = defineProps<{ region?: string }>()
 
@@ -31,81 +23,30 @@ const emit = defineEmits<{
   'cerrar': [];
 }>()
 
-const buscando = ref<boolean>(true);
-const frameActual = ref<number>(0);
-const animacionId = ref<number | null>(null);
-
+const buscando = ref<boolean>(true)
 const encounterStore = useEncounterStore()
 const foundPokemon = ref<EncounteredPokemon | null>(null)
 
-const spriteConfig: SpriteConfig = {
-  totalFrames: 4,
-  frameWidth: 128,
-  frameHeight: 128,
-  velocidadAnimacion: 200,
-};
-
-import spriteSheet from '@/assets/images/personaje-selva.png';
-const spriteSheetUrl = ref<string>(spriteSheet);
-
-const spriteStyle = computed((): { [key: string]: string } => ({
-  backgroundImage: `url('${spriteSheetUrl.value}')`,
-  backgroundPosition: `-${frameActual.value * spriteConfig.frameWidth}px 0px`,
-  backgroundSize: `${spriteConfig.totalFrames * spriteConfig.frameWidth}px ${spriteConfig.frameHeight}px`,
-  imageRendering: 'pixelated'
-}));
-
 onMounted((): void => {
-  iniciarBusqueda();
-});
-
-onUnmounted((): void => {
-  if (animacionId.value !== null) {
-    cancelAnimationFrame(animacionId.value);
-  }
-});
+  iniciarBusqueda()
+})
 
 const iniciarBusqueda = async (): Promise<void> => {
-  buscando.value = true;
-  frameActual.value = 0;
-
-  iniciarAnimacion();
+  buscando.value = true
 
   // Animate for 2-3 seconds while fetching from PokéAPI
-  const animationPromise = new Promise<void>(resolve => setTimeout(resolve, Math.random() * 1000 + 2000));
+  const animationPromise = new Promise<void>(resolve => setTimeout(resolve, Math.random() * 1000 + 2000))
 
   // Start encounter generation (async - fetches from PokéAPI)
-  const encounterPromise = encounterStore.generateEncounter(props.region);
+  const encounterPromise = encounterStore.generateEncounter(props.region)
 
   // Wait for both animation and fetch
-  await Promise.all([animationPromise, encounterPromise]);
+  await Promise.all([animationPromise, encounterPromise])
 
-  if (animacionId.value !== null) {
-    cancelAnimationFrame(animacionId.value);
-    animacionId.value = null;
-  }
+  decidirResultadoDeBusqueda()
 
-  decidirResultadoDeBusqueda();
-
-  buscando.value = false;
-};
-
-const iniciarAnimacion = (): void => {
-  let ultimoTiempo: number = 0;
-
-  const animar = (tiempo: number): void => {
-    if (!ultimoTiempo) ultimoTiempo = tiempo;
-
-    if (tiempo - ultimoTiempo > spriteConfig.velocidadAnimacion) {
-      frameActual.value = (frameActual.value + 1) % spriteConfig.totalFrames;
-      ultimoTiempo = tiempo;
-    }
-
-    animacionId.value = requestAnimationFrame(animar);
-  };
-
-  animacionId.value = requestAnimationFrame(animar);
-};
+  buscando.value = false
+}
 
 const decidirResultadoDeBusqueda = (): void => {
   // Check if encounter was successful by checking the store's wildPokemon
@@ -132,14 +73,14 @@ const decidirResultadoDeBusqueda = (): void => {
 const reiniciarBusqueda = (): void => {
   foundPokemon.value = null
   encounterStore.endEncounter()
-  buscando.value = true;
-  iniciarBusqueda();
-};
+  buscando.value = true
+  iniciarBusqueda()
+}
 
 const cerrarModal = (): void => {
   encounterStore.endEncounter()
-  emit('cerrar');
-};
+  emit('cerrar')
+}
 </script>
 <template>
   <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm">
@@ -151,16 +92,18 @@ const cerrarModal = (): void => {
 
       <CardContent class="text-center pt-6">
         <div v-if="buscando" class="space-y-4">
-          <div class="relative h-56 flex items-center justify-center rounded-lg bg-muted/50 border border-border">
-            <div
-              class="w-32 h-32"
-              :style="spriteStyle"
-            ></div>
+          <div class="relative h-40 flex items-center justify-center rounded-lg bg-gradient-to-b from-green-900/30 to-green-950/50 border border-border overflow-hidden">
+            <!-- Simple loading indicator -->
+            <div class="flex flex-col items-center gap-4">
+              <div class="w-12 h-12 border-4 border-green-500/30 border-t-green-500 rounded-full animate-spin"></div>
+            </div>
           </div>
 
           <div class="space-y-1">
-            <p class="text-lg font-semibold text-foreground">Buscando Pokémon...</p>
-            <p class="text-sm text-muted-foreground">Explorando la selva</p>
+            <p class="text-lg font-semibold text-foreground">
+              Buscando Pokémon...
+            </p>
+            <p class="text-sm text-muted-foreground">Explorando {{ region || 'la zona' }}...</p>
           </div>
         </div>
 
@@ -168,19 +111,19 @@ const cerrarModal = (): void => {
           <template v-if="foundPokemon">
             <div class="bg-primary/10 border border-primary rounded-lg p-4 space-y-2 text-left">
               <h3 class="font-bold text-base text-foreground flex items-center gap-2">
-                <i class="pi pi-check text-green-600"></i>
-                Pokémon encontrado
+                <span class="text-green-500 text-xl">✓</span>
+                ¡Pokémon encontrado!
               </h3>
-              <p class="text-sm text-muted-foreground">Nombre: <strong class="text-foreground">{{ foundPokemon.name }}</strong></p>
+              <p class="text-sm text-muted-foreground">Nombre: <strong class="text-foreground capitalize">{{ foundPokemon.name }}</strong></p>
               <p class="text-sm text-muted-foreground">Nivel: <strong class="text-foreground">{{ foundPokemon.level }}</strong></p>
-              <p class="text-sm text-muted-foreground">Tipos: <strong class="text-foreground">{{ foundPokemon.types?.join(' / ') ?? 'Normal' }}</strong></p>
+              <p class="text-sm text-muted-foreground">Tipos: <strong class="text-foreground capitalize">{{ foundPokemon.types?.join(' / ') ?? 'Normal' }}</strong></p>
             </div>
           </template>
 
           <template v-else>
             <div class="bg-destructive/10 border border-destructive rounded-lg p-4 space-y-2">
               <h3 class="font-bold text-base text-foreground flex items-center gap-2">
-                <i class="pi pi-times text-red-500"></i>
+                <span class="text-red-500 text-xl">✗</span>
                 No se encontró ningún Pokémon
               </h3>
               <p class="text-sm text-muted-foreground">{{ encounterStore.fetchError ?? 'Intenta de nuevo o cambia la región' }}</p>
@@ -201,7 +144,7 @@ const cerrarModal = (): void => {
 
         <Button
           @click="cerrarModal"
-          class="flex-1 text-white"
+          class="flex-1"
           variant="destructive"
         >
           Cerrar
@@ -210,3 +153,7 @@ const cerrarModal = (): void => {
     </Card>
   </div>
 </template>
+
+<style scoped>
+/* Simple spinner is handled by Tailwind animate-spin */
+</style>
