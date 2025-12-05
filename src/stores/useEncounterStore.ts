@@ -1,5 +1,3 @@
-// useEncounterStore.ts
-
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { GeneratedPokemon } from '../stores/pokemonGenerator'
@@ -14,18 +12,10 @@ export const useEncounterStore = defineStore('encounter', () => {
 
   const capturedPokemons = ref<GeneratedPokemon[]>([])
 
-  /**
-   * region: string opcional
-   * Ej: "kanto", "johto"
-   */
-  /**
-   * Genera un encuentro. Retorna true si se encontró un Pokémon, false si no.
-   */
   function generateEncounter(region?: string) {
     const pokemon = generateRandomPokemon(region)
 
     if (!pokemon) {
-      // No se encontraron pokémons para la región solicitada
       wildPokemon.value = null
       isEncounterActive.value = false
       return false
@@ -50,7 +40,6 @@ export const useEncounterStore = defineStore('encounter', () => {
     if (!wildPokemon.value) return { success: false, shakes: 0 }
 
     isCaptureInProgress.value = true
-
     const result = attemptCapture(wildPokemon.value, pokeballType)
 
     if (result.success) {
@@ -69,10 +58,10 @@ export const useEncounterStore = defineStore('encounter', () => {
     isEncounterActive,
     isCaptureInProgress,
     capturedPokemons,
-
     generateEncounter,
     setCurrentPokemon,
     endEncounter,
-    tryCapture
+    tryCapture // ✅ Ahora sí se exporta correctamente
   }
 })
+
