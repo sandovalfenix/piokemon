@@ -315,24 +315,8 @@ const handleMoveSelected = async (moveId: string) => {
 }
 
 const handleSwitchPokemon = async (pokemonIndex: number) => {
-  const newPokemon = battleStore.playerTeam[pokemonIndex]
-
-  if (!newPokemon || newPokemon.currentHp === 0) {
-    battleStore.log.push('¡No puedes usar ese Pokémon!')
-    return
-  }
-
-  if (newPokemon.id === battleStore.player.id) {
-    battleStore.log.push(`¡${newPokemon.name} ya está en combate!`)
-    return
-  }
-
-  const oldPokemonName = battleStore.player.name
-  battleStore.currentPlayerIndex = pokemonIndex
-  battleStore.player = newPokemon
-
-  battleStore.log.push(`¡Vuelve, ${oldPokemonName}!`)
-  battleStore.log.push(`¡Adelante, ${newPokemon.name}!`)
+  // Use the store action to confirm switch so the battle flow resumes correctly
+  battleStore.confirmPlayerSwitch(pokemonIndex)
 
   // Close modal and return to main view
   showSwitchModal.value = false

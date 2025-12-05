@@ -30,7 +30,6 @@ import { useEncounterStore, type EncounteredPokemon } from '@/stores/useEncounte
 import { getRandomUndefeatedNpc } from '@/data/thematicNpcs'
 import { gymLeaders } from '@/data/gymLeaders'
 import Buscar from '@/components/Buscar.vue'
-import Capturar from '@/components/Capturar.vue'
 
 
 const router = useRouter()
@@ -43,12 +42,6 @@ const showNoStarterModal = ref(false)
 
 // Wild encounter modal state (Buscar animation)
 const showWildEncounter = ref(false)
-
-// Capturar preview modal state
-const showCapturar = ref(false)
-
-// Found Pokémon data
-const foundPokemon = ref<EncounteredPokemon | null>(null)
 
 
 // Badge images mapping (ordered by gym progression)
@@ -185,13 +178,21 @@ function handleCloseWildEncounter() {
 
 /**
  * Feature 007: Handle Pokemon found from Buscar
- * Shows Capturar preview with ¡Batalla! and Huir buttons
+ * Navigate directly to BattleView with wild Pokémon data (skip Capturar preview)
  */
 function handlePokemonFound(pokemon: EncounteredPokemon) {
-  foundPokemon.value = pokemon
+  // Store wild encounter data for BattleView
+  sessionStorage.setItem('battleTarget', JSON.stringify({
+    type: 'wild',
+    id: `wild-${pokemon.id}`,
+    pokemonData: pokemon,
+  }))
+
   showWildEncounter.value = false
-  showCapturar.value = true
-  console.log('[HomeView] Pokémon found:', pokemon.name, 'Types:', pokemon.types)
+
+  // Navigate to battle immediately
+  router.push('/battle')
+  console.log('[HomeView] Pokémon found:', pokemon.name, '- Starting wild battle immediately')
 }
 
 /**
@@ -200,48 +201,6 @@ function handlePokemonFound(pokemon: EncounteredPokemon) {
 function handlePokemonNotFound() {
   console.log('[HomeView] No Pokémon found')
   // Buscar component stays open for retry or close
-}
-
-/**
- * Feature 007: Handle Battle button from Capturar
- * Navigate to BattleView with wild Pokémon data
- */
-function handleBattle() {
-  if (!foundPokemon.value) return
-
-  // Store wild encounter data for BattleView
-  sessionStorage.setItem('battleTarget', JSON.stringify({
-    type: 'wild',
-    id: `wild-${foundPokemon.value.id}`,
-    pokemonData: foundPokemon.value,
-  }))
-
-  showCapturar.value = false
-  foundPokemon.value = null
-
-  // Navigate to battle
-  router.push('/battle')
-  console.log('[HomeView] Starting wild battle')
-}
-
-/**
- * Feature 007: Handle Flee button from Capturar
- * Return to home, end encounter
- */
-function handleFlee() {
-  encounterStore.endEncounter()
-  showCapturar.value = false
-  foundPokemon.value = null
-  console.log('[HomeView] Fled from wild encounter')
-}
-
-/**
- * Feature 007: Handle Continue Searching from Capturar
- */
-function handleContinueSearching() {
-  showCapturar.value = false
-  foundPokemon.value = null
-  showWildEncounter.value = true
 }
 
 </script>
@@ -307,16 +266,6 @@ function handleContinueSearching() {
       @cerrar="handleCloseWildEncounter"
       @pokemon-encontrado="handlePokemonFound"
       @pokemon-no-encontrado="handlePokemonNotFound"
-    />
-
-    <!-- Feature 007: Capturar Preview Modal -->
-    <Capturar
-      v-if="showCapturar"
-      :pokemon-data="foundPokemon"
-      :estado-busqueda="foundPokemon ? 'encontrado' : 'no encontrado'"
-      @battle="handleBattle"
-      @flee="handleFlee"
-      @seguir-buscando="handleContinueSearching"
     />
 
     <!-- No Starter Modal -->

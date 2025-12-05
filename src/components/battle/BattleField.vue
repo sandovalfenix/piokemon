@@ -187,8 +187,8 @@ const getHpColor = (percent: number) => {
   width: 220px;
   height: 220px;
   bottom: -4%;
-  left: 10%;
-  animation-delay: 1.5s;
+  left: 16%;
+  animation-delay: 0s;
   transform: scaleX(-1);
 }
 
