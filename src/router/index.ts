@@ -7,6 +7,7 @@ import ZoneParqueCana from '../views/ZoneParqueCana.vue';
 import ZoneZooCali from '../views/ZoneZooCali.vue';
 import ZonePlazoletaJairoVarela from '../views/ZonePlazoletaJairoVarela.vue';
 import ZoneLaErmita from '../views/ZoneLaErmita.vue';
+import ZoneLobbyView from '../views/ZoneLobbyView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,12 @@ const router = createRouter({
       path: '/mapa',
       name: 'world-map',
       component: WorldMapViewPage,
+    },
+    {
+      path: '/zone-lobby/:zoneName',
+      name: 'zone-lobby',
+      component: ZoneLobbyView,
+      props: true,
     },
     {
       path: '/zona/la-ermita',
