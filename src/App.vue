@@ -1,11 +1,16 @@
 <template>
   <div id="app-container">
-    <RouterView />
+    <SidebarProvider>
+      <AppSidebar />
+      <RouterView />
+    </SidebarProvider>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
+import AppSidebar from '@/components/AppSidebar.vue';
+import { SidebarProvider } from '@/components/ui/sidebar';
 </script>
 
 <style>

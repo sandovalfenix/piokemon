@@ -1,110 +1,129 @@
 <template>
-  <button
-    :class="['zone-node', `state-${zone.state}`]"
-    :style="nodeStyle"
+  <Card
+    class="zone-card group relative overflow-hidden cursor-pointer transition-all duration-300 ease-out min-h-[200px]"
     @click="handleClick"
-    :title="zone.name"
-    :aria-label="`${zone.name} (${zone.state})`"
   >
-    <span class="node-dot" />
-    <span class="sr-only">{{ zone.name }} - {{ zone.state }}</span>
-  </button>
+    <!-- Imagen de fondo con efecto zoom -->
+    <div
+      v-if="zoneImage"
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-110"
+      :style="{
+        backgroundImage: `url(${zoneImage})`,
+      }"
+    />
+
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/60 transition-opacity duration-300 group-hover:bg-black/50" />
+
+    <!-- Contenido de la card -->
+    <div class="relative z-10 flex flex-row items-center justify-between h-full p-6 gap-6">
+      <!-- Icono o imagen de fallback -->
+      <div
+        v-if="!zoneImage"
+        class="w-24 h-24 rounded-full flex items-center justify-center shrink-0 shadow-lg bg-white/30"
+      >
+        <span class="text-5xl leading-none">{{ zoneIcon }}</span>
+      </div>
+
+      <!-- Información de la zona -->
+      <div class="flex flex-col gap-3 flex-1 min-w-0">
+        <h3
+          class="text-3xl font-black leading-tight text-white"
+          style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 12px rgba(0, 0, 0, 0.5);"
+        >
+          {{ zoneNameWithoutPrefix }}
+        </h3>
+
+        <p
+          v-if="zone.description"
+          class="text-base leading-relaxed text-white font-medium"
+          style="text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.4);"
+        >
+          {{ zone.description }}
+        </p>
+      </div>
+    </div>
+  </Card>
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps, defineEmits } from 'vue';
-import type { Zone } from '../types/zone';
+import { computed } from 'vue'
+import { Card } from '@/components/ui/card'
+import type { Zone } from '../types/zone'
+
+// Importar imágenes de locations
+import laErmitaImg from '@/assets/img/locations/la_ermita.png'
+import nicheImg from '@/assets/img/locations/niche.png'
+import parqueCanaImg from '@/assets/img/locations/parque_cana.png'
+import cristoReyImg from '@/assets/img/locations/cristo_rey.png'
+import zooCaliImg from '@/assets/img/locations/zoo_cali.png'
 
 const props = defineProps<{
-  zone: Zone;
-  mapWidth: number;
-  mapHeight: number;
-  imageWidth?: number;
-  imageHeight?: number;
-  imageOffsetX?: number;
-  imageOffsetY?: number;
-}>();
+  zone: Zone
+}>()
 
-const emit = defineEmits(['node-click']);
-
-const nodeStyle = computed(() => ({
-  // Si se proporcionan dimensiones de la imagen, calcular la posición en px dentro del contenedor
-  left: props.imageWidth
-    ? `${(props.imageOffsetX || 0) + (props.zone.position.x / props.mapWidth) * (props.imageWidth || 0)}px`
-    : `${(props.zone.position.x / props.mapWidth) * 100}%`,
-  top: props.imageHeight
-    ? `${(props.imageOffsetY || 0) + (props.zone.position.y / props.mapHeight) * (props.imageHeight || 0)}px`
-    : `${(props.zone.position.y / props.mapHeight) * 100}%`,
-}));
+const emit = defineEmits(['node-click'])
 
 const handleClick = () => {
-  emit('node-click', props.zone);
-};
+  emit('node-click', props.zone)
+}
+
+// Mapeo de zonas a imágenes de locations
+// Solo incluir zonas que tienen imágenes disponibles
+const zoneImage = computed(() => {
+  const images: Record<number, string> = {
+    1: nicheImg, // Zona Plazoleta Jairo Varela (id: 1) - niche.png
+    2: zooCaliImg, // Zona Zoo de Cali (id: 2) - zoo_cali.png
+    3: laErmitaImg, // Zona La Ermita (id: 3) - la_ermita.png
+    4: cristoReyImg, // Zona Cristo Rey (id: 4) - cristo_rey.png
+    5: parqueCanaImg, // Zona Parque de la Caña (id: 5) - parque_cana.png
+  }
+  return images[props.zone.id]
+})
+
+// Eliminar "Zona" del nombre si está presente
+const zoneNameWithoutPrefix = computed(() => {
+  return props.zone.name.replace(/^Zona\s+/i, '').trim()
+})
+
+// Iconos personalizados por zona (fallback cuando no hay imagen)
+const zoneIcon = computed(() => {
+  const icons: Record<number, string> = {
+    1: '🦁', // Zona Plazoleta Jairo Varela
+    2: '🐘', // Zona Zoo de Cali
+    3: '⛪', // Zona La Ermita
+    4: '🏔️', // Zona Cristo Rey
+    5: '🌴', // Zona Parque de la Caña
+  }
+  return icons[props.zone.id] || '📍'
+})
 </script>
 
 <style scoped>
-.zone-node {
-  position: absolute;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 4px solid #ffffff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #ffffff;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(255, 255, 255, 0.5);
-  transition: all 0.3s ease;
-  z-index: 10;
-  transform: translate(-50%, -50%); /* Centrar el nodo en sus coordenadas x, y */
+.zone-card {
+  background-color: #1a1a1a;
 }
 
-.state-locked {
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 0 0 8px rgba(255, 255, 255, 0.4);
+.zone-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
-.state-active {
-  box-shadow: 0 10px 25px rgba(56, 118, 29, 0.35), 0 0 0 8px rgba(144, 238, 144, 0.7);
-  animation: pulse 1.6s infinite;
+.zone-card:active {
+  transform: translateY(-2px);
 }
 
-.state-completed {
-  box-shadow: 0 10px 25px rgba(28, 69, 135, 0.35), 0 0 0 8px rgba(135, 206, 235, 0.7);
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+  }
 }
 
-@keyframes pulse {
-  0% { transform: scale(1) translate(-50%, -50%); }
-  50% { transform: scale(1.1) translate(-50%, -50%); }
-  100% { transform: scale(1) translate(-50%, -50%); }
-}
-
-.node-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #9ad6ff, #3a7bd5);
-  box-shadow: inset 0 0 0 2px #dff1ff, 0 0 10px rgba(58, 123, 213, 0.6);
-}
-
-.state-active .node-dot {
-  background: linear-gradient(135deg, #c6ffb3, #62c370);
-  box-shadow: inset 0 0 0 2px #e0ffd8, 0 0 10px rgba(98, 195, 112, 0.65);
-}
-
-.state-completed .node-dot {
-  background: linear-gradient(135deg, #b6d7ff, #1c4587);
-  box-shadow: inset 0 0 0 2px #e1eeff, 0 0 10px rgba(28, 69, 135, 0.65);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 </style>

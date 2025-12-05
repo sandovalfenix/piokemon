@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import NpcListPanel from '@/components/lobby/NpcListPanel.vue'
 import PlayersOnlinePanel from '@/components/lobby/PlayersOnlinePanel.vue'
 import ZoneActionsPanel from '@/components/lobby/ZoneActionsPanel.vue'
-import AppSidebar from '@/components/AppSidebar.vue'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { SidebarInset } from '@/components/ui/sidebar'
 import SiteHeader from '@/components/SiteHeader.vue'
+import { Button } from '@/components/ui/button'
+import { IconArrowLeft } from '@tabler/icons-vue'
 import zonalobbyBg from '@/assets/img/zonalobby.png'
 
 const route = useRoute()
+const router = useRouter()
+
+const goBackToMap = () => {
+  router.push('/mapa')
+}
 
 // Obtener el nombre de la zona desde los parámetros de la ruta
 const zoneName = computed(() => {
@@ -27,9 +33,6 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
 </script>
 
 <template>
-  <SidebarProvider>
-    <AppSidebar />
-
     <SidebarInset class="flex flex-col overflow-hidden !bg-transparent">
       <SiteHeader title="Zona Lobby" />
       <div
@@ -43,6 +46,17 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
         }"
       >
         <div class="relative z-10 flex h-full flex-col p-4 md:p-6 gap-4 justify-between">
+          <div class="absolute top-4 left-4 z-20">
+            <Button
+              @click="goBackToMap"
+              variant="outline"
+              size="lg"
+              class="bg-black/30 backdrop-blur-sm border-white/20 text-white hover:bg-black/50 hover:text-white font-bold"
+            >
+              <IconArrowLeft class="size-4" />
+              Volver al Mapa
+            </Button>
+          </div>
           <main class="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0 items-center">
             <aside class="md:col-span-3 lg:col-span-3 h-[80%]">
               <NpcListPanel @interact="onNpcInteraction" />
@@ -74,7 +88,6 @@ const onTradeRequest = (id: string) => console.log('Trade:', id)
         </div>
       </div>
     </SidebarInset>
-  </SidebarProvider>
 </template>
 
 <style scoped>

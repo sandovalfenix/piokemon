@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import AppSidebar from '@/components/AppSidebar.vue'
 import ChartAreaInteractive from '@/components/ChartAreaInteractive.vue'
 import DataTable from '@/components/DataTable.vue'
 import SectionCards from '@/components/SectionCards.vue'
 import SiteHeader from '@/components/SiteHeader.vue'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { SidebarInset } from '@/components/ui/sidebar'
 
 // Datos de ejemplo para la tabla
 const tableData = ref([
@@ -58,16 +57,13 @@ const tableData = ref([
 </script>
 
 <template>
-  <SidebarProvider>
-    <AppSidebar />
-    <SidebarInset>
-      <SiteHeader />
-      <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <SectionCards />
-        <ChartAreaInteractive />
-        <DataTable :data="tableData" />
-      </div>
-    </SidebarInset>
-  </SidebarProvider>
+  <SidebarInset>
+    <SiteHeader />
+    <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <SectionCards />
+      <ChartAreaInteractive />
+      <DataTable :data="tableData" />
+    </div>
+  </SidebarInset>
 </template>
 
