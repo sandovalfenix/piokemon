@@ -27,7 +27,7 @@ import {
 import { useTeamStore } from '@/stores/team'
 import { useProgressStore } from '@/stores/progress'
 import { useEncounterStore, type EncounteredPokemon } from '@/stores/useEncounterStore'
-import { getRandomUndefeatedNpc } from '@/data/thematicNpcs'
+import { getRandomUndefeatedNpcFromGym, getNpcsByGym } from '@/data/thematicNpcs'
 import { gymLeaders } from '@/data/gymLeaders'
 import Buscar from '@/components/Buscar.vue'
 
@@ -89,6 +89,52 @@ const currentGymInfo = computed(() => {
   return gym ? { name: gym.name, index: progressStore.currentGym } : { name: 'Gimnasio 1', index: 1 }
 })
 
+/**
+ * Computed: Current gym progress percentage
+ * 0% → 50% = NPCs progress, 50% → 100% = Gym Leader defeated
+ */
+const gymProgressPercent = computed(() => {
+  if (progressStore.isGameComplete) return 100
+
+  const gymId = progressStore.currentGym
+  const gymNpcs = getNpcsByGym(gymId)
+  const totalNpcs = gymNpcs.length
+  const defeatedNpcs = gymNpcs.filter(npc =>
+    progressStore.defeatedTrainers.includes(npc.id)
+  ).length
+
+  // NPCs contribute 0-50%, gym leader adds final 50%
+  const npcProgress = totalNpcs > 0 ? (defeatedNpcs / totalNpcs) * 50 : 0
+
+  // If gym leader is already defeated for this gym, add 50%
+  const gymLeaderDefeated = progressStore.isGymLeaderDefeated(gymId)
+  const leaderProgress = gymLeaderDefeated ? 50 : 0
+
+  return Math.round(npcProgress + leaderProgress)
+})
+
+/**
+ * Computed: Progress description text
+ */
+const progressDescription = computed(() => {
+  if (progressStore.isGameComplete) return '¡Has completado el juego!'
+
+  const gymId = progressStore.currentGym
+  const gymNpcs = getNpcsByGym(gymId)
+  const totalNpcs = gymNpcs.length
+  const defeatedNpcs = gymNpcs.filter(npc =>
+    progressStore.defeatedTrainers.includes(npc.id)
+  ).length
+
+  const canChallengeGym = progressStore.canChallengeGymLeader(gymId)
+
+  if (canChallengeGym) {
+    return `¡Listo para el Líder de Gimnasio!`
+  } else {
+    return `Entrenadores: ${defeatedNpcs}/${totalNpcs}`
+  }
+})
+
 
 
 /**
@@ -138,8 +184,8 @@ function handleBattleClick() {
       router.push('/battle')
     }
   } else {
-    // Challenge random undefeated NPC from current gym's pool
-    const npc = getRandomUndefeatedNpc(progressStore.defeatedTrainers)
+    // Challenge random undefeated NPC from current gym's pool only
+    const npc = getRandomUndefeatedNpcFromGym(progressStore.currentGym, progressStore.defeatedTrainers)
     if (npc) {
       sessionStorage.setItem('battleTarget', JSON.stringify({
         type: 'npc',
@@ -228,6 +274,24 @@ function handlePokemonNotFound() {
       <p class="progress-text">
         {{ progressStore.isGameComplete ? '¡Eres el Campeón!' : `Próximo: ${currentGymInfo.name}` }}
       </p>
+
+      <!-- Gym Progress Bar -->
+      <div v-if="!progressStore.isGameComplete" class="gym-progress-container">
+        <div class="gym-progress-header">
+          <span class="gym-progress-label">Progreso del Gimnasio {{ currentGymInfo.index }}</span>
+          <span class="gym-progress-percent">{{ gymProgressPercent }}%</span>
+        </div>
+        <div class="gym-progress-bar">
+          <div
+            class="gym-progress-fill"
+            :style="{ width: `${gymProgressPercent}%` }"
+            :class="{ 'ready-for-gym': gymProgressPercent >= 50 }"
+          />
+          <!-- Midpoint marker (50%) -->
+          <div class="gym-progress-marker" />
+        </div>
+        <p class="gym-progress-description">{{ progressDescription }}</p>
+      </div>
     </section>
 
     <!-- Battle Buttons -->
@@ -359,6 +423,70 @@ function handlePokemonNotFound() {
   font-size: 0.9rem;
   color: #888;
   margin: 0;
+}
+
+/* Gym Progress Bar Styles */
+.gym-progress-container {
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gym-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.gym-progress-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.gym-progress-percent {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.gym-progress-bar {
+  position: relative;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.gym-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
+
+.gym-progress-fill.ready-for-gym {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.gym-progress-marker {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%);
+}
+
+.gym-progress-description {
+  font-size: 0.7rem;
+  color: #999;
+  margin: 0.25rem 0 0 0;
+  text-align: center;
 }
 
 .battle-section {

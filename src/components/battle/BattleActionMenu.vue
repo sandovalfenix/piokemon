@@ -57,20 +57,19 @@ const props = withDefaults(defineProps<Props>(), {
       </div>
     </template>
 
-    <!-- MoveSelector con LogPanel a su lado -->
+    <!-- MoveSelector as Full Overlay (covers log panel) -->
     <template v-else-if="props.currentView === 'fight'">
-      <div class="fight-layout">
-        <!-- LogPanel en el lado izquierdo -->
-        <div class="log-section">
-          <LogPanel
-            :messages="props.logMessages"
-            :max-messages="8"
-            :is-battle-style="true"
-          />
+      <div class="fight-overlay">
+        <div class="overlay-header">
+          <span class="overlay-title">SELECT A MOVE</span>
+          <button class="cancel-btn" @click="$emit('back')">
+            <span class="cancel-icon">✕</span>
+            <span>CANCEL</span>
+          </button>
         </div>
 
-        <!-- MoveSelector -->
-        <div class="move-section">
+        <!-- MoveSelector takes full space -->
+        <div class="move-grid-container">
           <MoveSelector
             :moves="props.playerMoves"
             :is-battle-style="true"
@@ -78,9 +77,6 @@ const props = withDefaults(defineProps<Props>(), {
             @select-move="(id: string) => $emit('select-move', id)"
             @back="$emit('back')"
           />
-          <button class="back-button" @click="$emit('back')">
-            <span class="back-arrow">←</span> ATRÁS
-          </button>
         </div>
       </div>
     </template>
@@ -160,7 +156,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 .back-arrow {
   font-size: 11px;
-  
+
 }
 
 /* New Layout Styles */
@@ -186,6 +182,69 @@ const props = withDefaults(defineProps<Props>(), {
   gap: 8px;
   flex: 1;
   min-width: 0;
+}
+
+/* Fight Overlay - Full screen overlay for move selection */
+.fight-overlay {
+  position: absolute;
+  inset: 0;
+  background: oklch(var(--color-background) / 0.98);
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  padding: 12px;
+  gap: 12px;
+}
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 2px solid oklch(var(--color-border));
+}
+
+.overlay-title {
+  font-size: 0.875rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  color: oklch(var(--color-foreground));
+}
+
+.cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ef4444;
+  color: white;
+  font-weight: bold;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms;
+  border: none;
+}
+
+.cancel-btn:hover {
+  background: #dc2626;
+  transform: scale(1.02);
+}
+
+.cancel-btn:active {
+  transform: scale(0.98);
+}
+
+.cancel-icon {
+  font-size: 1rem;
+}
+
+.move-grid-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .fight-layout {
