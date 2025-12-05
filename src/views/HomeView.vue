@@ -9,11 +9,11 @@
  * - "Battle" button (auto-selects next opponent in progression)
  * - "Wild Encounter" button
  * - Progress display (badges earned)
- * 
+ *
  *
  * Flow Guard: Checks hasStarter flag before allowing battle
  */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import {
@@ -68,6 +68,24 @@ const badgeImages = [
 
 // Computed: Number of badges earned
 const badgesEarned = computed(() => progressStore.earnedBadges.length)
+
+// Computed: Can battle/explore (team must not be empty)
+const canBattle = computed(() => !teamStore.isTeamEmpty && teamStore.hasStarter)
+
+/**
+ * Lobby Guard: Auto-redirect to starter selection if no team
+ * Prevents "back button" exploits
+ */
+onMounted(() => {
+  // Load team from localStorage to ensure sync
+  teamStore.loadTeam()
+
+  // If team is empty and no starter, redirect to starter selection
+  if (teamStore.isTeamEmpty || !teamStore.hasStarter) {
+    console.log('[HomeView] No team or starter - redirecting to starter selection')
+    router.replace('/starter-selection')
+  }
+})
 
 // Computed: Current gym info
 const currentGymInfo = computed(() => {
@@ -258,7 +276,7 @@ function handleContinueSearching() {
       <Button
         class="battle-btn story-btn"
         size="lg"
-        :disabled="progressStore.isGameComplete"
+        :disabled="progressStore.isGameComplete || !canBattle"
         @click="handleBattleClick"
       >
         {{ progressStore.isGameComplete ? 'Campeón' : 'Batalla' }}
@@ -268,6 +286,7 @@ function handleContinueSearching() {
         class="battle-btn wild-btn"
         size="lg"
         variant="outline"
+        :disabled="!canBattle"
         @click="handleWildBattleClick"
       >
         Encuentro Salvaje
@@ -279,7 +298,7 @@ function handleContinueSearching() {
         @click="handleChangeTeamClick"
       >
         Cambia tu equipo
-      </Button>      
+      </Button>
     </section>
 
     <!-- Wild Encounter Modal (Buscar Animation) -->

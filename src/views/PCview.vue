@@ -22,6 +22,11 @@ const pcList = computed(() => pcBoxStore.pokemonList)
 const showTeamFull = ref(false)
 
 /* ===========================================================
+   Dialog: "Minimum Team" (at least 1 Pokémon required)
+=========================================================== */
+const showMinTeam = ref(false)
+
+/* ===========================================================
    MOVER PC → TEAM (CORREGIDO + DIALOG)
 =========================================================== */
 function moveFromPC(instanceId: string) {
@@ -33,32 +38,69 @@ function moveFromPC(instanceId: string) {
   const poke = pcBoxStore.removePokemon(instanceId)
   if (!poke) return
 
+  // Get level from old data (if exists) or use default level 10
+  const pokemonLevel = (poke as any).captureLevel ?? 10
+
+  // Convert MoveReference[] to Move[] with default battle values
+  // Pokemon.moves is MoveReference (id+name), but TeamMember.selectedMoves needs full Move data
+  const selectedMoves = (poke.pokemon.moves ?? []).slice(0, 4).map((moveRef) => ({
+    id: moveRef.id,
+    name: moveRef.name,
+    type: 'Normal' as const,  // Default type (actual type would require API fetch)
+    power: 40,                 // Default power
+    accuracy: 100,             // Default accuracy
+    category: 'Physical' as const,  // Default category - REQUIRED by battle engine
+    pp: 35,                    // Default PP
+  }))
+
+  // Fallback: if no moves, add Tackle
+  if (selectedMoves.length === 0) {
+    selectedMoves.push({
+      id: 33,
+      name: 'Tackle',
+      type: 'Normal' as const,
+      power: 40,
+      accuracy: 100,
+      category: 'Physical' as const,
+      pp: 35,
+    })
+  }
+
   teamStore.addPokemon({
     pokemon: poke.pokemon,
-    selectedMoves: poke.pokemon.moves ?? [],
-    level: poke.captureLevel,
-    currentHp: poke.captureLevel * 5 + 10,
-    maxHp: poke.captureLevel * 5 + 10,
+    selectedMoves,
+    level: pokemonLevel,
+    currentHp: pokemonLevel * 5 + 10,
+    maxHp: pokemonLevel * 5 + 10,
     position: teamStore.roster.length
   })
+
+  // Persistence Sync: Immediately save team after mutation to prevent Battle Module desyncs
+  teamStore.saveTeam()
 }
 
 /* ===========================================================
    MOVER TEAM → PC
 =========================================================== */
 function moveToPC(teamIndex: number) {
+  // Constraint: Minimum 1 Pokémon required in team
+  if (teamStore.roster.length <= 1) {
+    showMinTeam.value = true
+    return
+  }
+
   const mon = teamStore.roster[teamIndex]
   if (!mon) return
 
   pcBoxStore.addPokemon({
     instanceId: crypto.randomUUID(),
-    pokemon: mon.pokemon,
-    captureLevel: mon.level,
-    ballType: "pokeball",
-    capturedAt: new Date().toISOString()
+    pokemon: mon.pokemon
   })
 
   teamStore.removePokemon(teamIndex)
+
+  // Persistence Sync: Immediately save team after mutation
+  teamStore.saveTeam()
 }
 
 /* ===========================================================
@@ -89,7 +131,7 @@ function saveChanges() {
             v-for="(member, index) in teamList"
             :key="index"
             @click="moveToPC(index)"
-            class="flex items-center gap-4 p-4 border rounded-xl cursor-pointer 
+            class="flex items-center gap-4 p-4 border rounded-xl cursor-pointer
                    bg-slate-50 hover:bg-red-50 transition-transform hover:scale-[1.02]
                    shadow-sm hover:shadow-md"
           >
@@ -118,13 +160,13 @@ function saveChanges() {
             v-for="poke in pcList"
             :key="poke.instanceId"
             @click="moveFromPC(poke.instanceId)"
-            class="p-4 border rounded-xl cursor-pointer flex flex-col items-center 
+            class="p-4 border rounded-xl cursor-pointer flex flex-col items-center
                    bg-slate-50 hover:bg-green-50 transition-transform hover:scale-[1.03]
                    shadow-sm hover:shadow-md"
           >
             <img :src="poke.pokemon.sprite" class="w-14 h-14 drop-shadow-md" />
             <p class="text-sm font-semibold mt-2 text-slate-900">{{ poke.pokemon.name }}</p>
-            <p class="text-xs text-gray-500">Lv. {{ poke.captureLevel }}</p>
+            <p class="text-xs text-gray-500">Lv. {{ (poke as any).captureLevel ?? 10 }}</p>
           </div>
 
           <p v-if="pcList.length === 0" class="text-gray-400 text-center col-span-4 mt-4 italic">
@@ -156,8 +198,31 @@ function saveChanges() {
         </p>
 
         <DialogFooter class="mt-4">
-          <Button class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg" 
+          <Button class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
                   @click="showTeamFull = false">
+            Okay
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- =====================================================
+         MINIMUM TEAM DIALOG (at least 1 Pokémon required)
+    ====================================================== -->
+    <Dialog v-model:open="showMinTeam">
+      <DialogContent class="max-w-sm rounded-2xl shadow-xl">
+        <DialogHeader>
+          <DialogTitle class="text-xl font-bold text-amber-600">Minimum Team Required</DialogTitle>
+        </DialogHeader>
+
+        <p class="text-gray-700">
+          You must have at least 1 Pokémon in your team.
+          You cannot deposit your last Pokémon.
+        </p>
+
+        <DialogFooter class="mt-4">
+          <Button class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg"
+                  @click="showMinTeam = false">
             Okay
           </Button>
         </DialogFooter>
