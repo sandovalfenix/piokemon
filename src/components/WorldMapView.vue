@@ -3,7 +3,10 @@
     <!-- Instrucciones de controles -->
     <div class="controls-hint">
       <span class="hint-icon">🎮</span>
-      <span>Usa <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> para moverte</span>
+      <span
+        >Usa <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las <kbd>↑</kbd><kbd>↓</kbd
+        ><kbd>←</kbd><kbd>→</kbd> para moverte</span
+      >
     </div>
 
     <div ref="mapCanvas" class="map-canvas">
@@ -66,120 +69,127 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import mapArt from '../assets/map.jpg';
-import playerImage from '../assets/player.png';
-import { useKeyboardMovement } from '../composables/useKeyboardMovement';
-import { useMapStore } from '../stores/mapStore';
-import PathConnections from './PathConnections.vue';
-import PlayerCharacter from './PlayerCharacter.vue';
-import ZoneNode from './ZoneNode.vue';
-import ZonePopover from './ZonePopover.vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import mapArt from '../assets/map.jpg'
+import playerImage from '../assets/player.png'
+import { useKeyboardMovement } from '../composables/useKeyboardMovement'
+import { useMapStore } from '../stores/mapStore'
+import PathConnections from './PathConnections.vue'
+import PlayerCharacter from './PlayerCharacter.vue'
+import ZoneNode from './ZoneNode.vue'
+import ZonePopover from './ZonePopover.vue'
 
-const mapStore = useMapStore();
-const router = useRouter();
+const mapStore = useMapStore()
+const router = useRouter()
 
 // Sistema de movimiento del jugador
-const { position: playerPosition, isMoving, move } = useKeyboardMovement({
+const {
+  position: playerPosition,
+  isMoving,
+  move,
+} = useKeyboardMovement({
   initialPosition: { x: 50, y: 85 },
   speed: 2.5,
   bounds: { minX: 15, maxX: 85, minY: 10, maxY: 95 },
   onMove: (pos) => {
     // Detectar si el jugador está cerca de una zona
-    checkZoneProximity(pos);
+    checkZoneProximity(pos)
   },
-});
+})
 
 // Detectar proximidad a zonas
 const checkZoneProximity = (pos: { x: number; y: number }) => {
-  const proximityThreshold = 8; // % de distancia para activar zona
+  const proximityThreshold = 8 // % de distancia para activar zona
 
   for (const zone of mapStore.allZones) {
     // Convertir coordenadas de zona a porcentaje
-    const zoneX = (zone.position.x / MAP_WIDTH) * 100;
-    const zoneY = (zone.position.y / MAP_HEIGHT) * 100;
+    const zoneX = (zone.position.x / MAP_WIDTH) * 100
+    const zoneY = (zone.position.y / MAP_HEIGHT) * 100
 
-    const distance = Math.sqrt(
-      Math.pow(pos.x - zoneX, 2) + Math.pow(pos.y - zoneY, 2)
-    );
+    const distance = Math.sqrt(Math.pow(pos.x - zoneX, 2) + Math.pow(pos.y - zoneY, 2))
 
     // Mostrar modal en TODAS las zonas (incluso bloqueadas)
     if (distance < proximityThreshold) {
-      mapStore.setSelectedZone(zone);
-      return;
+      mapStore.setSelectedZone(zone)
+      return
     }
   }
-};
+}
 
-const MAP_WIDTH = 1200;
-const MAP_HEIGHT = 1800;
+const MAP_WIDTH = 1200
+const MAP_HEIGHT = 1800
 
 // Medición del área renderizada para alinear SVG y nodos en pixeles reales
-const mapCanvas = ref<HTMLElement | null>(null);
-const mapImg = ref<HTMLImageElement | null>(null);
-const renderWidth = ref<number>(0);
-const renderHeight = ref<number>(0);
+const mapCanvas = ref<HTMLElement | null>(null)
+const mapImg = ref<HTMLImageElement | null>(null)
+const renderWidth = ref<number>(0)
+const renderHeight = ref<number>(0)
 
 // Imagen renderizada dentro del canvas (área 'contain')
-const imageWidth = ref<number>(0);
-const imageHeight = ref<number>(0);
-const imageOffsetX = ref<number>(0); // desde el borde izquierdo del container
-const imageOffsetY = ref<number>(0); // desde el borde superior del container
+const imageWidth = ref<number>(0)
+const imageHeight = ref<number>(0)
+const imageOffsetX = ref<number>(0) // desde el borde izquierdo del container
+const imageOffsetY = ref<number>(0) // desde el borde superior del container
 
 const measure = () => {
-  if (!mapCanvas.value) return;
-  const rect = mapCanvas.value.getBoundingClientRect();
-  renderWidth.value = Math.round(rect.width);
-  renderHeight.value = Math.round(rect.height);
+  if (!mapCanvas.value) return
+  const rect = mapCanvas.value.getBoundingClientRect()
+  renderWidth.value = Math.round(rect.width)
+  renderHeight.value = Math.round(rect.height)
 
   // Si la imagen está cargada, calcular su tamaño real dentro del contenedor
   if (mapImg.value) {
-    const imgRect = mapImg.value.getBoundingClientRect();
-    imageWidth.value = Math.round(imgRect.width);
-    imageHeight.value = Math.round(imgRect.height);
-    imageOffsetX.value = Math.round(imgRect.left - rect.left);
-    imageOffsetY.value = Math.round(imgRect.top - rect.top);
+    const imgRect = mapImg.value.getBoundingClientRect()
+    imageWidth.value = Math.round(imgRect.width)
+    imageHeight.value = Math.round(imgRect.height)
+    imageOffsetX.value = Math.round(imgRect.left - rect.left)
+    imageOffsetY.value = Math.round(imgRect.top - rect.top)
   }
   // Debug: muestra las dimensiones reales usadas para escalar rutas
-  console.log('mapCanvas size', renderWidth.value, renderHeight.value);
-};
+  console.log('mapCanvas size', renderWidth.value, renderHeight.value)
+}
 
 onMounted(() => {
-  measure();
-  window.addEventListener('resize', measure);
+  measure()
+  window.addEventListener('resize', measure)
   // Si la imagen cambia de tamaño al cargarse, volver a medir
   if (mapImg.value) {
-    mapImg.value.addEventListener('load', measure);
+    mapImg.value.addEventListener('load', measure)
   }
-});
+})
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', measure);
+  window.removeEventListener('resize', measure)
   if (mapImg.value) {
-    mapImg.value.removeEventListener('load', measure);
+    mapImg.value.removeEventListener('load', measure)
   }
-});
+})
 
 const handleEnterZone = (zoneId: number) => {
-  console.log(`¡Entrando a la Zona ID: ${zoneId}! Redirigiendo...`);
+  console.log(`¡Entrando a la Zona ID: ${zoneId}! Redirigiendo...`)
 
-  // Mapeo de zonas a rutas
-  const zoneRoutes: Record<number, string> = {
-    1: '/zona/plazoleta-jairo-varela',
-    2: '/zona/zoologico-de-cali',
-    3: '/zona/la-ermita',
-    4: '/zona/gimnasio-cristo-rey',
-    5: '/zona/parque-de-la-cana',
-  };
+  // Obtener la zona desde el store
+  const zone = mapStore.getZoneById(zoneId)
 
-  const route = zoneRoutes[zoneId];
-  if (route) {
-    router.push(route);
-  } else {
-    alert(`Zona "${mapStore.getSelectedZone?.name}" próximamente disponible.`);
+  if (!zone) {
+    alert(`Zona con ID ${zoneId} no encontrada.`)
+    return
   }
-};
+
+  // Convertir el nombre de la zona a un slug URL-friendly
+  // Ejemplo: "Zona Plazoleta Jairo Varela" -> "zona-plazoleta-jairo-varela"
+  const zoneSlug = zone.name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Reemplazar espacios por guiones
+    .normalize('NFD') // Normalizar caracteres Unicode
+    .replace(/[\u0300-\u036f]/g, '') // Eliminar diacríticos (acentos)
+
+  // Usar la ruta correcta que coincide con ZoneLobbyView
+  const route = `/zone-lobby/${zoneSlug}`
+  router.push(route)
+}
 </script>
 
 <style scoped>
@@ -271,7 +281,9 @@ const handleEnterZone = (zoneId: number) => {
   font-size: 1.5rem;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: transform 0.1s, background 0.2s;
+  transition:
+    transform 0.1s,
+    background 0.2s;
 }
 
 .control-btn:active {

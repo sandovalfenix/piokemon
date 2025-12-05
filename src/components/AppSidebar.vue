@@ -56,6 +56,11 @@ const data = {
   ],
   navMain: [
     {
+      title: 'Mapa',
+      url: '/mapa',
+      icon: Map,
+    },
+    {
       title: 'Playground',
       url: '#',
       icon: SquareTerminal,
