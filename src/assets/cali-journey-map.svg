@@ -1,0 +1,89 @@
+<svg width="1200" height="1200" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapa ilustrado de aventura">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#e6f7ff" />
+      <stop offset="70%" stop-color="#bce6ff" />
+      <stop offset="100%" stop-color="#9dd4ff" />
+    </radialGradient>
+    <radialGradient id="island" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#d8f8c0" />
+      <stop offset="70%" stop-color="#8bd78b" />
+      <stop offset="100%" stop-color="#6ec070" />
+    </radialGradient>
+    <linearGradient id="river" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#bde5ff" />
+      <stop offset="100%" stop-color="#6fc1ff" />
+    </linearGradient>
+    <pattern id="dotted" width="16" height="16" patternUnits="userSpaceOnUse">
+      <circle cx="8" cy="8" r="2" fill="#ffe9b3" />
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="1200" fill="url(#sky)" />
+
+  <g opacity="0.5">
+    <path d="M180,220 q420,-180 740,60 q120,120 30,320 q-80,210 -310,360 q-210,140 -430,-30 q-220,-170 -160,-420 q20,-120 130,-290 z" fill="#fef8c4" />
+  </g>
+
+  <path d="M200,240 q420,-180 730,70 q110,130 10,330 q-90,210 -310,350 q-190,120 -400,-40 q-220,-170 -160,-410 q20,-130 130,-300 z" fill="url(#island)" stroke="#66b25f" stroke-width="8" />
+
+  <path d="M260,260 q80,100 170,150 q130,70 220,180 q80,100 140,230" fill="none" stroke="#71b97c" stroke-width="28" stroke-linecap="round" opacity="0.5" />
+
+  <path d="M420,220 q120,120 200,180 q70,55 160,100 q60,30 120,80 q-60,90 -150,160 q-120,-90 -220,-140 q-80,-40 -210,-90 q-90,-35 -170,-110 q60,-95 160,-180 z" fill="url(#river)" stroke="#5eafff" stroke-width="10" opacity="0.95" />
+
+  <path d="M260,260 q80,100 170,150 q130,70 220,180 q80,100 140,230" fill="none" stroke="#d0f1ff" stroke-width="22" stroke-linecap="round" opacity="0.7" />
+
+  <path d="M200,240 q420,-180 730,70 q110,130 10,330 q-90,210 -310,350 q-190,120 -400,-40 q-220,-170 -160,-410 q20,-130 130,-300 z" fill="none" stroke="#ffe19c" stroke-width="14" stroke-dasharray="18 10" opacity="0.9" />
+
+  <g fill="#7ab55c" stroke="#4d7f3a" stroke-width="5" opacity="0.85">
+    <circle cx="360" cy="360" r="36" />
+    <circle cx="820" cy="320" r="34" />
+    <circle cx="360" cy="620" r="32" />
+    <circle cx="880" cy="660" r="34" />
+    <circle cx="640" cy="760" r="28" />
+    <circle cx="520" cy="860" r="30" />
+  </g>
+
+  <g fill="#9c7a55" stroke="#6b4d35" stroke-width="6">
+    <rect x="340" y="390" width="40" height="60" rx="8" />
+    <rect x="800" y="350" width="38" height="55" rx="8" />
+    <rect x="340" y="650" width="36" height="50" rx="8" />
+    <rect x="860" y="690" width="38" height="55" rx="8" />
+    <rect x="620" y="790" width="30" height="45" rx="8" />
+    <rect x="500" y="890" width="32" height="45" rx="8" />
+  </g>
+
+  <g fill="#fff" stroke="#d7e7ff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.95">
+    <circle cx="600" cy="180" r="46" />
+    <circle cx="310" cy="440" r="46" />
+    <circle cx="600" cy="520" r="46" />
+    <circle cx="890" cy="470" r="46" />
+    <circle cx="600" cy="830" r="46" />
+  </g>
+
+  <g fill="#f8d9fd" opacity="0.9">
+    <circle cx="520" cy="160" r="18" />
+    <circle cx="700" cy="160" r="18" />
+    <circle cx="260" cy="460" r="14" />
+    <circle cx="940" cy="450" r="14" />
+    <circle cx="560" cy="780" r="14" />
+  </g>
+
+  <g fill="#f6f0b8" opacity="0.9">
+    <circle cx="640" cy="150" r="10" />
+    <circle cx="340" cy="410" r="10" />
+    <circle cx="860" cy="440" r="10" />
+    <circle cx="600" cy="780" r="10" />
+  </g>
+
+  <g fill="#4b86ff" opacity="0.85">
+    <circle cx="680" cy="260" r="12" />
+    <circle cx="430" cy="510" r="12" />
+    <circle cx="760" cy="560" r="12" />
+    <circle cx="540" cy="900" r="12" />
+  </g>
+
+  <text x="600" y="1115" font-size="56" font-family="'Segoe UI', 'Arial', sans-serif" text-anchor="middle" fill="#fbd34d" stroke="#f2b233" stroke-width="4">
+    CALI POKÉMON JOURNEY!
+  </text>
+</svg>
