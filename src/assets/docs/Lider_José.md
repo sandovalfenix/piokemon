@@ -2,7 +2,7 @@
 
 **#Lider José - El Guardián de Piedra del Valle**
 
-![Lider José](src/assets/images/Lideres/Lider_José-Cristo_Rey.png)
+![Lider José](../Images/leaders/Lider_Jose_-_Cristo_Rey.png)
 <!-- IMG -->
 
 **# HISTORIA COMPLETA**
@@ -45,8 +45,8 @@ Requiere usar fuerza, precisión y estrategia.
 Solo cuando vea que el jugador entiende el equilibrio del cerro, José dirá:
 
 “La montaña te ha aceptado.
-Ahora, veamos si también puedes resistir su fuerza.”
+Ahora, veamos si también puedes resistir su fuerza."
 
 **#Medalla:**
-![Medalla wildcraft CON FONDO](src/assets/images/Medallas/Valle_Vivo.png)
-![Medalla wildcraft SIN FONDO](src/assets/images/Medallas/bottomless/Valle_Vivo.png)
+![Medalla Valle Vivo](../Images/Badges/Valle_Vivo-JOSE.png)
+<!-- Medalla sin fondo no disponible -->

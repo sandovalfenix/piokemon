@@ -2,7 +2,7 @@
 
 **#Aldeano Genérico NPC'S - Don Ernesto EL GUARDIÁN DE SAN ANTONIO**
 
-![Don Ernesto - Aldeano](src/assets/images/NPCs/Don_Ernesto.png)
+![Don Ernesto - Aldeano](../Images/trainers/Ernesto-trainer.png)
 <!-- IMG -->
 
 **HISTORIA DE FONDO:**

@@ -1,6 +1,6 @@
 <!-- #cSpell:disable -->
 
-![Entrenador Novato](src/assets/images/NPCs/Entrenador_Novato.png)
+![Entrenador Novato](../Images/trainers/young-trainer.png)
 
 **Misión del día:**
 “Demostrar que todo gran viaje empieza con un primer compañero. 
@@ -30,5 +30,4 @@ Su primer compañero fue un Pidgey que encontró en las colinas cercanas al río
 
 
 **#Medalla:**
-![Medalla del entrenador novato CON FONDO](src/assets/images/Medallas/Bosque_Verde.png)
-![Medalla del entrenador novato SIN FONDO](src/assets/images/Medallas/bottomless/Bosque_Verde.png)
+<!-- Medalla Bosque Verde no disponible en la carpeta actual -->
