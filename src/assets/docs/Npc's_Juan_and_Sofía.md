@@ -34,3 +34,6 @@ La gracia y velocidad de Ribombee, junto con su tipo Bicho/Hada, complementan la
 **#Medalla:**
 ![Medalla Go Salsa CON FONDO](src/assets/images/Medallas/Salsa_Go.png)
 ![Medalla Go Salsa SIN FONDO](src/assets/images/Medallas/bottomless/Salsa_Go.png)
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/NPCs/Juan_sofia.png)

@@ -78,3 +78,6 @@ Lucampay lo acompaña a todas partes y protege el barrio.
 **Medalla:**
 ![Medalla de don Ernesto con fondo](src/assets/images/Medallas/El_Guardian.png)
 ![Medalla de don Ernesto sin fondo](src/assets/images/Medallas/bottomless/El_Guardian.png)
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/NPCs/Icon_Don_ernesto.png)

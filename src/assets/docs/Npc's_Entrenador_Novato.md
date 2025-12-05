@@ -32,3 +32,6 @@ Su primer compañero fue un Pidgey que encontró en las colinas cercanas al río
 **#Medalla:**
 ![Medalla del entrenador novato CON FONDO](src/assets/images/Medallas/Bosque_Verde.png)
 ![Medalla del entrenador novato SIN FONDO](src/assets/images/Medallas/bottomless/Bosque_Verde.png)
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/NPCs/Icon_Entrenador_Novato.png)

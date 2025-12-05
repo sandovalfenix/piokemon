@@ -50,3 +50,6 @@ Ahora, veamos si también puedes resistir su fuerza.”
 **#Medalla:**
 ![Medalla wildcraft CON FONDO](src/assets/images/Medallas/Valle_Vivo.png)
 ![Medalla wildcraft SIN FONDO](src/assets/images/Medallas/bottomless/Valle_Vivo.png)
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/Lideres/Icon_jose.png)

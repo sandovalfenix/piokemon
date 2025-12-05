@@ -63,3 +63,6 @@ Muéstrame si tus alas están listas.”
 Eso solo lo logran quienes realmente escuchan al cielo.
 Acepta la Medalla Cielo Sagrado.
 **Que nunca olvides:** la verdadera fuerza es aquella que levanta a los demás.”
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/Lideres/Icon_Sofia.png)

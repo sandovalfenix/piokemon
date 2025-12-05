@@ -64,3 +64,6 @@ Simboliza el flujo limpio del agua y la responsabilidad en el juego.
 “¡Has demostrado que la diversión verdadera también exige respeto!
 Que esta victoria te recuerde: un buen entrenador cuida el agua antes de usarla.
 Te pertenece la medalla Olleada Viva.
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/Lideres/Icon_manuel.png)

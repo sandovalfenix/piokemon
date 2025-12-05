@@ -69,3 +69,6 @@ Cuando los encuentras, él te revela un secreto sobre el mapa general del juego 
 **#Medalla:**
 ![Medalla del Profesor Salcedo CON FONDO](src/assets/images/Medallas/El_Sabio_De_la_Terminal.png)
 ![Medalla del Profesor Salcedo SIN FONDO](src/assets/images/Medallas/bottomless/El_Sabio_De_la_Terminal.png)
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/NPCs/Icon_Profesor_Salcedo.png)

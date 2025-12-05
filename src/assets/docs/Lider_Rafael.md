@@ -56,3 +56,6 @@ Pulso Armónico (ataque tipo Sonido que puede confundir al rival).
 
 **Al perder:**
 “Qué orgulloso estaría Jairo Varela de vos. Esta Medalla del Ritmo Pacífico te pertenece. Recordá siempre: un verdadero entrenador lucha con armonía antes que con fuerza.”
+
+**#Icono para la zona lobby**
+![Icon](src/assets/images/Lideres/Icon_Rafael.png)
