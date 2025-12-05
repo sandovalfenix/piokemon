@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DialogPortal, type DialogPortalProps } from 'radix-vue'
+import { DialogPortal, type DialogPortalProps } from 'reka-ui'
 
 const props = defineProps<DialogPortalProps>()
 </script>
