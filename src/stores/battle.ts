@@ -130,6 +130,8 @@ interface ExtendedBattleState extends BattleState {
   defeatModalState: DefeatModalState
   /** Feature 007: Wild Pokémon battle data for capture mechanics */
   wildPokemonData?: WildBattlePokemon
+  /** Feature: indicate player must choose next Pokemon after faint */
+  playerSwitchRequired?: boolean
 }
 
 export const useBattleStore = defineStore('battle', {
@@ -152,6 +154,7 @@ export const useBattleStore = defineStore('battle', {
     moveLearningState: { ...DEFAULT_MOVE_LEARNING_STATE },
     defeatModalState: { ...DEFAULT_DEFEAT_MODAL_STATE },
     wildPokemonData: undefined,
+    playerSwitchRequired: false,
   }),
 
   getters: {
@@ -443,14 +446,52 @@ export const useBattleStore = defineStore('battle', {
       )
 
       if (nextIndex !== -1) {
-        // Auto switch to next Pokémon after a small delay for better UX
-        this.currentPlayerIndex = nextIndex
-        this.player = this.playerTeam[nextIndex]!
-        this.log.push(`¡Adelante, ${this.player.name}!`)
-        await new Promise(resolve => setTimeout(resolve, 600))
+        // Instead of auto-switching, mark that player must choose and wait
+        this.playerSwitchRequired = true
+
+        // Create a promise that will be resolved when UI confirms the selection
+        // We keep the resolver in a module-scoped variable
+        return await new Promise<void>((resolve) => {
+          // store resolver for confirmPlayerSwitch to call
+          ;(this as any).__playerSwitchResolver = resolve
+        })
       } else {
         // No more Pokémon for player - NPC wins
         this.winner = 'npc'
+      }
+    },
+
+    /**
+     * Confirm player's switch choice (called from UI). Performs the switch and resumes battle.
+     */
+    confirmPlayerSwitch(pokemonIndex: number) {
+      const newPokemon = this.playerTeam[pokemonIndex]
+
+      if (!newPokemon || newPokemon.currentHp === 0) {
+        this.log.push('¡No puedes usar ese Pokémon!')
+        return
+      }
+
+      if (newPokemon.id === this.player.id) {
+        this.log.push(`¡${newPokemon.name} ya está en combate!`)
+        return
+      }
+
+      const oldPokemonName = this.player.name
+      this.currentPlayerIndex = pokemonIndex
+      this.player = newPokemon
+
+      this.log.push(`¡Vuelve, ${oldPokemonName}!`)
+      this.log.push(`¡Adelante, ${newPokemon.name}!`)
+
+      // Clear the required flag
+      this.playerSwitchRequired = false
+
+      // Resolve the awaiting promise if present
+      const resolver = (this as any).__playerSwitchResolver
+      if (typeof resolver === 'function') {
+        resolver()
+        ;(this as any).__playerSwitchResolver = undefined
       }
     },
 
