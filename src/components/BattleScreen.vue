@@ -61,6 +61,25 @@ import { useCapture } from '@/composables/useCapture'
 import type { WildBattlePokemon, BallType } from '@/models/capture'
 import type { EncounteredPokemon } from '@/stores/useEncounterStore'
 
+// Zone background images mapping
+import cristoReyBg from '@/assets/img/locations/cristo_rey.png'
+import laErmitaBg from '@/assets/img/locations/la_ermita.png'
+import nicheBg from '@/assets/img/locations/niche.png'
+import parqueCanaBg from '@/assets/img/locations/parque_cana.png'
+import zooChaliBg from '@/assets/img/locations/zoo_cali.png'
+
+// ZONE_ASSETS mapping for dynamic backgrounds
+const ZONE_ASSETS: Record<string, string> = {
+  'cristo-rey': cristoReyBg,
+  'la-ermita': laErmitaBg,
+  'plazoleta-jairo-varela': nicheBg,
+  'niche': nicheBg,
+  'parque-de-la-cana': parqueCanaBg,
+  'zoo-de-cali': zooChaliBg,
+  // Default fallback
+  'default': cristoReyBg,
+}
+
 // Props
 interface Props {
   trainer?: Trainer
@@ -75,6 +94,12 @@ const battleStore = useBattleStore()
 const teamStore = useTeamStore()
 const router = useRouter()
 const { rivalRemainingPokemon, startBattle: startTrainerBattle } = useTrainerBattle()
+
+// Dynamic background based on zone
+const currentZoneBackground = computed(() => {
+  const lastZone = sessionStorage.getItem('lastZone') || 'default'
+  return ZONE_ASSETS[lastZone] || ZONE_ASSETS['default']
+})
 
 // Gym battle state
 const currentBattleType = ref<BattleType>(BattleType.WILD)
@@ -190,7 +215,7 @@ const selectedBallType = ref<BallType | null>(null)
 const waitingTrainer = ref<import('@/data/trainersData').TrainerData | null>(null)
 
 // Feature 007: Capture composable
-const { captureState, isCapturing, openBallSelector, closeBallSelector, attemptCapture, resetCapture } = useCapture()
+const { captureState, closeBallSelector, attemptCapture, resetCapture } = useCapture()
 
 
 // Watch para sonidos sincronizados
@@ -369,41 +394,8 @@ const handleDefeatFromModal = () => {
   router.push('/')
 }
 
-/*
-IN STOPPED FEATURE - ITEM USAGE IN BATTLE
-
-const handleUseItem = (item: Item) => {
-  if (itemService.useItem(item.id)) {
-    battleStore.log.push(`¡Has usado ${item.name}!`)
-    // Here we would implement the actual item effect logic
-    // For now, just simulate a turn usage
-    setTimeout(() => {
-      currentView.value = 'main'
-      // Trigger enemy turn or whatever comes next
-    }, 1000)
-  }
-} */
-
-// ==========================================================================
-// Feature 007: Capture Handling
-// ==========================================================================
-
 /**
- * T018: Handle Capturar button click
- * Opens the ball selection overlay
- * @deprecated - Now handled through PokeballsBag modal via handleBag
- */
-function _handleCaptureClick() {
-  if (!isWildBattle.value) {
-    console.warn('[BattleScreen] Cannot capture - not a wild battle')
-    return
-  }
-  openBallSelector()
-}
-
-/**
- * Feature 007: Handle ball selection from PokeballsBag
- * Converts ball type and initiates capture attempt with animation
+ * T019: Handle Pokéball selection from PokeballsBag
  */
 async function handleBallSeleccionada(ballData: { type: string; label: string; count: number }) {
   // Map ball type names to BallType
@@ -483,7 +475,7 @@ async function handleBallSelected(ballType: BallType) {
   wildPokemonData.value.currentHp = npcHp
 
   // Attempt capture
-  const result = await attemptCapture(ballType, wildPokemonData.value)
+  await attemptCapture(ballType, wildPokemonData.value)
 }
 
 /**
@@ -697,106 +689,129 @@ watch(() => battleStore.log, () => {
 </script>
 
 <template>
-  <div class="battle-container">
-    <!-- T008: Error state when no team available -->
-    <div v-if="battleError" class="error-screen">
-      <div class="error-content">
-        <h2 class="error-title">¡Error!</h2>
-        <p class="error-message">{{ battleError }}</p>
-        <button class="error-button" @click="goToTeamBuilder">
-          Ir al Team Builder
-        </button>
-      </div>
-    </div>
+  <!-- Full viewport container with dynamic background -->
+  <div class="relative w-screen h-screen overflow-hidden">
+    <!-- Dynamic Background Image - Full screen -->
+    <img
+      :src="currentZoneBackground"
+      alt="Battle background"
+      class="absolute inset-0 z-0 w-full h-full object-cover"
+    />
 
-    <div v-else class="battle-screen">
-      <!-- Banner de batalla de gimnasio -->
-      <div v-if="isGymBattle && currentGymLeaderInfo" class="gym-battle-banner">
-        <div class="gym-badge-icon">
-          <i class="pi pi-star text-yellow-500"></i>
+    <!-- Dark overlay for better contrast -->
+    <div class="absolute inset-0 z-1 bg-black/30"></div>
+
+    <!-- Main content container -->
+    <div class="relative z-10 w-full h-full flex flex-col">
+      <!-- T008: Error state when no team available -->
+      <div v-if="battleError" class="flex-1 flex items-center justify-center p-4">
+        <div class="w-full max-w-md backdrop-blur-md bg-black/40 border border-white/10 rounded-xl p-8">
+          <div class="text-center">
+            <h2 class="text-2xl font-bold text-red-400 mb-4">¡Error!</h2>
+            <p class="text-white/80 mb-6">{{ battleError }}</p>
+            <button
+              class="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 rounded-lg text-white font-semibold transition-all"
+              @click="goToTeamBuilder"
+            >
+              Ir al Team Builder
+            </button>
+          </div>
         </div>
-        <div class="gym-info">
-          <span class="gym-leader-name">{{ currentGymLeaderInfo.name }}</span>
-          <span class="gym-type">Tipo {{ currentGymLeaderInfo.type }}</span>
+      </div>
+
+      <!-- Battle Screen Layout -->
+      <template v-else>
+        <!-- Banner de batalla de gimnasio -->
+        <div v-if="isGymBattle && currentGymLeaderInfo" class="absolute top-4 left-1/2 -translate-x-1/2 z-20 backdrop-blur-md bg-linear-to-r from-yellow-500/80 to-orange-500/80 border border-white/20 rounded-xl px-6 py-3 flex items-center gap-4 shadow-xl">
+          <div class="text-2xl animate-pulse">⭐</div>
+          <div class="flex flex-col">
+            <span class="text-white font-bold text-sm">{{ currentGymLeaderInfo.name }}</span>
+            <span class="text-white/70 text-xs">Tipo {{ currentGymLeaderInfo.type }}</span>
+          </div>
         </div>
-      </div>
 
-      <!-- Campo de batalla -->
-      <BattleField
-        :player-pokemon="battleStore.player"
-        :npc-pokemon="battleStore.npc"
-        :player-sprite="playerSprite"
-        :enemy-sprite="enemySprite"
-        :player-hp-percent="playerHpPercent"
-        :enemy-hp-percent="enemyHpPercent"
-        :shake-effect="shakeEffect"
-        :is-trainer-battle="isTrainerBattle"
-        :rival-remaining-pokemon="rivalRemainingPokemon"
-        :npc-team-length="battleStore.npcTeam.length"
-      />
+        <!-- Battle Field Area - Transparent to show background -->
+        <div class="flex-1 flex items-center justify-center">
+          <BattleField
+            :player-pokemon="battleStore.player"
+            :npc-pokemon="battleStore.npc"
+            :player-sprite="playerSprite"
+            :enemy-sprite="enemySprite"
+            :player-hp-percent="playerHpPercent"
+            :enemy-hp-percent="enemyHpPercent"
+            :shake-effect="shakeEffect"
+            :is-trainer-battle="isTrainerBattle"
+            :rival-remaining-pokemon="rivalRemainingPokemon"
+            :npc-team-length="battleStore.npcTeam.length"
+            class="w-full max-w-4xl"
+          />
+        </div>
 
-      <!-- Panel de control -->
-      <div class="control-area-wrapper">
-        <BattleActionMenu
-          v-if="currentView === 'main' || currentView === 'fight'"
-          :current-view="battleMenuView"
-          :log-messages="battleStore.log"
-          :player-moves="battleStore.player.moves"
-          :is-attacking="isAttacking"
-          :is-wild-battle="currentBattleType === BattleType.WILD"
-          @fight="handleFight"
-          @bag="handleBag"
-          @pokemon="handlePokemon"
-          @run="handleRun"
-          @select-move="handleMoveSelected"
-          @back="handleBack"
-        />
+        <!-- Floating Control Panel with Glassmorphism -->
+        <div class="p-4">
+          <div class="backdrop-blur-md bg-black/40 border border-white/10 rounded-xl overflow-hidden shadow-2xl h-[180px]">
+            <BattleActionMenu
+              v-if="currentView === 'main' || currentView === 'fight'"
+              :current-view="battleMenuView"
+              :log-messages="battleStore.log"
+              :player-moves="battleStore.player.moves"
+              :is-attacking="isAttacking"
+              :is-wild-battle="currentBattleType === BattleType.WILD"
+              @fight="handleFight"
+              @bag="handleBag"
+              @pokemon="handlePokemon"
+              @run="handleRun"
+              @select-move="handleMoveSelected"
+              @back="handleBack"
+            />
 
-        <!-- Vista de Pokéballs -->
-        <PokeballsBag
-          v-else-if="currentView === 'pokeball'"
-          @ball-seleccionada="handleBallSeleccionada"
-          @cerrar="handleBack"
-        />
+            <!-- Vista de Pokéballs -->
+            <PokeballsBag
+              v-else-if="currentView === 'pokeball'"
+              @ball-seleccionada="handleBallSeleccionada"
+              @cerrar="handleBack"
+            />
 
-        <!-- Vista de Pokémon -->
-        <BattleTeamSelector
-          v-else-if="currentView === 'pokemon'"
-          :team="battleStore.playerTeam"
-          :current-pokemon-id="battleStore.player.id"
-          :trainer-name="trainerName"
-          @switch-pokemon="handleSwitchPokemon"
-          @back="handleBack"
-        />
+            <!-- Vista de Pokémon -->
+            <BattleTeamSelector
+              v-else-if="currentView === 'pokemon'"
+              :team="battleStore.playerTeam"
+              :current-pokemon-id="battleStore.player.id"
+              :trainer-name="trainerName"
+              @switch-pokemon="handleSwitchPokemon"
+              @back="handleBack"
+            />
 
-        <!-- Entrenador esperando cambio de Pokémon -->
-        <TrainerWaitingScreen
-          v-else-if="currentView === 'trainer-waiting' && waitingTrainer"
-          :trainer="waitingTrainer"
-          :available-pokemon="battleStore.npcTeam"
-          :current-pokemon-index="battleStore.currentNpcIndex"
-          @pokemon-selected="handleTrainerPokemonSelected"
-        />
+            <!-- Entrenador esperando cambio de Pokémon -->
+            <TrainerWaitingScreen
+              v-else-if="currentView === 'trainer-waiting' && waitingTrainer"
+              :trainer="waitingTrainer"
+              :available-pokemon="battleStore.npcTeam"
+              :current-pokemon-index="battleStore.currentNpcIndex"
+              @pokemon-selected="handleTrainerPokemonSelected"
+            />
 
-        <!-- Selector de equipo del jugador con imágenes grandes -->
-        <PokemonTeamSwitcher
-          v-else-if="currentView === 'player-team-switch'"
-          :team="battleStore.playerTeam"
-          :current-pokemon-id="battleStore.player.id"
-          :trainer-name="trainerName"
-          @select="handleSwitchPokemon"
-        />
+            <!-- Selector de equipo del jugador con imágenes grandes -->
+            <PokemonTeamSwitcher
+              v-else-if="currentView === 'player-team-switch'"
+              :team="battleStore.playerTeam"
+              :current-pokemon-id="battleStore.player.id"
+              :trainer-name="trainerName"
+              @select="handleSwitchPokemon"
+            />
 
-        <!-- Selector de equipo del enemigo con imágenes grandes -->
-        <PokemonTeamSwitcher
-          v-else-if="currentView === 'enemy-team-switch' && waitingTrainer"
-          :team="battleStore.npcTeam"
-          :current-pokemon-id="battleStore.npc.id"
-          :trainer-name="waitingTrainer.name"
-          is-enemy-team
-          @select="handleTrainerPokemonSelected"
-        />
-      </div>
+            <!-- Selector de equipo del enemigo con imágenes grandes -->
+            <PokemonTeamSwitcher
+              v-else-if="currentView === 'enemy-team-switch' && waitingTrainer"
+              :team="battleStore.npcTeam"
+              :current-pokemon-id="battleStore.npc.id"
+              :trainer-name="waitingTrainer.name"
+              is-enemy-team
+              @select="handleTrainerPokemonSelected"
+            />
+          </div>
+        </div>
+      </template>
     </div>
 
     <!-- Pokemon Switch Modal -->
@@ -843,161 +858,19 @@ watch(() => battleStore.log, () => {
   </div>
 </template>
 
-<style>
-.battle-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, oklch(var(--color-background)) 0%, oklch(var(--color-muted)) 100%);
-  padding: 20px;
-}
+<style scoped>
+/* Minimal styles - most styling done with Tailwind classes */
 
-.battle-screen {
-  width: 720px;
-  height: 480px;
-  display: flex;
-  flex-direction: column;
-  background: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.control-area-wrapper {
-  height: 150px;
-  position: relative;
-}
-
-@media (max-width: 800px) {
-  .battle-screen {
-    width: 95vw;
-    height: auto;
-    aspect-ratio: 3 / 2;
-  }
-}
-
-@media (min-width: 1200px) {
-  .battle-screen {
-    width: 960px;
-    height: 640px;
-  }
-
-  .control-area-wrapper {
+/* Responsive adjustments for control panel */
+@media (min-width: 1024px) {
+  .h-\[180px\] {
     height: 200px;
   }
 }
 
-/* T008: Error screen styles */
-.error-screen {
-  width: 720px;
-  height: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-}
-
-.error-content {
-  text-align: center;
-  padding: 40px;
-}
-
-.error-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.error-title {
-  font-size: 18px;
-  color: oklch(var(--color-destructive));
-  margin-bottom: 16px;
-}
-
-.error-message {
-  font-size: 10px;
-  color: oklch(var(--color-foreground));
-  line-height: 1.6;
-  margin-bottom: 24px;
-  max-width: 400px;
-}
-
-.error-button {
-  background: oklch(var(--color-primary));
-  color: oklch(var(--color-primary-foreground));
-  border: none;
-  border-radius: 4px;
-  padding: 12px 24px;
-  font-size: 10px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.error-button:hover {
-  opacity: 0.9;
-}
-
-@media (max-width: 800px) {
-  .error-screen {
-    width: 95vw;
-    height: auto;
-    aspect-ratio: 3 / 2;
+@media (max-width: 640px) {
+  .h-\[180px\] {
+    height: 160px;
   }
-}
-
-/* Estilos para banner de gimnasio */
-.gym-battle-banner {
-  position: absolute;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  border: 3px solid oklch(0.3 0.1 40);
-  border-radius: 8px;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  z-index: 100;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  font-family: 'Press Start 2P', 'Courier New', monospace;
-}
-
-.gym-badge-icon {
-  font-size: 24px;
-  animation: pulse 2s infinite;
-}
-
-.gym-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.gym-leader-name {
-  font-size: 10px;
-  font-weight: bold;
-  color: oklch(0.3 0.1 40);
-}
-
-.gym-type {
-  font-size: 7px;
-  color: oklch(0.4 0.08 40);
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
 }
 </style>

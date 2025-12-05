@@ -7,9 +7,9 @@
 -->
 <script setup lang="ts">
 import type { TeamMember } from '@/models/teamBuilder'
-import PhysicalIcon from '@/assets/Images/Battle/Physical.png'
-import SpecialIcon from '@/assets/Images/Battle/Special.png'
-import StatusIcon from '@/assets/Images/Battle/Status.png'
+import PhysicalIcon from '@/assets/img/Battle/Physical.png'
+import SpecialIcon from '@/assets/img/Battle/Special.png'
+import StatusIcon from '@/assets/img/Battle/Status.png'
 
 interface Props {
   member: TeamMember

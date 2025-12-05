@@ -140,10 +140,8 @@ const getHpColor = (percent: number) => {
 .battlefield {
   flex: 1;
   position: relative;
-  background-image: url('@/assets/Images/battle/battlefield.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Transparent background - location image shows through from BattleScreen */
+  background: transparent;
   overflow: hidden;
 }
 
@@ -156,7 +154,7 @@ const getHpColor = (percent: number) => {
 .enemy-platform {
   width: 240px;
   height: 60px;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.8), transparent);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.5), transparent);
   top: 50%;
   right: 12%;
 }
@@ -164,7 +162,7 @@ const getHpColor = (percent: number) => {
 .player-platform {
   width: 220px;
   height: 48px;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.7), transparent);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.4), transparent);
   bottom: -2%;
   left: 16%;
 }
@@ -227,11 +225,13 @@ const getHpColor = (percent: number) => {
 }
 
 .info-box {
-  background: rgba(255, 255, 255, 0.95);
-  border: 2px solid #000;
-  border-radius: 8px;
-  padding: 8px 12px;
-  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 .enemy-info-panel {
@@ -262,15 +262,16 @@ const getHpColor = (percent: number) => {
 }
 
 .pokemon-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
-  color: #2d2d2d;
+  color: white;
   letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .level-row {
-  font-size: 9px;
-  color: #666;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 5px;
 }
 
@@ -282,39 +283,40 @@ const getHpColor = (percent: number) => {
 }
 
 .hp-text {
-  font-size: 8px;
-  color: #f59e0b;
+  font-size: 9px;
+  color: #fbbf24;
   font-weight: bold;
 }
 
 .hp-bar-outer {
   flex: 1;
-  height: 7px;
-  background: #2d2d2d;
-  border-radius: 3px;
-  border: 1px solid #000;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
 }
 
 .hp-bar-inner {
   height: 100%;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .hp-numbers {
-  font-size: 10px;
-  color: #2d2d2d;
+  font-size: 11px;
+  color: white;
   text-align: right;
-  margin-top: 2px;
+  margin-top: 3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .team-indicator {
-  font-size: 8px;
-  color: #666;
-  margin-top: 3px;
-  padding-top: 3px;
-  border-top: 1px solid #ddd;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   text-align: center;
   font-weight: bold;
 }

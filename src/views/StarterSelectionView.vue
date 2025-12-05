@@ -8,22 +8,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
 import { Button } from '@/components/ui/button'
 import StarterPokemonCard from '@/components/teamBuilder/StarterPokemonCard.vue'
 import { useTeamStore } from '@/stores/team'
 import { fetchStarterPokemon } from '@/services/teamBuilder/starterService'
 import { fetchMovesBatch } from '@/services/teamBuilder/moveService'
 import type { Pokemon, Move, TeamMember } from '@/models/teamBuilder'
-import Bulbasaur from '@/assets/images/pokemon/bulbasaur.png'
-import Charmander from '@/assets/images/pokemon/charmander.png'
-import Squirtle from '@/assets/images/pokemon/squirtle.png'
-import Pikachu from '@/assets/images/pokemon/pikachu.png'
-import ProfesorOak from '@/assets/images/ProfesorOak.png'
+import Bulbasaur from '@/assets/img/pokemon/bulbasaur.png'
+import Charmander from '@/assets/img/pokemon/charmander.png'
+import Squirtle from '@/assets/img/pokemon/squirtle.png'
+import Pikachu from '@/assets/img/pokemon/pikachu.png'
 
 const router = useRouter()
 const teamStore = useTeamStore()
-const { roster } = storeToRefs(teamStore)
 
 // State
 const starters = ref<Pokemon[]>([])

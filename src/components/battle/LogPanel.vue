@@ -1,18 +1,18 @@
 <template>
   <div
-    class="p-3 bg-white/20 backdrop-blur-lg rounded-2xl border border-black/30 shadow-xl min-h-32 max-h-48 overflow-y-auto"
+    class="p-3 bg-black/30 backdrop-blur-md rounded-xl border border-white/10 shadow-xl min-h-32 max-h-48 overflow-y-auto"
     role="log"
     aria-live="polite"
     aria-atomic="false"
     aria-label="Battle log"
   >
-    <p v-if="battleStore.log.length === 0" class="text-sm text-gray-600 dark:text-gray-300">
+    <p v-if="battleStore.log.length === 0" class="text-sm text-white/60">
       Battle messages will appear here.
     </p>
     <div
       v-for="(msg, i) in battleStore.log"
       :key="i"
-      :class="['text-sm py-0.5', getMessageClass(msg)]"
+      :class="['text-sm py-0.5 text-white/90', getMessageClass(msg)]"
     >
       {{ msg }}
     </div>
@@ -40,16 +40,16 @@ const battleStore = useBattleStore()
  */
 const getMessageClass = (message: string): string => {
   if (message.includes('súper efectivo') || message.includes('super effective')) {
-    return 'text-green-600 dark:text-green-400 font-semibold'
+    return 'text-green-400 font-semibold'
   }
   if (message.includes('No es muy efectivo') || message.includes('not very effective')) {
-    return 'text-red-600 dark:text-red-400'
+    return 'text-red-400'
   }
   if (message.includes('falló') || message.includes('missed')) {
-    return 'text-gray-500 dark:text-gray-400 italic'
+    return 'text-white/50 italic'
   }
   if (message.includes('debilitó') || message.includes('fainted') || message.includes('Ganaste') || message.includes('Perdiste')) {
-    return 'font-bold text-purple-600 dark:text-purple-400'
+    return 'font-bold text-purple-400'
   }
   return ''
 }
