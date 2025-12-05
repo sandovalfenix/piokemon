@@ -14,8 +14,9 @@ import zonalobbyBg from '@/assets/img/zonalobby.png'
 
 // Importar imágenes de fondo dinámicas de zones-lobby
 import zooCaliLobbyBg from '@/assets/img/zones-lobby/zoo_cali.png'
-import laErmitaLobbyBg from '@/assets/img/zones-lobby/la-ermita.png'
 import cristoReyLobbyBg from '@/assets/img/zones-lobby/cristo_rey.png'
+import laErmitaLobbyBg from '@/assets/img/zones-lobby/la-ermita.png'
+import nicheLobbyBg from '@/assets/img/zones-lobby/niche.png'
 
 // Importar imágenes de locations como fallback
 import laErmitaImg from '@/assets/img/locations/la_ermita.png'
@@ -72,8 +73,9 @@ const zoneBackgroundImage = computed(() => {
   // Mapeo de slugs a imágenes de zones-lobby (si existen)
   const lobbyImages: Record<string, string> = {
     'zoo-de-cali': zooCaliLobbyBg,
-    'la-ermita': laErmitaLobbyBg,
     'cristo-rey': cristoReyLobbyBg,
+    'la-ermita': laErmitaLobbyBg,
+    'plazoleta-jairo-varela': nicheLobbyBg,
   }
 
   // Mapeo de slugs a imágenes de locations (fallback)
