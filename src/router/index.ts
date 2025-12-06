@@ -40,7 +40,7 @@ const router = createRouter({
       name: 'pc',
       component: PCview,
     },
-    
+
     {
       path: '/zona/:zoneName',
       name: 'zona-lobby',
