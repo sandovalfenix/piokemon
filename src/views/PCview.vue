@@ -128,7 +128,15 @@ function moveToPC(teamIndex: number) {
    GUARDAR CAMBIOS
 =========================================================== */
 function saveChanges() {
-    router.replace({ name: 'home' })
+  // Regresar a la zona guardada o al mapa si no hay zona
+  const lastZone = sessionStorage.getItem('lastZone')
+  sessionStorage.removeItem('lastZone')
+
+  if (lastZone) {
+    router.replace(`/zona/${lastZone}`)
+  } else {
+    router.replace('/mapa')
+  }
 }
 </script>
 

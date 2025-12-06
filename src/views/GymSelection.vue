@@ -30,7 +30,7 @@ const getPokemonSpriteFallback = (pokemonId: number) => {
 }
 
 const getDifficultyStars = (difficulty: number) => {
-  return Array(8).fill(0).map((_, i) => i < difficulty ? '★' : '☆').join('')
+  return Array(8).fill(0).map((_, i) => i < difficulty ? '*' : '-').join('')
 }
 </script>
 

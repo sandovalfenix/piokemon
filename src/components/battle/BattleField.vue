@@ -1,7 +1,25 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import StatusPanel from '../StatusPanel.vue'
 import type { Pokemon } from '@/domain/battle/engine/entities'
 import type { SpriteLoaderReturn } from '@/types/pokemonshowdown-sprite'
+
+// Import all battlefield images
+import cristoReyBattlefield from '@/assets/img/battle/battlefield/cristo-rey-battlefield.jpeg'
+import laErmitaBattlefield from '@/assets/img/battle/battlefield/la-ermita-battlefield.jpeg'
+import parqueCanaBattlefield from '@/assets/img/battle/battlefield/parque-cana-battlefield.jpeg'
+import plazoletaJairoValeraBattlefield from '@/assets/img/battle/battlefield/plazoleta-jairo-varela-battlefield.jpeg'
+import zooCaliBattlefield from '@/assets/img/battle/battlefield/zoo-cali-battlefield.jpeg'
+
+// Mapping of zone slugs to battlefield images
+const BATTLEFIELD_IMAGES: Record<string, string> = {
+  'cristo-rey': cristoReyBattlefield,
+  'la-ermita': laErmitaBattlefield,
+  'parque-de-la-cana': parqueCanaBattlefield,
+  'plazoleta-jairo-varela': plazoletaJairoValeraBattlefield,
+  'zoo-de-cali': zooCaliBattlefield,
+  'default': cristoReyBattlefield,
+}
 
 interface Props {
   playerPokemon: Pokemon
@@ -14,9 +32,17 @@ interface Props {
   isTrainerBattle: boolean
   rivalRemainingPokemon: number
   npcTeamLength: number
+  /** Zone slug for dynamic battlefield background */
+  battleZona?: string
 }
 
 const props = defineProps<Props>()
+
+// Computed battlefield background based on zone
+const battlefieldBackground = computed(() => {
+  const zone = props.battleZona || sessionStorage.getItem('lastZone') || 'default'
+  return BATTLEFIELD_IMAGES[zone] || BATTLEFIELD_IMAGES['default']
+})
 
 const getHpColor = (percent: number) => {
   if (percent > 50) return '#10b981'
@@ -26,7 +52,10 @@ const getHpColor = (percent: number) => {
 </script>
 
 <template>
-  <div class="battlefield">
+  <div
+    class="battlefield"
+    :style="{ backgroundImage: `url(${battlefieldBackground})` }"
+  >
     <!-- Información del Pokémon enemigo -->
     <div class="enemy-info-panel">
       <div class="info-box enemy-box">
@@ -55,11 +84,10 @@ const getHpColor = (percent: number) => {
 
     <!-- Sprite enemigo -->
     <div class="enemy-sprite-area">
-      <div class="sprite-platform enemy-platform"></div>
       <!-- Loading skeleton for enemy sprite -->
       <div
         v-if="props.enemySprite.isLoading.value"
-        class="animate-pulse bg-gray-200 w-40 h-40 rounded-full"
+        class="animate-pulse bg-gray-200/50 w-40 h-40 rounded-full absolute enemy-sprite-pos"
       ></div>
       <!-- Enemy sprite with error fallback -->
       <img
@@ -72,19 +100,18 @@ const getHpColor = (percent: number) => {
         ]"
       />
       <!-- Error fallback: show Pokemon name -->
-      <div v-else class="flex flex-col items-center justify-center w-40 h-40">
-        <div class="text-2xl">?</div>
-        <div class="text-sm text-gray-600">{{ props.npcPokemon.name }}</div>
+      <div v-else class="flex flex-col items-center justify-center w-40 h-40 absolute enemy-sprite-pos">
+        <div class="text-2xl text-white">?</div>
+        <div class="text-sm text-white/70">{{ props.npcPokemon.name }}</div>
       </div>
     </div>
 
     <!-- Sprite jugador -->
     <div class="player-sprite-area">
-      <div class="sprite-platform player-platform"></div>
       <!-- Loading skeleton for player sprite -->
       <div
         v-if="props.playerSprite.isLoading.value"
-        class="animate-pulse bg-gray-200 w-40 h-40 rounded-full"
+        class="animate-pulse bg-gray-200/50 w-40 h-40 rounded-full absolute player-sprite-pos"
       ></div>
       <!-- Player sprite with error fallback -->
       <img
@@ -97,9 +124,9 @@ const getHpColor = (percent: number) => {
         ]"
       />
       <!-- Error fallback: show Pokemon name -->
-      <div v-else class="flex flex-col items-center justify-center w-40 h-40">
-        <div class="text-2xl">❓</div>
-        <div class="text-sm text-gray-600">{{ props.playerPokemon.name }}</div>
+      <div v-else class="flex flex-col items-center justify-center w-40 h-40 absolute player-sprite-pos">
+        <div class="text-2xl text-white font-bold">?</div>
+        <div class="text-sm text-white/70">{{ props.playerPokemon.name }}</div>
       </div>
     </div>
 
@@ -140,54 +167,54 @@ const getHpColor = (percent: number) => {
 .battlefield {
   flex: 1;
   position: relative;
-  /* Transparent background - location image shows through from BattleScreen */
-  background: transparent;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   overflow: hidden;
+  min-height: 450px;
 }
 
-.sprite-platform {
+.enemy-sprite-area,
+.player-sprite-area {
   position: absolute;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.enemy-platform {
-  width: 240px;
-  height: 60px;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.5), transparent);
-  top: 50%;
-  right: 12%;
+.enemy-sprite-area {
+  top: 58%;
+  right: 24%;
 }
 
-.player-platform {
-  width: 220px;
-  height: 48px;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.4), transparent);
-  bottom: -2%;
+.player-sprite-area {
+  bottom: -4%;
   left: 16%;
 }
 
 .pokemon-sprite {
-  position: absolute;
   image-rendering: pixelated;
   animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.7));
+  position: relative;
 }
 
 .enemy-sprite {
   width: auto;
-  height: 148px;
-  top: 26%;
-  right: 20%;
-  animation-delay: 0s;
+  height: 98px;
+}
+
+.enemy-sprite-pos {
+  width: 160px;
+  height: 160px;
 }
 
 .player-sprite {
-  width: 220px;
-  height: 220px;
-  bottom: -4%;
-  left: 16%;
-  animation-delay: 0s;
+  width: auto;
+  height: 172px;
   transform: scaleX(-1);
+}
+
+.player-sprite-pos {
+  width: 240px;
+  height: 240px;
 }
 
 @keyframes float {
@@ -235,9 +262,10 @@ const getHpColor = (percent: number) => {
 }
 
 .enemy-info-panel {
+
   position: absolute;
-  top: 8%;
-  left: 6%;
+  top: 12%;
+  right: 18%;
 }
 
 .enemy-box {
@@ -246,8 +274,8 @@ const getHpColor = (percent: number) => {
 
 .player-info-panel {
   position: absolute;
-  bottom: 8%;
-  right: 6%;
+  bottom: 2%;
+  left: 4%;
 }
 
 .player-box {

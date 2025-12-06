@@ -65,7 +65,7 @@ const props = withDefaults(defineProps<Props>(), {
           <div class="fight-header">
             <span class="fight-title">Select a Move</span>
             <button class="cancel-button" @click="$emit('back')">
-              <span class="cancel-icon">✕</span>
+              <span class="cancel-icon">X</span>
               <span class="cancel-text">CANCEL</span>
             </button>
           </div>

@@ -140,8 +140,8 @@ const handlePokemonFound = (pokemon: EncounteredPokemon) => {
 
   showWildEncounter.value = false
 
-  // Navigate to battle immediately
-  router.push('/battle')
+  // Navigate to battle with zone parameter for dynamic battlefield
+  router.push(`/battle/${zoneSlug.value}`)
   console.log('[ZoneLobbyView] Pokémon found:', pokemon.name, '- Starting wild battle immediately')
 }
 
@@ -155,6 +155,8 @@ const handlePokemonNotFound = () => {
 
 const onHealTeam = () => {
   console.log('[ZoneLobbyView] Heal team / View team')
+  // Guardar la zona actual para regresar despues de PC
+  sessionStorage.setItem('lastZone', zoneSlug.value)
   router.push('/pc')
 }
 const onChallengePlayer = (id: string) => console.log('Challenge:', id)

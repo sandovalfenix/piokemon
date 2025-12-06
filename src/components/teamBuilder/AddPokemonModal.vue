@@ -8,9 +8,9 @@
 import { ref, computed, watch } from 'vue'
 import type { Pokemon, Move } from '@/models/teamBuilder'
 import { fetchMovesBatch } from '@/services/teamBuilder'
-import PhysicalIcon from '@/assets/img/Battle/Physical.png'
-import SpecialIcon from '@/assets/img/Battle/Special.png'
-import StatusIcon from '@/assets/img/Battle/Status.png'
+import PhysicalIcon from '@/assets/img/Battle/physical.png'
+import SpecialIcon from '@/assets/img/Battle/special.png'
+import StatusIcon from '@/assets/img/Battle/status.png'
 
 interface Props {
   pokemon: Pokemon | null
@@ -194,9 +194,9 @@ function getTypeColor(type: string): string {
  */
 function getCategoryIcon(category: string): string {
   const icons: Record<string, string> = {
-    Physical: "https://play.pokemonshowdown.com/sprites/categories/Physical.png",
-    Special: "https://play.pokemonshowdown.com/sprites/categories/Special.png",
-    Status: "https://play.pokemonshowdown.com/sprites/categories/Status.png",
+    Physical: PhysicalIcon,
+    Special: SpecialIcon,
+    Status: StatusIcon,
   }
   return icons[category] ?? ''
 }

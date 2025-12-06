@@ -41,9 +41,9 @@ export interface PlayerProps {
 
 const props = withDefaults(defineProps<PlayerProps>(), {
   imageSrc: '',
-  sprite: '🧑‍🎓',
+  sprite: 'P',
   isMoving: false,
-  label: 'Tú',
+  label: 'Tu',
   showLabel: true,
 })
 

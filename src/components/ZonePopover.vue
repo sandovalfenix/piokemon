@@ -12,7 +12,9 @@
       <!-- Estado de la zona -->
       <div class="zone-status">
         <div v-if="zone.state === 'locked'" class="status-locked">
-          <span class="status-icon">🔒</span>
+          <span class="status-icon">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+          </span>
           <div class="status-info">
             <span class="status-label">Zona Bloqueada</span>
             <span class="status-requirement">{{ zone.requirements }}</span>
@@ -20,15 +22,19 @@
         </div>
 
         <div v-else-if="zone.state === 'completed'" class="status-completed">
-          <span class="status-icon">✅</span>
+          <span class="status-icon">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+          </span>
           <div class="status-info">
-            <span class="status-label">¡Completada!</span>
+            <span class="status-label">Completada</span>
             <span class="status-progress">Progreso: {{ zone.progress }}%</span>
           </div>
         </div>
 
         <div v-else class="status-active">
-          <span class="status-icon">⚡</span>
+          <span class="status-icon">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+          </span>
           <div class="status-info">
             <span class="status-label">Zona Disponible</span>
             <span v-if="zone.progress !== undefined" class="status-progress">
@@ -45,7 +51,9 @@
           @click="$emit('enter-zone', zone.id)"
           class="btn-enter"
         >
-          <span class="btn-icon">🚀</span>
+          <span class="btn-icon">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+          </span>
           {{ zone.state === 'completed' ? 'Volver a Explorar' : 'Entrar a la Zona' }}
         </button>
 
@@ -73,18 +81,18 @@ const stateClass = computed(() => {
 });
 
 const zoneIcon = computed(() => {
-  if (!props.zone) return '📍';
+  if (!props.zone) return 'Z';
 
-  // Iconos personalizados por zona
+  // Iconos personalizados por zona (primera letra del nombre)
   const icons: Record<number, string> = {
-    1: '🦁', // Zoológico
-    2: '💃', // Plazoleta Jairo Varela
-    3: '🐘', // Zoológico Sur
-    4: '⛪', // Cristo Rey
-    5: '🌴', // Parque de la Caña
+    1: 'ZOO',
+    2: 'PJV',
+    3: 'ZS',
+    4: 'CR',
+    5: 'PC',
   };
 
-  return icons[props.zone.id] || '📍';
+  return icons[props.zone.id] || 'Z';
 });
 </script>
 

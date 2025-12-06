@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 import BattleView from '@/views/BattleView.vue'
 import TeamBuilderView from '@/views/TeamBuilderView.vue'
 import StarterSelectionView from '@/views/StarterSelectionView.vue'
@@ -13,11 +12,11 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      name: 'mapa',
+      component: WorldMapViewPage,
     },
     {
-      path: '/battle',
+      path: '/battle/:battleZona?',
       name: 'battle',
       component: BattleView,
     },
@@ -41,11 +40,7 @@ const router = createRouter({
       name: 'pc',
       component: PCview,
     },
-    {
-      path: '/mapa',
-      name: 'mapa',
-      component: WorldMapViewPage,
-    },
+    
     {
       path: '/zona/:zoneName',
       name: 'zona-lobby',

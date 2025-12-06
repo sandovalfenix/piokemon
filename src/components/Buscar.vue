@@ -56,15 +56,15 @@ const decidirResultadoDeBusqueda = (): void => {
   if (encontrado) {
     foundPokemon.value = encounterStore.wildPokemon as EncounteredPokemon
     if (foundPokemon.value) {
-      console.log('✅ Pokémon encontrado (store):', foundPokemon.value)
+      console.log('[Buscar] Pokemon encontrado (store):', foundPokemon.value)
       emit('pokemon-encontrado', foundPokemon.value)
     } else {
-      console.log('❌ Error inesperado: se indicó encuentro pero no hay Pokémon en el store')
+      console.log('[Buscar] Error inesperado: se indico encuentro pero no hay Pokemon en el store')
       emit('pokemon-no-encontrado')
     }
   } else {
     // No se encontraron pokémons en POKEMON_DATA para la región solicitada
-    console.log('❌ No se encontraron pokémons en POKEMON_DATA para la región:', props.region)
+    console.log('[Buscar] No se encontraron pokemons en POKEMON_DATA para la region:', props.region)
     foundPokemon.value = null
     emit('pokemon-no-encontrado')
   }
@@ -111,7 +111,7 @@ const cerrarModal = (): void => {
           <template v-if="foundPokemon">
             <div class="bg-primary/10 border border-primary rounded-lg p-4 space-y-2 text-left">
               <h3 class="font-bold text-base text-foreground flex items-center gap-2">
-                <span class="text-green-500 text-xl">✓</span>
+                                <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                 ¡Pokémon encontrado!
               </h3>
               <p class="text-sm text-muted-foreground">Nombre: <strong class="text-foreground capitalize">{{ foundPokemon.name }}</strong></p>
@@ -123,8 +123,8 @@ const cerrarModal = (): void => {
           <template v-else>
             <div class="bg-destructive/10 border border-destructive rounded-lg p-4 space-y-2">
               <h3 class="font-bold text-base text-foreground flex items-center gap-2">
-                <span class="text-red-500 text-xl">✗</span>
-                No se encontró ningún Pokémon
+                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                No se encontro ningun Pokemon
               </h3>
               <p class="text-sm text-muted-foreground">{{ encounterStore.fetchError ?? 'Intenta de nuevo o cambia la región' }}</p>
             </div>

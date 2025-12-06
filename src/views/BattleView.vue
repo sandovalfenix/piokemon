@@ -9,7 +9,7 @@
  */
 
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import BattleScreen from '@/components/BattleScreen.vue'
 import DefeatModal from '@/components/battle/DefeatModal.vue'
 import MoveLearningModal from '@/components/battle/MoveLearningModal.vue'
@@ -34,9 +34,15 @@ import { Button } from '@/components/ui/button'
 import type { Pokemon } from '@/domain/battle/engine/entities'
 
 const router = useRouter()
+const route = useRoute()
 const teamStore = useTeamStore()
 const battleStore = useBattleStore()
 const progressStore = useProgressStore()
+
+// Get zone from route parameter for redirect after battle
+const battleZona = computed(() => {
+  return (route.params.battleZona as string) || sessionStorage.getItem('lastZone') || 'default'
+})
 
 // Loading state
 const isLoading = ref(true)
@@ -104,9 +110,14 @@ async function initializeBattle() {
     const targetJson = sessionStorage.getItem('battleTarget')
     if (!targetJson) {
       // No battle target found - likely a page reload
-      // Redirect to home instead of showing error
-      console.warn('[BattleView] No battle target found, redirecting to home')
-      router.replace('/')
+      // Redirect to last zone or map
+      console.warn('[BattleView] No battle target found, redirecting to zone')
+      const lastZone = sessionStorage.getItem('lastZone')
+      if (lastZone) {
+        router.replace(`/zona/${lastZone}`)
+      } else {
+        router.replace('/mapa')
+      }
       return
     }
 
@@ -118,9 +129,14 @@ async function initializeBattle() {
     teamStore.loadTeam()
 
     if (teamStore.roster.length === 0) {
-      // No team - redirect to team builder
-      console.warn('[BattleView] No team found, redirecting to home')
-      router.replace('/')
+      // No team - redirect to zone or map
+      console.warn('[BattleView] No team found, redirecting to zone')
+      const lastZone = sessionStorage.getItem('lastZone')
+      if (lastZone) {
+        router.replace(`/zona/${lastZone}`)
+      } else {
+        router.replace('/mapa')
+      }
       return
     }
 
@@ -261,6 +277,9 @@ async function initializeBattle() {
       opponent: opponentName.value,
       playerTeamSize: playerTeam.value.length,
       opponentTeamSize: opponentTeam.value.length,
+      playerTeamHP: playerTeam.value.map(p => ({ name: p.name, hp: p.currentHp, maxHp: p.stats.hp })),
+      battleStorePlayerTeam: battleStore.playerTeam.length,
+      battleStorePlayerTeamRemaining: battleStore.playerTeamRemaining,
     })
   } catch (err) {
     console.error('[BattleView] Error initializing battle:', err)
@@ -324,15 +343,22 @@ function handleDefeat() {
 // ==========================================================================
 
 /**
- * Close victory modal and redirect
+ * Close victory modal and redirect to zone
  */
 function closeVictoryAndRedirect() {
   showVictoryModal.value = false
-  router.replace('/')
+  const returnZone = battleZona.value !== 'default' ? battleZona.value : null
+  sessionStorage.removeItem('lastZone')
+
+  if (returnZone) {
+    router.replace(`/zona/${returnZone}`)
+  } else {
+    router.replace('/mapa')
+  }
 }
 
 /**
- * Close defeat modal and redirect
+ * Close defeat modal and redirect to zone
  */
 function closeDefeatAndRedirect() {
   // Heal team on defeat too
@@ -340,7 +366,15 @@ function closeDefeatAndRedirect() {
   showDefeatModal.value = false
   // Reset battle state to prevent stale data
   battleStore.endBattle()
-  router.replace('/')
+
+  const returnZone = battleZona.value !== 'default' ? battleZona.value : null
+  sessionStorage.removeItem('lastZone')
+
+  if (returnZone) {
+    router.replace(`/zona/${returnZone}`)
+  } else {
+    router.replace('/mapa')
+  }
 }
 
 /**
@@ -377,10 +411,17 @@ function retryBattle() {
 }
 
 /**
- * Go back to lobby
+ * Go back to zone lobby
  */
 function goToLobby() {
-  router.replace('/')
+  const lastZone = battleZona.value !== 'default' ? battleZona.value : sessionStorage.getItem('lastZone')
+  sessionStorage.removeItem('lastZone')
+
+  if (lastZone && lastZone !== 'default') {
+    router.replace(`/zona/${lastZone}`)
+  } else {
+    router.replace('/mapa')
+  }
 }
 
 // Watch for battle end

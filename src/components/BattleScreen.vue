@@ -16,9 +16,6 @@
  *   Props: currentView, logMessages, playerMoves, isAttacking
  *   Events: @fight, @bag, @pokemon, @run, @select-move, @back
  *
- * - **BagScreen.vue** - Items display and usage
- *   Events: @use-item, @back
- *
  * - **BattleTeamSelector.vue** - Pokemon team selection for switching
  *   Props: team, currentPokemonId, trainerName
  *   Events: @switch-pokemon, @back
@@ -36,7 +33,7 @@
  * - Detect faint/switch scenarios
  */
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import BattleTeamSelector from './battle/BattleTeamSelector.vue'
 import PokemonTeamSwitcher from './battle/PokemonTeamSwitcher.vue'
 import PokemonSwitchModal from './battle/PokemonSwitchModal.vue'
@@ -93,12 +90,17 @@ const props = defineProps<Props>()
 const battleStore = useBattleStore()
 const teamStore = useTeamStore()
 const router = useRouter()
+const route = useRoute()
+
+// Get zone from route parameter
+const battleZona = computed(() => {
+  return (route.params.battleZona as string) || sessionStorage.getItem('lastZone') || 'default'
+})
 const { rivalRemainingPokemon, startBattle: startTrainerBattle } = useTrainerBattle()
 
-// Dynamic background based on zone
+// Dynamic background based on zone from route
 const currentZoneBackground = computed(() => {
-  const lastZone = sessionStorage.getItem('lastZone') || 'default'
-  return ZONE_ASSETS[lastZone] || ZONE_ASSETS['default']
+  return ZONE_ASSETS[battleZona.value] || ZONE_ASSETS['default']
 })
 
 // Gym battle state
@@ -321,13 +323,13 @@ const handleRun = () => {
     // Limpiar estado de batalla
     battleStore.endBattle()
 
-    // Obtener la zona guardada y redirigir
-    const lastZone = sessionStorage.getItem('lastZone')
+    // Usar el parámetro de ruta o fallback a sessionStorage
+    const returnZone = battleZona.value !== 'default' ? battleZona.value : sessionStorage.getItem('lastZone')
     sessionStorage.removeItem('lastZone')
 
     setTimeout(() => {
-      if (lastZone) {
-        router.push(`/zona/${lastZone}`)
+      if (returnZone && returnZone !== 'default') {
+        router.push(`/zona/${returnZone}`)
       } else {
         router.push('/mapa')
       }
@@ -375,7 +377,7 @@ const handleCloseSwitchModal = () => {
 
 /**
  * Handle defeat from switch modal (no available Pokemon)
- * Closes modal, heals team, and redirects to lobby
+ * Closes modal, heals team, and redirects to zone
  */
 const handleDefeatFromModal = () => {
   // Close the modal
@@ -390,8 +392,15 @@ const handleDefeatFromModal = () => {
   teamStore.healTeam()
   battleStore.endBattle()
 
-  // Navigate to lobby
-  router.push('/')
+  // Navigate back to zone (use route param or sessionStorage fallback)
+  const returnZone = battleZona.value !== 'default' ? battleZona.value : sessionStorage.getItem('lastZone')
+  sessionStorage.removeItem('lastZone')
+
+  if (returnZone && returnZone !== 'default') {
+    router.push(`/zona/${returnZone}`)
+  } else {
+    router.push('/mapa')
+  }
 }
 
 /**
@@ -550,7 +559,16 @@ function handleFinalCapturaClose() {
   capturedPokemonData.value = null
   wildPokemonData.value = null
   selectedBallType.value = null
-  router.replace('/')
+
+  // Regresar a la zona o mapa
+  const returnZone = battleZona.value !== 'default' ? battleZona.value : sessionStorage.getItem('lastZone')
+  sessionStorage.removeItem('lastZone')
+
+  if (returnZone && returnZone !== 'default') {
+    router.replace(`/zona/${returnZone}`)
+  } else {
+    router.replace('/mapa')
+  }
 }
 
 
@@ -664,6 +682,13 @@ watch(() => battleStore.log, () => {
   // Detectar si el jugador necesita cambiar Pokémon
   if (lastMessage?.includes('se debilitó') && lastMessage.includes(battleStore.player.name)) {
     // El Pokémon del jugador se debilitó
+    console.log('[BattleScreen] Player Pokemon fainted! Team status:', {
+      playerTeamRemaining: battleStore.playerTeamRemaining,
+      playerTeamLength: battleStore.playerTeam.length,
+      teamHP: battleStore.playerTeam.map(p => ({ name: p.name, hp: p.currentHp })),
+      winner: battleStore.winner,
+    })
+
     if (battleStore.playerTeamRemaining > 0 && battleStore.winner === null) {
       // Mostrar modal de cambio de Pokémon (forzado)
       setTimeout(() => {
@@ -723,7 +748,7 @@ watch(() => battleStore.log, () => {
       <template v-else>
         <!-- Banner de batalla de gimnasio -->
         <div v-if="isGymBattle && currentGymLeaderInfo" class="absolute top-4 left-1/2 -translate-x-1/2 z-20 backdrop-blur-md bg-linear-to-r from-yellow-500/80 to-orange-500/80 border border-white/20 rounded-xl px-6 py-3 flex items-center gap-4 shadow-xl">
-          <div class="text-2xl animate-pulse">⭐</div>
+          <div class="text-2xl animate-pulse text-yellow-400 font-bold">GYM</div>
           <div class="flex flex-col">
             <span class="text-white font-bold text-sm">{{ currentGymLeaderInfo.name }}</span>
             <span class="text-white/70 text-xs">Tipo {{ currentGymLeaderInfo.type }}</span>
@@ -743,12 +768,13 @@ watch(() => battleStore.log, () => {
             :is-trainer-battle="isTrainerBattle"
             :rival-remaining-pokemon="rivalRemainingPokemon"
             :npc-team-length="battleStore.npcTeam.length"
+            :battle-zona="battleZona"
             class="w-full max-w-4xl"
           />
         </div>
 
         <!-- Floating Control Panel with Glassmorphism -->
-        <div class="p-4">
+        <div>
           <div class="backdrop-blur-md bg-black/40 border border-white/10 rounded-xl overflow-hidden shadow-2xl h-[180px]">
             <BattleActionMenu
               v-if="currentView === 'main' || currentView === 'fight'"
@@ -763,13 +789,6 @@ watch(() => battleStore.log, () => {
               @run="handleRun"
               @select-move="handleMoveSelected"
               @back="handleBack"
-            />
-
-            <!-- Vista de Pokéballs -->
-            <PokeballsBag
-              v-else-if="currentView === 'pokeball'"
-              @ball-seleccionada="handleBallSeleccionada"
-              @cerrar="handleBack"
             />
 
             <!-- Vista de Pokémon -->
@@ -854,6 +873,13 @@ watch(() => battleStore.log, () => {
       }"
       :save-location="captureState.savedTo ?? 'team'"
       @volver-inicio="handleFinalCapturaClose"
+    />
+
+    <!-- Modal de Pokéballs (separado del panel de control) -->
+    <PokeballsBag
+      v-if="currentView === 'pokeball'"
+      @ball-seleccionada="handleBallSeleccionada"
+      @cerrar="handleBack"
     />
   </div>
 </template>

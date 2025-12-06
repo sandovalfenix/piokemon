@@ -89,13 +89,13 @@ const zoneNameWithoutPrefix = computed(() => {
 // Iconos personalizados por zona (fallback cuando no hay imagen)
 const zoneIcon = computed(() => {
   const icons: Record<number, string> = {
-    1: '🦁', // Zona Plazoleta Jairo Varela
-    2: '🐘', // Zona Zoo de Cali
-    3: '⛪', // Zona La Ermita
-    4: '🏔️', // Zona Cristo Rey
-    5: '🌴', // Zona Parque de la Caña
+    1: 'PJV', // Zona Plazoleta Jairo Varela
+    2: 'ZOO', // Zona Zoo de Cali
+    3: 'ERM', // Zona La Ermita
+    4: 'CR', // Zona Cristo Rey
+    5: 'PC', // Zona Parque de la Caña
   }
-  return icons[props.zone.id] || '📍'
+  return icons[props.zone.id] || 'Z'
 })
 </script>
 

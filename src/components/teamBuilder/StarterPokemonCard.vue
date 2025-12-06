@@ -120,7 +120,7 @@ function handleSelect() {
         :class="isSelected ? 'bg-yellow-500 hover:bg-yellow-600 text-black' : 'bg-white/90 hover:bg-white text-gray-800'"
         @click.stop="handleSelect"
       >
-        {{ isSelected ? '✓ Selected!' : 'Choose Me!' }}
+        {{ isSelected ? 'Selected!' : 'Choose Me!' }}
       </Button>
     </CardContent>
 

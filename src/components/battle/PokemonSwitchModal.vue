@@ -44,6 +44,12 @@ const emit = defineEmits<Emits>()
  * Handle return to lobby when defeated (no available Pokemon)
  */
 function handleDefeat() {
+  console.log('[PokemonSwitchModal] Defeat triggered! Team status:', {
+    teamLength: props.team.length,
+    currentPokemonId: props.currentPokemonId,
+    teamHP: props.team.map(p => ({ id: p.id, name: p.name, hp: p.currentHp })),
+    availablePokemon: availablePokemon.value.length,
+  })
   emit('defeat')
 }
 
@@ -149,7 +155,7 @@ function getTypeBadgeColor(type: string): string {
       >
         <div class="mb-4">
           <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-red-900/50 flex items-center justify-center border-2 border-red-600/50">
-            <span class="text-4xl">💔</span>
+                        <svg class="w-12 h-12 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="2"/></svg>
           </div>
           <p class="text-lg font-semibold text-red-400">¡No tienes Pokémon disponibles!</p>
           <p class="text-sm text-slate-400 mt-2">Todos tus Pokémon han sido derrotados.</p>

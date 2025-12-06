@@ -447,12 +447,16 @@ export const useBattleStore = defineStore('battle', {
     },
 
     async switchPlayerPokemon() {
-      // Check if there are any alive player Pokémon left
-      const nextIndex = this.playerTeam.findIndex(
-        (p, idx) => idx > this.currentPlayerIndex && p.currentHp > 0
-      )
+      // Check if there are any alive player Pokémon left (search entire team, not just after current index)
+      const aliveCount = this.playerTeam.filter(p => p.currentHp > 0).length
 
-      if (nextIndex !== -1) {
+      console.log('[BattleStore] switchPlayerPokemon called:', {
+        aliveCount,
+        currentPlayerIndex: this.currentPlayerIndex,
+        teamHP: this.playerTeam.map(p => ({ name: p.name, hp: p.currentHp })),
+      })
+
+      if (aliveCount > 0) {
         // Instead of auto-switching, mark that player must choose and wait
         this.playerSwitchRequired = true
 
@@ -465,6 +469,7 @@ export const useBattleStore = defineStore('battle', {
       } else {
         // No more Pokémon for player - NPC wins
         this.winner = 'npc'
+        this.log.push('¡Todos tus Pokémon han sido derrotados!')
       }
     },
 
