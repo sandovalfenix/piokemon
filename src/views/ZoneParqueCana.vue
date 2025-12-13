@@ -208,7 +208,7 @@ const fightTrainer = () => { if (currentEncounter.value?.type === 'trainer') { c
 const closeTrainerResult = () => { showTrainerResult.value = false }
 const collectItem = () => { if (currentEncounter.value?.type === 'item') { itemsCollected.value.push(currentEncounter.value.data.id); itemsFound.value++; currentEncounter.value = null } }
 
-const goBack = () => { router.push('/mapa') }
+const goBack = () => { router.push('/map') }
 </script>
 
 <style scoped>

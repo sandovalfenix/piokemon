@@ -512,11 +512,11 @@ const startLeaderBattle = () => {
 
 const claimVictory = () => {
   showVictoryModal.value = false
-  router.push('/mapa')
+  router.push('/map')
 }
 
 const goBack = () => {
-  router.push('/mapa')
+  router.push('/map')
 }
 </script>
 

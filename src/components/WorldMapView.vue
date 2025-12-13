@@ -163,22 +163,8 @@ onBeforeUnmount(() => {
 
 const handleEnterZone = (zoneId: number) => {
   console.log(`¡Entrando a la Zona ID: ${zoneId}! Redirigiendo...`);
-
-  // Mapeo de zonas a rutas
-  const zoneRoutes: Record<number, string> = {
-    1: '/zona/plazoleta-jairo-varela',
-    2: '/zona/zoologico-de-cali',
-    3: '/zona/la-ermita',
-    4: '/zona/gimnasio-cristo-rey',
-    5: '/zona/parque-de-la-cana',
-  };
-
-  const route = zoneRoutes[zoneId];
-  if (route) {
-    router.push(route);
-  } else {
-    alert(`Zona "${mapStore.getSelectedZone?.name}" próximamente disponible.`);
-  }
+  // Redirigir a la ruta estándar /zone/:id
+  router.push(`/zone/${zoneId}`);
 };
 </script>
 

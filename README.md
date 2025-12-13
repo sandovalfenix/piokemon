@@ -46,3 +46,35 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Rutas requeridas por la actividad
+
+El proyecto usa Vue Router y las rutas que exige la actividad son:
+
+- `/map` → Mapa principal
+- `/zone/:id` → Lobby de zona (recibe `id` numérico)
+- `/missions` → Misiones
+- `/pvp` → Arena PvP
+
+También existe la ruta auxiliar para ver tus Pokémon:
+
+- `/pokemons` → Listado de Pokémon (ejemplos)
+
+## Entrega
+
+1) Capturas de pantalla (3-4) que muestren:
+  - Mapa (`/map`)
+  - Lobby de una zona (`/zone/:id`) — ejemplo `/zone/2`
+  - Misiones (`/missions`) y PvP (`/pvp`)
+  - Pokémons (`/pokemons`) con 3 tarjetas de ejemplo
+2) Enlace al repositorio GitHub del proyecto
+
+Para ejecutar localmente:
+
+```sh
+npm install
+npm run dev
+```
+
+Visita `http://localhost:5173/` (o la URL que indique Vite) y navega a `/map`, `/zone/2`, `/missions` y `/pvp`.
+
